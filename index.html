@@ -275,55 +275,7 @@
 <audio id="notificationSound" src="https://www.soundjay.com/buttons/sounds/button-37a.mp3"></audio>
 <script src="script.js"></script>
 <audio id="azanSound" src="https://www.islamcan.com/common/makkah.mp3" preload="auto"></audio>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // ضع الكود الذي نسخته من الخطوة رقم 1 هنا
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const provider = new GoogleAuthProvider();
-
-  // دالة تسجيل الدخول والمزامنة
-  window.loginAndSync = async function() {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      // 1. مزامنة الختمة من الهاتف للسحاب
-      const localData = localStorage.getItem('khatmaProgress');
-      if (localData) {
-          await setDoc(doc(db, "users", user.uid), {
-              khatma: JSON.parse(localData),
-              email: user.email,
-              lastSync: new Date()
-          });
-          alert(`تم المزامنة بنجاح يا ${user.displayName}`);
-      }
-    } catch (error) {
-      alert("حدث خطأ أثناء المزامنة: " + error.message);
-    }
-  };
-
-  // دالة الإشعارات البسيطة
-  window.requestNotify = function() {
-      Notification.requestPermission().then(permission => {
-          if (permission === "granted") {
-              new Notification("حقيبة المؤمن", { body: "تم تفعيل التنبيهات بنجاح ✅" });
-          }
-      });
-  };
 <script type="module">
   // استيراد المكتبات
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
