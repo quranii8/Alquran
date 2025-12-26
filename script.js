@@ -782,5 +782,44 @@ function updateKhatmaUI() {
     document.getElementById('total-percent-text').innerText = `التقدم الكلي: ${totalPercent}%`;
     document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
 }
+// دالة تسجيل الدخول والمزامنة
+window.loginAndSync = async function() {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        
+        // جلب بيانات الختمة من الـ localStorage اللي في كودك الأصلي
+        const localData = localStorage.getItem('khatmaProgress');
+        
+        if (localData) {
+            // رفع البيانات لـ Firestore Database
+            await setDoc(doc(db, "users", user.uid), {
+                khatma: JSON.parse(localData),
+                displayName: user.displayName,
+                lastSync: new Date()
+            });
+            alert(`تمت المزامنة بنجاح يا ${user.displayName} ✅`);
+        } else {
+            alert("مسجل دخول، لكن لا توجد بيانات ختمة حالياً لحفظها.");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("حدث خطأ في المزامنة، تأكد من تفعيل Google في Firebase");
+    }
+};
+window.requestSystemNotify = function() {
+    if (!("Notification" in window)) {
+        alert("متصفحك لا يدعم الإشعارات");
+        return;
+    }
+    Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+            new Notification("حقيبة المؤمن", {
+                body: "تم تفعيل التنبيهات بنجاح ✅ سنذكرك بالأوراد والصلوات.",
+                icon: "favicon.ico" // تأكد من مسار أيقونة موقعك
+            });
+        }
+    });
+};
 
 
