@@ -1,0 +1,227 @@
+:root {
+    --dark-teal: #2F5F63;
+    --gold: #C9B07A;
+    --bg: #fdfcf9;
+    --black: #000000;
+    --success: #28a745;
+}
+
+body { font-family: 'Amiri', serif; background: var(--bg); color: var(--dark-teal); margin: 0; direction: rtl; transition: 0.4s; }
+
+/* القائمة الجانبية */
+.side-menu { position: fixed; top: 0; left: -320px; width: 260px; height: 100%; background: var(--dark-teal); color: var(--gold); z-index: 2000; transition: all 0.4s ease-in-out; padding: 25px; visibility: hidden; }
+.side-menu.open { left: 0; visibility: visible; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+.menu-icon { position: absolute; right: 20px; top: 22px; font-size: 28px; cursor: pointer; color: var(--gold); z-index: 1001; }
+.close-btn { background: none; border: none; color: white; font-size: 35px; cursor: pointer; }
+.menu-item { display: flex; justify-content: space-between; align-items: center; margin: 30px 0; }
+.menu-tool-btn { background: var(--gold); border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; color: var(--dark-teal); }
+
+/* الهيدر */
+header { background: var(--dark-teal); color: var(--gold); padding: 20px 10px; text-align: center; border-bottom: 5px solid var(--gold); }
+.main-nav { display: flex; justify-content: center; gap: 8px; margin-top: 15px; }
+.main-nav button { background: transparent; border: 1.5px solid var(--gold); color: var(--gold); padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+.main-nav button.active { background: var(--gold); color: var(--dark-teal); }
+
+/* شبكة السور */
+.surah-grid, .azkar-categories { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 12px; margin-top: 15px; padding: 10px; }
+.surah-card, .category-card { background: white; padding: 15px 10px; border-right: 4px solid var(--gold); border-radius: 8px; text-align: center; cursor: pointer; font-weight: bold; font-size: 0.95rem; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; min-height: 55px; }
+
+/* المشغل الصوتي */
+.player-container.modern-style { background: white; padding: 15px 20px; border-radius: 15px; margin: 10px; text-align: center; border: 1px solid rgba(201, 176, 122, 0.2); }
+.play-btn-small { width: 55px; height: 55px; border-radius: 50%; background: var(--dark-teal); color: var(--gold); border: 2px solid var(--gold); font-size: 1.4rem; cursor: pointer; }
+#reciterSelect { padding: 5px; border-radius: 10px; border: 1px solid var(--gold); background: var(--bg); color: var(--dark-teal); font-family: 'Amiri'; margin-bottom: 10px; width: 100%; }
+#seekSlider { width: 100%; accent-color: var(--dark-teal); height: 4px; }
+
+/* الآيات */
+.ayah-text { background: white; padding: 25px; border-radius: 12px; font-size: 1.7rem; line-height: 2.3; text-align: center; margin: 10px; border: 1px solid rgba(201, 176, 122, 0.1); }
+
+/* الأذكار */
+.zekr-card { background: white; padding: 15px; border-right: 6px solid var(--gold); border-radius: 10px; margin: 10px; cursor: pointer; transition: 0.5s; }
+.zekr-card.completed { border-right-color: var(--success) !important; background-color: rgba(40, 167, 69, 0.05) !important; }
+.zekr-card.completed .zekr-counter { background-color: var(--success) !important; color: white !important; }
+.zekr-text { font-size: 1.4rem; line-height: 2; text-align: center; margin-bottom: 10px; }
+.zekr-counter { background: var(--dark-teal); color: var(--gold); padding: 4px 15px; border-radius: 15px; font-size: 0.9rem; }
+
+/* السبحة المحدثة */
+.goal-setting { text-align: center; margin: 15px 0; font-weight: bold; }
+#sebhaGoal { width: 60px; padding: 5px; border: 1px solid var(--gold); border-radius: 5px; text-align: center; background: white; color: var(--dark-teal); }
+
+.progress-container { width: 80%; background: #eee; height: 10px; border-radius: 10px; margin: 10px auto; overflow: hidden; }
+.progress-bar { width: 0%; height: 100%; background: var(--gold); transition: 0.3s; }
+
+.sebha-circle { width: 180px; height: 180px; border-radius: 50%; background: var(--dark-teal); color: var(--gold); display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 20px auto; border: 8px solid var(--gold); cursor: pointer; transition: 0.2s; }
+.sebha-circle:active { transform: scale(0.95); }
+.sebha-circle.goal-reached { border-color: var(--success); box-shadow: 0 0 20px var(--success); }
+
+.modern-reset-btn { display: block; margin: 10px auto; background: #e74c3c; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+
+.modern-timer { font-family: sans-serif; font-weight: bold; color: var(--gold); background: var(--dark-teal); padding: 5px 15px; border-radius: 10px; display: inline-block; }
+
+/* الوضع الداكن */
+body.dark-mode { background: var(--black) !important; color: white !important; }
+body.dark-mode .surah-card, body.dark-mode .category-card, body.dark-mode .player-container, body.dark-mode .ayah-text, body.dark-mode .zekr-card { background: #111 !important; border-color: var(--gold); color: white !important; }
+/* زر العودة */
+.modern-back-btn {
+    background: transparent;
+    color: var(--gold);
+    border: 2px solid var(--gold);
+    padding: 7px 20px;
+    border-radius: 25px;
+    font-family: 'Amiri';
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.modern-back-btn:hover {
+    background: var(--gold);
+    color: var(--dark-teal);
+}
+
+/* زر التصفير */
+.modern-reset-soft {
+    background: rgba(201,176,122,0.15);
+    color: var(--dark-teal);
+    border: 1.5px solid var(--gold);
+    padding: 7px 20px;
+    border-radius: 20px;
+    font-family: 'Amiri';
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.modern-reset-soft:hover {
+    background: var(--gold);
+    color: var(--dark-teal);
+}
+
+/* الوضع الداكن */
+body.dark-mode .modern-back-btn,
+body.dark-mode .modern-reset-soft {
+    color: var(--gold);
+    border-color: var(--gold);
+}
+.modern-back-btn {
+    direction: ltr;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.prayer-hero-card {
+    background: var(--dark-teal);
+    color: var(--gold);
+    padding: 25px;
+    border-radius: 20px;
+    margin: 20px 0;
+    border: 2px solid var(--gold);
+}
+.big-timer { font-size: 3rem; font-weight: bold; font-family: sans-serif; }
+.prayer-detailed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 15px;
+}
+.p-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    border-bottom: 4px solid var(--gold);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+.p-card span { display: block; font-size: 0.85rem; color: #777; font-weight: bold; }
+.p-card b { font-size: 1.2rem; color: var(--dark-teal); }
+
+/* دعم الوضع المظلم */
+body.dark-mode .p-card { background: #1a1a1a; }
+body.dark-mode .p-card b { color: white; }
+
+/* استبدل من سطر 158 إلى آخر الملف بهذا الكود */
+
+.qibla-container {
+    background: radial-gradient(circle, var(--dark-teal), #052e2e);
+    color: var(--gold);
+    padding: 30px 20px;
+    border-radius: 20px;
+    border: 3px solid var(--gold);
+    margin: 20px auto;
+    max-width: 320px;
+}
+
+.compass {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border: 6px solid var(--gold);
+    border-radius: 50%;
+    margin: 20px auto;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* هذا هو السهم الذي سيتحرك برمجياً */
+.compass-arrow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 85px;
+    background: var(--gold);
+    /* نقطة الارتكاز: أسفل السهم يكون في مركز الدائرة */
+    transform-origin: bottom center; 
+    transform: translate(-50%, -100%) rotate(0deg);
+    transition: transform 0.2s cubic-bezier(0.1, 0.5, 0.1, 1);
+    border-radius: 5px;
+    z-index: 5;
+}
+
+/* رأس السهم (المثلث) */
+.compass-arrow::after {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: -7px;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 20px solid var(--gold);
+}
+
+/* النقطة المركزية في البوصلة */
+.compass::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--gold);
+    border-radius: 50%;
+    z-index: 6;
+}
+
+.kaaba-icon {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    z-index: 2;
+}
+
+.qibla-degrees {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* تأثير النبض لزر التفعيل ليجذب الانتباه */
+#enable-compass-btn {
+    animation: pulse 2s infinite;
+    font-family: 'Amiri', serif;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(201, 176, 122, 0.4); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(201, 176, 122, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(201, 176, 122, 0); }
+}
