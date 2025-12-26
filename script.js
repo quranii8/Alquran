@@ -782,16 +782,4 @@ function updateKhatmaUI() {
     document.getElementById('total-percent-text').innerText = `التقدم الكلي: ${totalPercent}%`;
     document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
 }
-// دالة تسجيل الدخول والمزامنة
-
-    Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-            new Notification("حقيبة المؤمن", {
-                body: "تم تفعيل التنبيهات بنجاح ✅ سنذكرك بالأوراد والصلوات.",
-                icon: "favicon.ico" // تأكد من مسار أيقونة موقعك
-            });
-        }
-    });
-};
-
 
