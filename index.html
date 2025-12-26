@@ -324,7 +324,55 @@
           }
       });
   };
+<script type="module">
+  // استيراد المكتبات
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  // إعدادات Firebase الخاصة بك
+  const firebaseConfig = {
+    apiKey: "AIzaSyB-ضع-مفتاحك-هنا", 
+    authDomain: "alquran-app-f02b9.firebaseapp.com",
+    projectId: "alquran-app-f02b9",
+    storageBucket: "alquran-app-f02b9.appspot.com",
+    messagingSenderId: "367332462319",
+    appId: "1:367332462319:web:95d9061014e7a829e2f416"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  // دالة المزامنة بالتحويل (تمنع الصفحة البيضاء)
+  window.loginAndSync = function() {
+    signInWithRedirect(auth, provider);
+  };
+
+  // دالة طلب الإشعارات
+  window.requestSystemNotify = function() {
+    Notification.requestPermission().then(p => {
+      if(p === "granted") alert("تم تفعيل الإشعارات ✅");
+    });
+  };
+
+  // معالجة العودة من جوجل وحفظ البيانات تلقائياً
+  getRedirectResult(auth).then(async (result) => {
+    if (result && result.user) {
+      const localData = localStorage.getItem('khatmaProgress');
+      if (localData) {
+        await setDoc(doc(db, "users", result.user.uid), {
+          khatma: JSON.parse(localData),
+          displayName: result.user.displayName,
+          lastSync: new Date()
+        });
+        alert("تمت المزامنة بنجاح يا " + result.user.displayName + " ✅");
+      }
+    }
+  }).catch(e => console.error("خطأ:", e));
 </script>
+
 
 </body>
 </html>
