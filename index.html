@@ -11,6 +11,17 @@
 
 <div id="sideMenu" class="side-menu">
     <button class="close-btn" onclick="toggleMenu()">×</button>
+<div id="userProfile" style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 20px; display: none;">
+    <img id="userPhoto" src="" alt="avatar" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--gold); margin-bottom: 10px;">
+    <div id="userName" style="color: white; font-weight: bold; font-size: 14px;"></div>
+    <div id="userEmail" style="color: var(--gold); font-size: 11px; opacity: 0.8;"></div>
+    <button onclick="logout()" style="background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; border-radius: 5px; padding: 3px 10px; font-size: 10px; margin-top: 10px; cursor: pointer;">تسجيل خروج</button>
+</div>
+
+<div id="loginGuest" style="text-align: center; padding: 15px; margin-bottom: 20px;">
+    <p style="font-size: 12px; color: #ccc;">أنت تتصفح كضيف</p>
+    <button class="menu-tool-btn" onclick="loginAndSync()" style="width: 100%; margin-top: 5px;">ربط الحساب بسحابة جوجل ☁️</button>
+</div>
     <h3 style="text-align:center;color:var(--gold);">الإعدادات</h3>
     <hr style="border:0.5px solid rgba(201,176,122,0.3);">
 
