@@ -288,62 +288,56 @@
 <audio id="azanSound" src="https://www.islamcan.com/common/makkah.mp3" preload="auto"></audio>
 
 <script type="module">
-  // استيراد المكتبات
+  // استيراد   // 1. استيراد المكتبات الضرورية
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
- import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// مراقب حالة المستخدم (يعرف إذا دخل أو خرج)
-onAuthStateChanged(auth, (user) => {
-    const profileCard = document.getElementById('userProfile');
-    const guestCard = document.getElementById('loginGuest');
-
-    if (user) {
-        // إذا مسجل دخول: أظهر بياناته
-        profileCard.style.display = 'block';
-        guestCard.style.display = 'none';
-        document.getElementById('userName').innerText = user.displayName;
-        document.getElementById('userEmail').innerText = user.email;
-        document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/60';
-    } else {
-        // إذا غير مسجل: أظهر رسالة الضيف
-        profileCard.style.display = 'none';
-        guestCard.style.display = 'block';
-    }
-});
-
-// دالة تسجيل الخروج
-window.logout = function() {
-    if(confirm("هل تريد تسجيل الخروج؟")) {
-        signOut(auth).then(() => location.reload());
-    }
-};
-
-  // إعدادات Firebase الخاصة بك
+  // 2. إعدادات Firebase (بياناتك الحقيقية من الصورة)
   const firebaseConfig = {
     apiKey: "AIzaSyDAWPEns_hhMY3jAWJd2EqILJ9vxInKfMs", 
     authDomain: "alquran-app-f02b9.firebaseapp.com",
     projectId: "alquran-app-f02b9",
-    storageBucket: "alquran-app-f02b9.firebasestorage.app", // عدل هذا السطر لـ firebasestorage.app
+    storageBucket: "alquran-app-f02b9.firebasestorage.app",
     messagingSenderId: "283906260546",
     appId: "1:283906260546:web:4215f4193ae35add0777db"
   };
 
+  // 3. تعريف المحركات (يجب أن تكون قبل استخدامها)
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
+  // 4. مراقب حالة المستخدم (لتحديث الملف الشخصي)
+  onAuthStateChanged(auth, (user) => {
+    const profileCard = document.getElementById('userProfile');
+    const guestCard = document.getElementById('loginGuest');
+
+    if (user) {
+        if(profileCard) profileCard.style.display = 'block';
+        if(guestCard) guestCard.style.display = 'none';
+        if(document.getElementById('userName')) document.getElementById('userName').innerText = user.displayName;
+        if(document.getElementById('userEmail')) document.getElementById('userEmail').innerText = user.email;
+        if(document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/60';
+    } else {
+        if(profileCard) profileCard.style.display = 'none';
+        if(guestCard) guestCard.style.display = 'block';
+    }
+  });
+
+  // 5. الدوال العالمية (مربوطة بالأزرار)
   window.loginAndSync = function() {
     signInWithRedirect(auth, provider);
   };
 
-  window.requestSystemNotify = function() {
-    Notification.requestPermission().then(p => {
-      if(p === "granted") alert("تم تفعيل الإشعارات ✅");
-    });
+  window.logout = function() {
+    if(confirm("هل تريد تسجيل الخروج؟")) {
+        signOut(auth).then(() => location.reload());
+    }
   };
 
+  // 6. استقبال نتيجة تسجيل الدخول بعد العودة من جوجل
   getRedirectResult(auth).then(async (result) => {
     if (result && result.user) {
       const localData = localStorage.getItem('khatmaProgress');
@@ -352,11 +346,12 @@ window.logout = function() {
           khatma: JSON.parse(localData),
           displayName: result.user.displayName,
           lastSync: new Date()
-        });
+        }, { merge: true });
         alert("تمت المزامنة بنجاح يا " + result.user.displayName + " ✅");
       }
     }
-  }).catch(e => console.error("خطأ:", e));
+  }).catch(e => console.error("خطأ المزامنة:", e));
+
 </script>
 
 </body>
