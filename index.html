@@ -287,9 +287,9 @@
     apiKey: "AIzaSyDAWPEns_hhMY3jAWJd2EqILJ9vxInKfMs", 
     authDomain: "alquran-app-f02b9.firebaseapp.com",
     projectId: "alquran-app-f02b9",
-    storageBucket: "alquran-app-f02b9.appspot.com",
-    messagingSenderId: "367332462319",
-    appId: "1:367332462319:web:95d9061014e7a829e2f416"
+    storageBucket: "alquran-app-f02b9.firebasestorage.app", // عدل هذا السطر لـ firebasestorage.app
+    messagingSenderId: "283906260546",
+    appId: "1:283906260546:web:4215f4193ae35add0777db"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -297,19 +297,16 @@
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  // دالة المزامنة بالتحويل (تمنع الصفحة البيضاء)
   window.loginAndSync = function() {
     signInWithRedirect(auth, provider);
   };
 
-  // دالة طلب الإشعارات
   window.requestSystemNotify = function() {
     Notification.requestPermission().then(p => {
       if(p === "granted") alert("تم تفعيل الإشعارات ✅");
     });
   };
 
-  // معالجة العودة من جوجل وحفظ البيانات تلقائياً
   getRedirectResult(auth).then(async (result) => {
     if (result && result.user) {
       const localData = localStorage.getItem('khatmaProgress');
@@ -325,6 +322,6 @@
   }).catch(e => console.error("خطأ:", e));
 </script>
 
-
 </body>
 </html>
+
