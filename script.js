@@ -836,10 +836,7 @@ function closeAchievements() {
     const achSec = document.getElementById('achievements-section');
     if(achSec) achSec.style.display = 'none';
 }
-
-
-// 3. دالة عرض البيانات المحفو
-0';
+// 3. دالة عرض البيانات الم
 function renderAchievements() {
     // جلب البيانات من localStorage مع وضع '0' كقيمة افتراضية إذا كانت فارغة
     const sebha = localStorage.getItem('sebhaCount') || 0;
