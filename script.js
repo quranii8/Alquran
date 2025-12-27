@@ -847,5 +847,5 @@ function renderAchievements() {
     document.getElementById('totalKhatma').innerText = localStorage.getItem('totalKhatma') || 0;
 }
 0';
-}
+
 
