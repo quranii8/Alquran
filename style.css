@@ -10,26 +10,10 @@ body { font-family: 'Amiri', serif; background: var(--bg); color: var(--dark-tea
 
 /* القائمة الجانبية */
 .side-menu { position: fixed; top: 0; left: -320px; width: 260px; height: 100%; background: var(--dark-teal); color: var(--gold); z-index: 2000; transition: all 0.4s ease-in-out; padding: 25px; visibility: hidden; }
-.side-menu.open { 
-    left: 0; 
-    visibility: visible; 
-    display: block; 
-    box-shadow: 5px 0 15px rgba(0,0,0,0.5); 
-}
-
+.side-menu.open { left: 0; visibility: visible; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
 .menu-icon { position: absolute; right: 20px; top: 22px; font-size: 28px; cursor: pointer; color: var(--gold); z-index: 1001; }
 .close-btn { background: none; border: none; color: white; font-size: 35px; cursor: pointer; }
-./* هذا الكود يمنع تداخل الأزرار ويوزعها بشكل صحيح */
-.menu-item { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin: 10px 0; /* مسافة بين كل خيار والثاني */
-    padding: 10px;
-    border-bottom: 1px solid rgba(201,176,122,0.1); /* خط بسيط للتنظيم */
-    width: 100%;
-}
-
+.menu-item { display: flex; justify-content: space-between; align-items: center; margin: 30px 0; }
 .menu-tool-btn { background: var(--gold); border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; color: var(--dark-teal); }
 
 /* الهيدر */
@@ -384,3 +368,4 @@ body.dark-mode #total-percent-text {
     color: #b0b0b0 !important;
 }
 
+ 
