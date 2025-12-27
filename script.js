@@ -917,19 +917,22 @@ const namesData = [
     { name: "الرشيد", desc: "الذي يرشد الخلق ويدبرهم بحكمته البالغة.", count: "ثابت بالمعنى" },
     { name: "الصبور", desc: "الذي لا يعاجل العصاة بالعقوبة صبراً عليهم ليتوبوا.", count: "ثابت في السنة" }
 ];
-function initNamesSection() {
-    const namesContainer = document.getElementById('names');
-    namesContainer.innerHTML = ""; // نظف أي محتوى موجود
+const namesContainer = document.getElementById('names');
 
-    namesData.forEach(item => {
-        const btn = document.createElement('button');
-        btn.innerText = item.name;
-        btn.style.margin = "5px";
-        btn.onclick = () => {
-            alert(`${item.name}\n\n${item.desc}\n\n${item.count}`);
-        };
-        namesContainer.appendChild(btn);
-    });
+namesData.forEach(item => {
+    const btn = document.createElement('button');
+    btn.textContent = item.name;
+    btn.style.padding = "8px 15px";
+    btn.style.borderRadius = "8px";
+    btn.style.border = "1px solid var(--gold)";
+    btn.style.background = "var(--dark-teal)";
+    btn.style.color = "white";
+    btn.style.cursor = "pointer";
+    btn.onclick = () => {
+        alert(`${item.name}\n\n${item.desc}\n\n${item.count}`);
+    };
+    namesContainer.appendChild(btn);    
+});
 }
 
 // نفذ عند تحميل الصفحة
