@@ -298,9 +298,10 @@ function switchMainTab(t) {
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 function changeFontSize(d) { 
     const el = document.getElementById('ayahsContainer'); 
-    let s = window.getComputedStyle(el).fontSize; 
-    el.style.fontSize = (parseFloat(s) + d) + 'px'; 
+    let currentSize = parseFloat(window.getComputedStyle(el).fontSize) || 22; 
+    el.style.fontSize = (currentSize + d) + 'px'; 
 }
+
 
 // --- تهيئة التشغيل ---
 document.getElementById('sebhaCounter').innerText = sCount;
@@ -851,6 +852,18 @@ function renderAchievements() {
     if(document.getElementById('totalAyat')) document.getElementById('totalAyat').innerText = ayat;
     if(document.getElementById('totalKhatma')) document.getElementById('totalKhatma').innerText = (khatma - 1); // الختمات المكتملة
     if(document.getElementById('firstVisit')) document.getElementById('firstVisit').innerText = firstVisit;
+}
+// دوال الربط مع Firebase (تأكد من وجودها)
+function saveSebhaProgress() {
+    if (typeof saveProgress === 'function') {
+        saveProgress('sebha', { count: sCount, goal: sGoal });
+    }
+}
+
+function saveKhatmaProgress() {
+    if (typeof saveProgress === 'function') {
+        saveProgress('khatma', khatmaData);
+    }
 }
 
 
