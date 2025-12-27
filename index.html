@@ -9,17 +9,6 @@
 </head>
 <body>
 <!-- الضيف -->
-<div id="loginGuest">
-  <button onclick="loginAndSync()">تسجيل الدخول بحساب Google</button>
-</div>
-
-<!-- المستخدم -->
-<div id="userProfile" style="display:none">
-  <img id="userPhoto" width="60">
-  <p id="userName"></p>
-  <p id="userEmail"></p>
-  <button onclick="logout()">تسجيل خروج</button>
-</div>
 <div id="sideMenu" class="side-menu">
     <button class="close-btn" onclick="toggleMenu()">×</button>
 <div id="userProfile" style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 20px; display: none;">
@@ -301,16 +290,13 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithRedirect,
-    getRedirectResult,
-    setPersistence,
-    browserLocalPersistence,
-    onAuthStateChanged,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
   /* Firebase Config */
   const firebaseConfig = {
@@ -348,11 +334,28 @@
     }
   });
 
-  /* زر تسجيل الدخول */
-  window.loginAndSync = async function () {
-    await setPersistence(auth, browserLocalPersistence);
-    await signInWithRedirect(auth, provider);
-  };
+  /* زر تسجيل الدخول */window.loginAndSync = async function () {
+  try {
+    const result = await signInWithPopup(auth, provider);
+
+    const localData = localStorage.getItem('khatmaProgress');
+    if (localData) {
+      await setDoc(
+        doc(db, "users", result.user.uid),
+        {
+          displayName: result.user.displayName,
+          email: result.user.email,
+          khatma: JSON.parse(localData),
+          lastSync: new Date()
+        },
+        { merge: true }
+      );
+    }
+  } catch (e) {
+    console.error(e);
+    alert("فشل تسجيل الدخول");
+  }
+};
 
   /* بعد الرجوع من Google */
   getRedirectResult(auth).then(async (result) => {
