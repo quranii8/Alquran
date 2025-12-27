@@ -358,25 +358,7 @@ import {
 };
 
   /* بعد الرجوع من Google */
-  getRedirectResult(auth).then(async (result) => {
-    if (result && result.user) {
-      const localData = localStorage.getItem('khatmaProgress');
-
-      if (localData) {
-        await setDoc(
-          doc(db, "users", result.user.uid),
-          {
-            displayName: result.user.displayName,
-            email: result.user.email,
-            khatma: JSON.parse(localData),
-            lastSync: new Date()
-          },
-          { merge: true }
-        );
-      }
-    }
-  }).catch(err => console.error(err));
-
+  
   /* تسجيل الخروج */
   window.logout = function () {
     if (confirm("تسجيل خروج؟")) {
