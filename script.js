@@ -220,18 +220,21 @@ function updateGoal() {
 function incrementSebha() {
     sCount++;
     document.getElementById('sebhaCounter').innerText = sCount;
-    localStorage.setItem('sebhaCount', sCount);
-    updateProgress();
+    localStorage.setItem('sebhaCount', sCount); // حفظ عداد اليوم
     
-    // حفظ التقدم على Firebase لو المستخدم مسجل دخول
-    if (typeof saveProgress === 'function') {
-        saveProgress('sebha', { count: sCount, goal: sGoal });
+    // حفظ تاريخ أول دخول إذا لم يكن موجوداً
+    if(!localStorage.getItem('firstVisitDate')) {
+        localStorage.setItem('firstVisitDate', new Date().toLocaleDateString('ar-EG'));
     }
 
+    updateProgress();
+    
     if (sCount === sGoal) {
         document.querySelector('.sebha-circle').classList.add('goal-reached');
         playNotify(); 
     }
+}
+
 }
 
 function updateProgress() {
@@ -814,38 +817,43 @@ function checkDailyAzkarReset() {
 setInterval(checkDailyAzkarReset, 60000); // كل دقيقة
 checkDailyAzkarReset(); // عند التحميل
 // 1. دالة فتح الإنجازات كصفحة مستقلة
+// دالة فتح الإنجازات كصفحة مستقلة (Overlay)
 function showAchievements() {
-    toggleMenu(); // أغلق القائمة فوراً لمنع التعليق
-    
-    // إخفاء كل شيء آخر
-    const sections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section'];
-    sections.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.style.display = 'none';
-    });
+    // 1. إغلاق القائمة الجانبية فوراً
+    const sideMenu = document.getElementById('sideMenu');
+    if(sideMenu) sideMenu.classList.remove('open');
 
-    // إظهار قسم الإنجازات
+    // 2. إظهار قسم الإنجازات كـ Overlay فوق الصفحة
     const achSec = document.getElementById('achievements-section');
     if(achSec) {
         achSec.style.display = 'block';
-        renderAchievements(); // تحديث الأرقام من الذاكرة
+        renderAchievements(); // تحديث الأرقام المعروضة
     }
 }
 
-// 2. دالة العودة للرئيسية
+// دالة العودة للرئيسية (إغلاق الـ Overlay)
 function closeAchievements() {
-    document.getElementById('achievements-section').style.display = 'none';
-    document.getElementById('quran-section').style.display = 'block';
+    const achSec = document.getElementById('achievements-section');
+    if(achSec) achSec.style.display = 'none';
 }
 
-// 3. دالة عرض البيانات المحفوظة
-function renderAchievements() {
-    document.getElementById('firstVisit').innerText = localStorage.getItem('firstVisit') || 'اليوم';
-    document.getElementById('totalSebha').innerText = localStorage.getItem('totalSebha') || 0;
-    document.getElementById('totalAzkar').innerText = localStorage.getItem('totalAzkar') || 0;
-    document.getElementById('totalAyat').innerText = localStorage.getItem('totalAyat') || 0;
-    document.getElementById('totalKhatma').innerText = localStorage.getItem('totalKhatma') || 0;
-}
+
+// 3. دالة عرض البيانات المحفو
 0';
+function renderAchievements() {
+    // جلب البيانات من localStorage مع وضع '0' كقيمة افتراضية إذا كانت فارغة
+    const sebha = localStorage.getItem('sebhaCount') || 0;
+    const azkar = localStorage.getItem('totalAzkarCount') || 0;
+    const ayat = localStorage.getItem('totalAyatCount') || 0;
+    const khatma = JSON.parse(localStorage.getItem('khatmaProgress'))?.currentJuz || 1;
+    const firstVisit = localStorage.getItem('firstVisitDate') || new Date().toLocaleDateString('ar-EG');
+
+    // وضع القيم في العناصر المقابلة لها في HTML
+    if(document.getElementById('totalSebha')) document.getElementById('totalSebha').innerText = sebha;
+    if(document.getElementById('totalAzkar')) document.getElementById('totalAzkar').innerText = azkar;
+    if(document.getElementById('totalAyat')) document.getElementById('totalAyat').innerText = ayat;
+    if(document.getElementById('totalKhatma')) document.getElementById('totalKhatma').innerText = (khatma - 1); // الختمات المكتملة
+    if(document.getElementById('firstVisit')) document.getElementById('firstVisit').innerText = firstVisit;
+}
 
 
