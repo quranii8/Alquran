@@ -629,7 +629,6 @@ function showMain() {
     if(audio) audio.pause(); 
     if(playBtn) playBtn.innerText = "▷";
 }
-
 function switchMainTab(t) {
     // 1. تحديث شكل الأزرار في القائمة العلوية
     document.querySelectorAll('.main-nav button').forEach(b => {
@@ -814,8 +813,3 @@ function checkDailyAzkarReset() {
 }
 setInterval(checkDailyAzkarReset, 60000); // كل دقيقة
 checkDailyAzkarReset(); // عند التحميل
-}
-// نفذ عند تحميل الصفحة
-window.addEventListener('DOMContentLoaded', () => {
-    initNamesSection();
-});
