@@ -288,12 +288,10 @@
 <audio id="azanSound" src="https://www.islamcan.com/common/makkah.mp3" preload="auto"></audio>
 
 <script type="module">
-  // استيراد   // 1. استيراد المكتبات الضرورية
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  // 2. إعدادات Firebase (بياناتك الحقيقية من الصورة)
-    // 1. إعدادات   // 1. إعدادات Firebase (بياناتك الصحيحة)
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyDAWPEns_hhMY3jAWJd2EqILJ9vxInKfMs", 
     authDomain: "alquran-app-f02b9.firebaseapp.com",
@@ -303,56 +301,64 @@ import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onA
     appId: "1:283906260546:web:4215f4193ae35add0777db"
   };
 
-  // 2. تهيئة المحركات (يجب أن تكون في البداية)
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  // 3. مراقب حالة المستخدم (لتغيير كلمة "ضيف" فوراً)
-  onAuthStateChanged(auth, (user) => {
+  // هذا هو "المحرك" اللي يراقب الدخول والخروج باستمرار
+  onAuthStateChanged(auth, async (user) => {
     const profileCard = document.getElementById('userProfile');
     const guestCard = document.getElementById('loginGuest');
 
     if (user) {
+        // تحديث الواجهة فوراً
         if(profileCard) profileCard.style.display = 'block';
         if(guestCard) guestCard.style.display = 'none';
         if(document.getElementById('userName')) document.getElementById('userName').innerText = user.displayName;
         if(document.getElementById('userEmail')) document.getElementById('userEmail').innerText = user.email;
-        if(document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/60';
+        if(document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL;
+
+        // مزامنة البيانات تلقائياً عند الدخول
+        await syncData(user);
     } else {
         if(profileCard) profileCard.style.display = 'none';
         if(guestCard) guestCard.style.display = 'block';
     }
   });
 
-  // 4. دالة تسجيل الدخول (زر السحابة)
-  window.loginAndSync = function() {
-    signInWithRedirect(auth, provider);
+  // دالة تسجيل الدخول بالنافذة المنبثقة (أضمن حل)
+  window.loginAndSync = async function() {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("تم تسجيل الدخول بنجاح:", result.user.displayName);
+    } catch (error) {
+        console.error("خطأ في تسجيل الدخول:", error);
+        alert("حدث خطأ أثناء الاتصال بجوجل، حاول مرة أخرى.");
+    }
   };
 
-  // 5. دالة تسجيل الخروج
+  // دالة المزامنة
+  async function syncData(user) {
+    const localData = localStorage.getItem('khatmaProgress');
+    if (localData) {
+        await setDoc(doc(db, "users", user.uid), {
+            khatma: JSON.parse(localData),
+            displayName: user.displayName,
+            email: user.email,
+            lastSync: new Date()
+        }, { merge: true });
+        console.log("تمت المزامنة سحابياً ✅");
+    }
+  }
+
   window.logout = function() {
     if(confirm("هل تريد تسجيل الخروج؟")) {
         signOut(auth).then(() => location.reload());
     }
   };
-
-  // 6. التقاط نتيجة الدخول والمزامنة
-  getRedirectResult(auth).then(async (result) => {
-    if (result && result.user) {
-      const localData = localStorage.getItem('khatmaProgress');
-      if (localData) {
-        await setDoc(doc(db, "users", result.user.uid), {
-          khatma: JSON.parse(localData),
-          displayName: result.user.displayName,
-          lastSync: new Date()
-        }, { merge: true });
-        alert("تم ربط الحساب بنجاح ✅");
-      }
-    }
-  }).catch(e => console.error("خطأ:", e));
 </script>
+
 
 
 </body>
