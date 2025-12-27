@@ -290,10 +290,20 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onIdTokenChanged, setPersistence, browserLocalPersistence, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithRedirect,
+    getRedirectResult,
+    setPersistence,
+    browserLocalPersistence,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+  /* Firebase Config */
   const firebaseConfig = {
-    apiKey: "AIzaSyDAWPEns_hhMY3jAWJd2EqILJ9vxInKfMs", 
+    apiKey: "AIzaSyDAWPEns_hhMY3jAWJd2EqILJ9vxInKfMs",
     authDomain: "alquran-app-f02b9.firebaseapp.com",
     projectId: "alquran-app-f02b9",
     storageBucket: "alquran-app-f02b9.firebasestorage.app",
@@ -301,52 +311,63 @@
     appId: "1:283906260546:web:4215f4193ae35add0777db"
   };
 
+  /* Init */
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  // مراقب الحالة "الحديدي"
-  onIdTokenChanged(auth, (user) => {
+  /* مراقب الحالة – هذا هو المهم */
+  onAuthStateChanged(auth, (user) => {
     const profileCard = document.getElementById('userProfile');
     const guestCard = document.getElementById('loginGuest');
 
     if (user) {
-        if(profileCard) profileCard.style.display = 'block';
-        if(guestCard) guestCard.style.display = 'none';
-        document.getElementById('userName').innerText = user.displayName;
-        document.getElementById('userEmail').innerText = user.email;
-        document.getElementById('userPhoto').src = user.photoURL;
-        console.log("Logged in as:", user.displayName);
+      profileCard.style.display = 'block';
+      guestCard.style.display = 'none';
+
+      document.getElementById('userName').textContent = user.displayName || '';
+      document.getElementById('userEmail').textContent = user.email || '';
+      document.getElementById('userPhoto').src = user.photoURL || '';
+
+      console.log("Logged in:", user.email);
     } else {
-        if(profileCard) profileCard.style.display = 'none';
-        if(guestCard) guestCard.style.display = 'block';
+      profileCard.style.display = 'none';
+      guestCard.style.display = 'block';
     }
   });
 
-  window.loginAndSync = function() {
-    // إجبار المتصفح على تذكر الجلسة محلياً قبل التحويل
-    setPersistence(auth, browserLocalPersistence).then(() => {
-        return signInWithRedirect(auth, provider);
-    });
+  /* زر تسجيل الدخول */
+  window.loginAndSync = async function () {
+    await setPersistence(auth, browserLocalPersistence);
+    await signInWithRedirect(auth, provider);
   };
 
-  // التقاط النتيجة فور العودة من جوجل
+  /* بعد الرجوع من Google */
   getRedirectResult(auth).then(async (result) => {
     if (result && result.user) {
-        const localData = localStorage.getItem('khatmaProgress');
-        if (localData) {
-            await setDoc(doc(db, "users", result.user.uid), {
-                khatma: JSON.parse(localData),
-                displayName: result.user.displayName,
-                lastSync: new Date()
-            }, { merge: true });
-        }
-    }
-  }).catch(e => console.error("Firebase Error:", e));
+      const localData = localStorage.getItem('khatmaProgress');
 
-  window.logout = function() {
-    if(confirm("خروج؟")) { signOut(auth).then(() => location.reload()); }
+      if (localData) {
+        await setDoc(
+          doc(db, "users", result.user.uid),
+          {
+            displayName: result.user.displayName,
+            email: result.user.email,
+            khatma: JSON.parse(localData),
+            lastSync: new Date()
+          },
+          { merge: true }
+        );
+      }
+    }
+  }).catch(err => console.error(err));
+
+  /* تسجيل الخروج */
+  window.logout = function () {
+    if (confirm("تسجيل خروج؟")) {
+      signOut(auth).then(() => location.reload());
+    }
   };
 </script>
 
