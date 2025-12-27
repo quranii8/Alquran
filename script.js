@@ -813,34 +813,39 @@ function checkDailyAzkarReset() {
 }
 setInterval(checkDailyAzkarReset, 60000); // كل دقيقة
 checkDailyAzkarReset(); // عند التحميل
+// 1. دالة فتح الإنجازات كصفحة مستقلة
 function showAchievements() {
-    // إغلاق المنيو فوراً
-    toggleMenu(); 
+    toggleMenu(); // أغلق القائمة فوراً لمنع التعليق
     
-    // إخفاء جميع الأقسام الأخرى لتبدو كصفحة جديدة
-    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section'];
-    allSections.forEach(id => {
+    // إخفاء كل شيء آخر
+    const sections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section'];
+    sections.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.style.display = 'none';
     });
 
-    // إظهار قسم الإنجازات وتحديث البيانات
-    document.getElementById('achievements-section').style.display = 'block';
-    renderAchievements();
+    // إظهار قسم الإنجازات
+    const achSec = document.getElementById('achievements-section');
+    if(achSec) {
+        achSec.style.display = 'block';
+        renderAchievements(); // تحديث الأرقام من الذاكرة
+    }
 }
 
+// 2. دالة العودة للرئيسية
 function closeAchievements() {
     document.getElementById('achievements-section').style.display = 'none';
-    document.getElementById('quran-section').style.display = 'block'; // العودة للقرآن
+    document.getElementById('quran-section').style.display = 'block';
 }
 
-}
+// 3. دالة عرض البيانات المحفوظة
 function renderAchievements() {
-    // استدعاء البيانات من ذاكرة المتصفح مع وضع '0' كقيمة افتراضية
     document.getElementById('firstVisit').innerText = localStorage.getItem('firstVisit') || 'اليوم';
-    document.getElementById('totalSebha').innerText = localStorage.getItem('totalSebha') || '0';
-    document.getElementById('totalAzkar').innerText = localStorage.getItem('totalAzkar') || '0';
-    document.getElementById('totalAyat').innerText = localStorage.getItem('totalAyat') || '0';
-    document.getElementById('totalKhatma').innerText = localStorage.getItem('totalKhatma') || '0';
+    document.getElementById('totalSebha').innerText = localStorage.getItem('totalSebha') || 0;
+    document.getElementById('totalAzkar').innerText = localStorage.getItem('totalAzkar') || 0;
+    document.getElementById('totalAyat').innerText = localStorage.getItem('totalAyat') || 0;
+    document.getElementById('totalKhatma').innerText = localStorage.getItem('totalKhatma') || 0;
+}
+0';
 }
 
