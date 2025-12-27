@@ -203,56 +203,70 @@ function resetAzkarProgress() {
 }
 
 // --- 5. السبحة والعداد التلقائي ---
-let sCount = parseInt(localStorage.getItem('sebhaCount')) || 0;
-let sGoal = parseInt(localStorage.getItem('sebhaGoal')) || 100;
+// --- نظام السبحة الاحترافي الجديد ---
+let currentSebhaKey = 'تسبيح'; 
+let allSebhaData = JSON.parse(localStorage.getItem('allSebhaData')) || {
+    'تسبيح': { count: 0, text: 'سبحان الله' },
+    'استغفار': { count: 0, text: 'أستغفر الله' },
+    'تحميد': { count: 0, text: 'الحمد لله' },
+    'تكبير': { count: 0, text: 'الله أكبر' },
+    'صلاة على النبي': { count: 0, text: 'اللهم صلِ على محمد' }
+};
 
-function updateGoal() {
-    sGoal = parseInt(document.getElementById('sebhaGoal').value);
-    localStorage.setItem('sebhaGoal', sGoal);
+function toggleSebhaDropdown(event) {
+    event.stopPropagation();
+    document.getElementById("sebhaDropdown").classList.toggle("show-dropdown");
+}
+
+function selectSebhaType(key, text) {
+    currentSebhaKey = key;
+    document.getElementById('current-sebha-label').innerText = key;
+    document.getElementById('active-zekr-text').innerText = text;
+    document.getElementById('sebhaCounter').innerText = allSebhaData[key].count;
+    document.getElementById("sebhaDropdown").classList.remove("show-dropdown");
     updateProgress();
-
-    // حفظ الهدف على Firebase لو المستخدم مسجل دخول
-    if (typeof saveProgress === 'function') {
-        saveProgress('sebha', { count: sCount, goal: sGoal });
-    }
 }
 
 function incrementSebha() {
-    sCount++;
-    document.getElementById('sebhaCounter').innerText = sCount;
-    localStorage.setItem('sebhaCount', sCount);
+    allSebhaData[currentSebhaKey].count++;
+    document.getElementById('sebhaCounter').innerText = allSebhaData[currentSebhaKey].count;
+    
+    // حفظ البيانات
+    localStorage.setItem('allSebhaData', JSON.stringify(allSebhaData));
+    
+    // تحديث الإنجازات (اختياري لو أردت حساب المجموع الكلي)
+    let total = parseInt(localStorage.getItem('sebhaCount') || 0);
+    localStorage.setItem('sebhaCount', total + 1);
+
     updateProgress();
     
-    // حفظ التقدم على Firebase لو المستخدم مسجل دخول
-    if (typeof saveProgress === 'function') {
-        saveProgress('sebha', { count: sCount, goal: sGoal });
-    }
-
-    if (sCount === sGoal) {
-        document.querySelector('.sebha-circle').classList.add('goal-reached');
-        playNotify(); 
-    }
+    // صوت التنبيه عند الوصول لمضاعفات الـ 33 أو الـ 100
+    if (allSebhaData[currentSebhaKey].count % 33 === 0) playNotify();
 }
 
 function updateProgress() {
-    let percent = Math.min((sCount / sGoal) * 100, 100);
-    const bar = document.getElementById('sebhaBar');
-    if(bar) bar.style.width = percent + "%";
+    let goal = parseInt(document.getElementById('sebhaGoal').value) || 100;
+    let percent = Math.min((allSebhaData[currentSebhaKey].count / goal) * 100, 100);
+    document.getElementById('sebhaBar').style.width = percent + "%";
 }
 
 function resetSebha() {
-    if(confirm("تصفير السبحة؟")) {
-        sCount = 0;
+    if(confirm(`تصفير عداد ${currentSebhaKey}؟`)) {
+        allSebhaData[currentSebhaKey].count = 0;
         document.getElementById('sebhaCounter').innerText = 0;
-        document.querySelector('.sebha-circle').classList.remove('goal-reached');
-        localStorage.setItem('sebhaCount', 0);
+        localStorage.setItem('allSebhaData', JSON.stringify(allSebhaData));
         updateProgress();
-
-        // حفظ التصفير على Firebase لو المستخدم مسجل دخول
-        if (typeof saveProgress === 'function') {
-            saveProgress('sebha', { count: sCount, goal: sGoal });
-        }
     }
+}
+
+// تعديل بسيط لإغلاق القوائم عند الضغط خارجها
+window.onclick = function(event) {
+    if (!event.target.matches('.dropdown-btn')) {
+        document.getElementById("quranDropdown")?.classList.remove("show-dropdown");
+        document.getElementById("sebhaDropdown")?.classList.remove("show-dropdown");
+    }
+}
+
 }
 
 function updateCountdown() {
