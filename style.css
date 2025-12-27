@@ -19,7 +19,17 @@ body { font-family: 'Amiri', serif; background: var(--bg); color: var(--dark-tea
 
 .menu-icon { position: absolute; right: 20px; top: 22px; font-size: 28px; cursor: pointer; color: var(--gold); z-index: 1001; }
 .close-btn { background: none; border: none; color: white; font-size: 35px; cursor: pointer; }
-.menu-item { display: flex; justify-content: space-between; align-items: center; margin: 30px 0; }
+./* هذا الكود يمنع تداخل الأزرار ويوزعها بشكل صحيح */
+.menu-item { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin: 10px 0; /* مسافة بين كل خيار والثاني */
+    padding: 10px;
+    border-bottom: 1px solid rgba(201,176,122,0.1); /* خط بسيط للتنظيم */
+    width: 100%;
+}
+
 .menu-tool-btn { background: var(--gold); border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; color: var(--dark-teal); }
 
 /* الهيدر */
