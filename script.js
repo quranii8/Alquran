@@ -182,6 +182,7 @@ function countZekr(id) {
     if (c > 0) {
         c--; el.innerText = c;
         localStorage.setItem(`zekr_${id}`, c);
+        localStorage.setItem('lastAzkarUpdate', new Date().toISOString());
         if (c === 0) {
             el.closest('.zekr-card').classList.add('completed');
             playNotify(); 
@@ -797,4 +798,18 @@ function updateKhatmaUI() {
     document.getElementById('total-percent-text').innerText = `التقدم الكلي: ${totalPercent}%`;
     document.getElementById('daily-task-title').innerText = `ورد اليوم (الجزء ${khatmaData.currentJuz})`;
 }
-
+function resetAzkarAutomated() {
+    Object.keys(localStorage).forEach(k => {
+        if(k.startsWith('zekr_')) localStorage.removeItem(k);
+    });
+    loadAzkar(document.getElementById('azkar-title').dataset.cat || 'morning');
+}
+function checkDailyAzkarReset() {
+    const last = localStorage.getItem('lastAzkarUpdate');
+    const today = new Date().toDateString();
+    if (!last || new Date(last).toDateString() !== today) {
+        resetAzkarAutomated();
+    }
+}
+setInterval(checkDailyAzkarReset, 60000); // كل دقيقة
+checkDailyAzkarReset(); // عند التحميل
