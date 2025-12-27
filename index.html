@@ -66,18 +66,6 @@
 
 </div>
 
-  <div id="achievements-section" style="display:none; text-align:center; padding:20px;">
-    <div class="achievements-box">
-        <h2 style="color:var(--gold);">🏅 سجل إنجازاتك</h2>
-        <hr style="border:0.5px solid var(--gold); opacity:0.3;">
-        <div style="margin:15px 0;">📅 أول دخول: <span id="firstVisit">-</span></div>
-        <div style="margin:15px 0;">🔢 مجموع التسبيحات: <span id="totalSebha">0</span></div>
-        <div style="margin:15px 0;">📿 مجموع الأذكار: <span id="totalAzkar">0</span></div>
-        <div style="margin:15px 0;">📖 مجموع الآيات: <span id="totalAyat">0</span></div>
-        <div style="margin:15px 0;">🏆 عدد الختمات: <span id="totalKhatma">0</span></div>
-        <button class="modern-back-btn" onclick="location.reload()" style="margin-top:20px;">↩ العودة للرئيسية</button>
-    </div>
-</div>
 
 
     <p style="font-size:12px;text-align:center;margin-top:50px;opacity:0.6;">
@@ -86,6 +74,20 @@
 </div>
 
 <header>
+    <div id="achievements-section" style="display:none; padding: 20px; text-align: center;">
+    <div class="daily-card" style="border-top: 4px solid var(--gold);">
+        <h2 style="color:var(--dark-teal);">🏅 سجل إنجازاتك</h2>
+        <div class="achievements-grid" style="display: grid; gap: 15px; margin: 20px 0; text-align: right;">
+            <div class="p-card">📅 أول دخول: <span id="firstVisit">-</span></div>
+            <div class="p-card">🔢 مجموع التسبيحات: <span id="totalSebha">0</span></div>
+            <div class="p-card">📿 مجموع الأذكار: <span id="totalAzkar">0</span></div>
+            <div class="p-card">📖 مجموع الآيات: <span id="totalAyat">0</span></div>
+            <div class="p-card">🏆 عدد الختمات: <span id="totalKhatma">0</span></div>
+        </div>
+        <button class="modern-back-btn" onclick="closeAchievements()" style="width: 100%;">↩ العودة للرئيسية</button>
+    </div>
+</div>
+
     <div class="menu-icon" onclick="toggleMenu()">☰</div>
     <h1>حقيبة المؤمن</h1>
     
