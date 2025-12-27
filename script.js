@@ -939,7 +939,3 @@ namesData.forEach(item => {
 window.addEventListener('DOMContentLoaded', () => {
     initNamesSection();
 });
-function switchMainTab(tabName) {
-    document.querySelectorAll('.main-tab').forEach(tab => tab.style.display = 'none');
-    document.getElementById(tabName).style.display = 'block';
-}
