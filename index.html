@@ -329,6 +329,27 @@ async function saveProgress(type, data) {
     console.error(`Error syncing ${type}:`, e);
   }
 }
+// ================= التسبيح =================
+function saveSebhaProgress() {
+  const counter = parseInt(document.getElementById('sebhaCounter').textContent) || 0;
+  saveProgress('sebha', { count: counter, goal: parseInt(document.getElementById('sebhaGoal').value) });
+}
+
+// ================= الأذكار =================
+function saveAzkarProgress() {
+  const azkarData = {}; // هيكل بياناتك للأذكار
+  const azkarList = document.querySelectorAll('#azkarList .azkar-item');
+  azkarList.forEach(item => {
+    azkarData[item.dataset.id] = item.dataset.done === 'true';
+  });
+  saveProgress('azkar', azkarData);
+}
+
+// ================= الختمة =================
+function saveKhatmaProgress() {
+  const khatmaData = JSON.parse(localStorage.getItem('khatmaProgress') || '{}');
+  saveProgress('khatma', khatmaData);
+}
   /* مراقب الحالة – هذا هو المهم */
   onAuthStateChanged(auth, (user) => {
     const profileCard = document.getElementById('userProfile');
