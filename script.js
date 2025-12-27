@@ -813,3 +813,22 @@ function checkDailyAzkarReset() {
 }
 setInterval(checkDailyAzkarReset, 60000); // كل دقيقة
 checkDailyAzkarReset(); // عند التحميل
+function showAchievements() {
+    // 1. قائمة بجميع الأقسام التي يجب إخفاؤها
+    const sections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section'];
+    
+    sections.forEach(id => {
+        const section = document.getElementById(id);
+        if (section) section.style.display = 'none';
+    });
+
+    // 2. إظهار قسم الإنجازات
+    const achSection = document.getElementById('achievements-section');
+    if (achSection) {
+        achSection.style.display = 'block';
+        renderAchievements(); // تحديث الأرقام فوراً
+    }
+
+    // 3. إغلاق القائمة الجانبية لتتمكن من رؤية النتيجة
+    toggleMenu();
+}
