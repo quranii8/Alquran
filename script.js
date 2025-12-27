@@ -209,6 +209,11 @@ function updateGoal() {
     sGoal = parseInt(document.getElementById('sebhaGoal').value);
     localStorage.setItem('sebhaGoal', sGoal);
     updateProgress();
+
+    // حفظ الهدف على Firebase لو المستخدم مسجل دخول
+    if (typeof saveProgress === 'function') {
+        saveProgress('sebha', { count: sCount, goal: sGoal });
+    }
 }
 
 function incrementSebha() {
@@ -217,6 +222,11 @@ function incrementSebha() {
     localStorage.setItem('sebhaCount', sCount);
     updateProgress();
     
+    // حفظ التقدم على Firebase لو المستخدم مسجل دخول
+    if (typeof saveProgress === 'function') {
+        saveProgress('sebha', { count: sCount, goal: sGoal });
+    }
+
     if (sCount === sGoal) {
         document.querySelector('.sebha-circle').classList.add('goal-reached');
         playNotify(); 
@@ -236,6 +246,11 @@ function resetSebha() {
         document.querySelector('.sebha-circle').classList.remove('goal-reached');
         localStorage.setItem('sebhaCount', 0);
         updateProgress();
+
+        // حفظ التصفير على Firebase لو المستخدم مسجل دخول
+        if (typeof saveProgress === 'function') {
+            saveProgress('sebha', { count: sCount, goal: sGoal });
+        }
     }
 }
 
