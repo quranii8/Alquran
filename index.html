@@ -44,30 +44,25 @@
         <button id="muteBtn" class="menu-tool-btn" onclick="toggleMute()">🔊</button>
     </div>
 
-       <div class="menu-item">
+    <div class="menu-item">
         <span>حجم الخط</span>
         <div class="font-controls">
             <button class="menu-tool-btn" onclick="changeFontSize(2)">A+</button>
             <button class="menu-tool-btn" onclick="changeFontSize(-2)">A-</button>
         </div>
-    </div> <div class="menu-item">
-        <span>تحديث الموقع</span>
-        <button class="menu-tool-btn" onclick="getQibla()">📍</button>
-    </div>
-
+    <div class="menu-item">
+    <span>تحديث الموقع</span>
+    <button class="menu-tool-btn" onclick="getQibla()">📍</button>
+</div>
 
 <div class="menu-item">
     <span>تنبيهات الأذان</span>
     <button id="notifBtn" class="menu-tool-btn" onclick="requestNotificationPermission()">🔔</button>
 </div>
-<div class="menu-item">
-    <span>🏅 إنجازاتك</span>
-    <button class="menu-tool-btn" onclick="showAchievements()">فتح</button>
-</div>
 
 </div>
 
-
+    </div>
 
     <p style="font-size:12px;text-align:center;margin-top:50px;opacity:0.6;">
         إصدار حقيبة المؤمن 2025
@@ -409,31 +404,6 @@ function saveKhatmaProgress() {
 </script>
 
 
-<div id="achievements-section" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; overflow-y:auto; padding:20px;">
-    <div class="daily-card" style="max-width: 450px; margin: 40px auto; border-top: 5px solid var(--gold); box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
-        <h2 style="color:var(--dark-teal); margin-bottom: 20px;">🏅 سجل إنجازاتك</h2>
-        
-        <div style="text-align: right; margin-bottom: 30px;">
-            <div class="p-card" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; padding:15px; background:#fff; border-radius:10px;">
-                <span>📅 أول دخول:</span> <b id="firstVisit" style="color:var(--dark-teal);">-</b>
-            </div>
-            <div class="p-card" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; padding:15px; background:#fff; border-radius:10px;">
-                <span>🔢 مجموع التسبيحات:</span> <b id="totalSebha" style="color:var(--dark-teal);">0</b>
-            </div>
-            <div class="p-card" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; padding:15px; background:#fff; border-radius:10px;">
-                <span>📿 مجموع الأذكار:</span> <b id="totalAzkar" style="color:var(--dark-teal);">0</b>
-            </div>
-            <div class="p-card" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; padding:15px; background:#fff; border-radius:10px;">
-                <span>📖 مجموع الآيات:</span> <b id="totalAyat" style="color:var(--dark-teal);">0</b>
-            </div>
-            <div class="p-card" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; padding:15px; background:#fff; border-radius:10px;">
-                <span>🏆 عدد الختمات:</span> <b id="totalKhatma" style="color:var(--dark-teal);">0</b>
-            </div>
-        </div>
-
-        <button class="modern-reset-soft" onclick="closeAchievements()" style="width:100%; padding:15px; font-size:1.1rem; cursor:pointer;">↩ العودة للرئيسية</button>
-    </div>
-</div>
 
 
 </body>
