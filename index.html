@@ -8,7 +8,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<!-- الضيف -->
+<div id="loginGuest">
+  <button onclick="loginAndSync()">تسجيل الدخول بحساب Google</button>
+</div>
 
+<!-- المستخدم -->
+<div id="userProfile" style="display:none">
+  <img id="userPhoto" width="60">
+  <p id="userName"></p>
+  <p id="userEmail"></p>
+  <button onclick="logout()">تسجيل خروج</button>
+</div>
 <div id="sideMenu" class="side-menu">
     <button class="close-btn" onclick="toggleMenu()">×</button>
 <div id="userProfile" style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 20px; display: none;">
