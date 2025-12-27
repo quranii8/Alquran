@@ -313,7 +313,22 @@ import {
   const db = getFirestore(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
+// دالة عامة لحفظ أي تقدم في Firestore
+async function saveProgress(type, data) {
+  const user = auth.currentUser;
+  if (!user) return; // لو الضيف ما نحفظ
 
+  try {
+    await setDoc(
+      doc(db, "users", user.uid),
+      { [type]: data, lastSync: new Date() },
+      { merge: true }
+    );
+    console.log(`${type} synced to cloud`);
+  } catch (e) {
+    console.error(`Error syncing ${type}:`, e);
+  }
+}
   /* مراقب الحالة – هذا هو المهم */
   onAuthStateChanged(auth, (user) => {
     const profileCard = document.getElementById('userProfile');
