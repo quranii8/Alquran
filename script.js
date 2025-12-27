@@ -832,3 +832,11 @@ function showAchievements() {
     // 3. إغلاق القائمة الجانبية لتتمكن من رؤية النتيجة
     toggleMenu();
 }
+function renderAchievements() {
+    document.getElementById('firstVisit').innerText = localStorage.getItem('firstVisit') || 'اليوم';
+    document.getElementById('totalSebha').innerText = localStorage.getItem('totalSebha') || 0;
+    document.getElementById('totalAzkar').innerText = localStorage.getItem('totalAzkar') || 0;
+    document.getElementById('totalAyat').innerText = localStorage.getItem('totalAyat') || 0;
+    document.getElementById('totalKhatma').innerText = localStorage.getItem('totalKhatma') || 0;
+}
+
