@@ -292,9 +292,8 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
   // 2. إعدادات Firebase (بياناتك الحقيقية من الصورة)
-    // 1. إعدادات Firebase
+    // 1. إعدادات   // 1. إعدادات Firebase (بياناتك الصحيحة)
   const firebaseConfig = {
     apiKey: "AIzaSyDAWPEns_hhMY3jAWJd2EqILJ9vxInKfMs", 
     authDomain: "alquran-app-f02b9.firebaseapp.com",
@@ -304,38 +303,42 @@ import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onA
     appId: "1:283906260546:web:4215f4193ae35add0777db"
   };
 
-  // 2. تهيئة Firebase
+  // 2. تهيئة المحركات (يجب أن تكون في البداية)
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  // 3. مراقب حالة المستخدم (هذا هو السحر الذي يغير "ضيف" إلى اسمك)
+  // 3. مراقب حالة المستخدم (لتغيير كلمة "ضيف" فوراً)
   onAuthStateChanged(auth, (user) => {
     const profileCard = document.getElementById('userProfile');
     const guestCard = document.getElementById('loginGuest');
 
     if (user) {
-        // إذا نجح تسجيل الدخول
         if(profileCard) profileCard.style.display = 'block';
         if(guestCard) guestCard.style.display = 'none';
         if(document.getElementById('userName')) document.getElementById('userName').innerText = user.displayName;
         if(document.getElementById('userEmail')) document.getElementById('userEmail').innerText = user.email;
         if(document.getElementById('userPhoto')) document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/60';
-        console.log("تم التعرف على المستخدم:", user.displayName);
     } else {
-        // إذا لم يسجل دخول
         if(profileCard) profileCard.style.display = 'none';
         if(guestCard) guestCard.style.display = 'block';
     }
   });
 
-  // 4. دالة تسجيل الدخول
+  // 4. دالة تسجيل الدخول (زر السحابة)
   window.loginAndSync = function() {
     signInWithRedirect(auth, provider);
   };
 
-  // 5. التقاط نتيجة تسجيل الدخول بعد إعادة التوجيه
+  // 5. دالة تسجيل الخروج
+  window.logout = function() {
+    if(confirm("هل تريد تسجيل الخروج؟")) {
+        signOut(auth).then(() => location.reload());
+    }
+  };
+
+  // 6. التقاط نتيجة الدخول والمزامنة
   getRedirectResult(auth).then(async (result) => {
     if (result && result.user) {
       const localData = localStorage.getItem('khatmaProgress');
@@ -343,25 +346,13 @@ import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onA
         await setDoc(doc(db, "users", result.user.uid), {
           khatma: JSON.parse(localData),
           displayName: result.user.displayName,
-          email: result.user.email,
           lastSync: new Date()
         }, { merge: true });
-        alert("أهلاً بك " + result.user.displayName + "، تمت مزامنة بياناتك بنجاح ✅");
+        alert("تم ربط الحساب بنجاح ✅");
       }
     }
-  }).catch(e => {
-    console.error("خطأ في المزامنة:", e);
-  });
-
-  // 6. تسجيل الخروج
-  window.logout = function() {
-    if(confirm("هل تريد تسجيل الخروج؟")) {
-        signOut(auth).then(() => {
-            alert("تم تسجيل الخروج");
-            location.reload();
-        });
-    }
-  };
+  }).catch(e => console.error("خطأ:", e));
+</script>
 
 
 </body>
