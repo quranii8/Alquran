@@ -203,14 +203,24 @@ function resetAzkarProgress() {
 }
 
 // --- 5. السبحة والعداد التلقائي ---
-let sCount = parseInt(localStorage.getItem('sebhaCount')) || 0;
+const sebhaTypes = {
+  tasbeeh: "سبحان الله",
+  istighfar: "أستغفر الله",
+  tahmeed: "الحمد لله",
+  takbeer: "الله أكبر",
+  salat: "اللهم صلِّ على محمد ﷺ"
+};
+
+let currentSebhaType = "tasbeeh";
+let sCount = 0;
+let sGoal = 100;
 let sGoal = parseInt(localStorage.getItem('sebhaGoal')) || 100;
 
 function updateGoal() {
-    sGoal = parseInt(document.getElementById('sebhaGoal').value);
-    localStorage.setItem('sebhaGoal', sGoal);
-    updateProgress();
-
+  sGoal = parseInt(document.getElementById('sebhaGoal').value);
+  localStorage.setItem(sebhaKey('goal'), sGoal);
+  updateProgress();
+}
     // حفظ الهدف على Firebase لو المستخدم مسجل دخول
     if (typeof saveProgress === 'function') {
         saveProgress('sebha', { count: sCount, goal: sGoal });
@@ -218,10 +228,21 @@ function updateGoal() {
 }
 
 function incrementSebha() {
-    sCount++;
-    document.getElementById('sebhaCounter').innerText = sCount;
-    localStorage.setItem('sebhaCount', sCount);
-    updateProgress();
+  sCount++;
+  localStorage.setItem(sebhaKey('count'), sCount);
+  document.getElementById('sebhaCounter').innerText = sCount;
+
+  updateProgress();
+
+  if (typeof saveProgress === 'function') {
+    saveProgress(`sebha_${currentSebhaType}`, {
+      count: sCount,
+      goal: sGoal
+    });
+  }
+
+  if (sCount === sGoal) playNotify();
+}
     
     // حفظ التقدم على Firebase لو المستخدم مسجل دخول
     if (typeof saveProgress === 'function') {
@@ -241,12 +262,13 @@ function updateProgress() {
 }
 
 function resetSebha() {
-    if(confirm("تصفير السبحة؟")) {
-        sCount = 0;
-        document.getElementById('sebhaCounter').innerText = 0;
-        document.querySelector('.sebha-circle').classList.remove('goal-reached');
-        localStorage.setItem('sebhaCount', 0);
-        updateProgress();
+  if(confirm("تصفير العداد؟")) {
+    sCount = 0;
+    localStorage.setItem(sebhaKey('count'), 0);
+    document.getElementById('sebhaCounter').innerText = 0;
+    updateProgress();
+  }
+}
 
         // حفظ التصفير على Firebase لو المستخدم مسجل دخول
         if (typeof saveProgress === 'function') {
@@ -282,7 +304,20 @@ function resetSebhaAutomated() {
 }
 
 setInterval(updateCountdown, 1000);
+function sebhaKey(k) {
+  return `sebha_${currentSebhaType}_${k}`;
+}
 
+function loadSebhaData() {
+  sCount = parseInt(localStorage.getItem(sebhaKey('count'))) || 0;
+  sGoal  = parseInt(localStorage.getItem(sebhaKey('goal'))) || 100;
+
+  document.getElementById('sebhaCounter').innerText = sCount;
+  document.getElementById('sebhaGoal').value = sGoal;
+  document.getElementById('sebhaStatus').innerText = sebhaTypes[currentSebhaType];
+
+  updateProgress();
+}
 // --- 6. الوضع الداكن والخط والتبديل ---
 function switchMainTab(t) {
     document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
@@ -557,8 +592,16 @@ function toggleQuranDropdown(event) {
     event.stopPropagation();
     document.getElementById("quranDropdown").classList.toggle("show-dropdown");
 }
-
-// دالة اختيار الخيار المطلوب
+function toggleSebhaDropdown(e) {
+  e.stopPropagation();
+  document.getElementById('sebhaDropdown').classList.toggle('show-dropdown');
+}
+function selectSebhaType(type) {
+  currentSebhaType = type;
+  document.getElementById('sebhaDropdown').classList.remove('show-dropdown');
+  switchMainTab('sebha');
+  loadSebhaData();
+}// دالة اختيار الخيار المطلوب
 // 1. تعديل دالة اختيار خيار القرآن
 function selectQuranOption(option) {
     document.getElementById("quranDropdown").classList.remove("show-dropdown");
