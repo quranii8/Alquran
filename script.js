@@ -120,7 +120,7 @@ async function fetchAyahTimings(surahId, reciterCode) {
     }
     
     try {
-        console.log("🔄 جاري تحميل التوقيتات الدقيقة...");
+        console.log("🔄 جاري تحميل التوقيتات من Quran.com API...");
         
         // ✅ جلب معلومات السورة مع التوقيتات
         const url = `https://api.quran.com/api/v4/chapter_recitations/${reciterId}/${surahId}`;
@@ -142,19 +142,17 @@ async function fetchAyahTimings(surahId, reciterCode) {
                 return start / 1000; // تحويل من ميلي ثانية
             });
             
-            console.log("✅ تم تحميل التوقيتات الدقيقة بنجاح:", ayahTimings.length, "آية");
-            console.log("📊 أول 3 توقيتات:", ayahTimings.slice(0, 3));
+            console.log("✅ نجح! تم تحميل", ayahTimings.length, "توقيت دقيق");
         } else {
-            throw new Error('لا توجد توقيتات في الاستجابة');
+            throw new Error('لا توجد توقيتات');
         }
         
     } catch (error) {
-        console.error("❌ فشل تحميل التوقيتات:", error.message);
-        console.log("⚠️ سنستخدم الحساب الذكي بناءً على طول الآيات");
+        console.error("❌ خطأ:", error.message);
+        console.log("⚠️ سنستخدم الحساب الذكي");
         ayahTimings = [];
     }
 }
-
 
 
 function setupAyahHighlighting(totalAyahs) {
