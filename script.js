@@ -204,15 +204,15 @@ function resetAzkarProgress() {
 
 // --- 5. السبحة والعداد التلقائي ---
 // --- 1. إعدادات البيانات الأساسية ---
+// --- نظام السبحة السحابي المطور ---
 let currentSebhaKey = 'تسبيح';
-let sebhaData = JSON.parse(localStorage.getItem('sebhaStore_v3')) || {
+let sebhaData = JSON.parse(localStorage.getItem('sebhaData_Final')) || {
     'تسبيح': { count: 0, goal: 100, text: 'سبحان الله' },
     'استغفار': { count: 0, goal: 100, text: 'أستغفر الله' },
     'تحميد': { count: 0, goal: 100, text: 'الحمد لله' },
     'تكبير': { count: 0, goal: 100, text: 'الله أكبر' }
 };
 
-// --- 2. التحكم بالقائمة المنسدلة ---
 function toggleSebhaDropdown(e) {
     e.stopPropagation();
     document.getElementById("sebhaDropdown").classList.toggle("show-dropdown");
@@ -222,65 +222,74 @@ function selectSebhaType(key, text) {
     currentSebhaKey = key;
     document.getElementById('current-sebha-label').innerText = key;
     document.getElementById('active-zekr-text').innerText = text;
-    document.getElementById('sebhaCounter').innerText = sebhaData[key].count;
     document.getElementById('sebhaGoal').value = sebhaData[key].goal;
+    updateSebhaUI();
     document.getElementById("sebhaDropdown").classList.remove("show-dropdown");
 }
 
-// --- 3. منطق العد والتصفير التلقائي ---
 function incrementSebha() {
     sebhaData[currentSebhaKey].count++;
     
-    // فحص الوصول للهدف
+    // نظام التصفير التلقائي عند الهدف
     if (sebhaData[currentSebhaKey].count >= sebhaData[currentSebhaKey].goal) {
         playNotify();
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
-        alert(`تم بحمد الله الوصول لهدف ${currentSebhaKey} (${sebhaData[currentSebhaKey].goal})`);
-        sebhaData[currentSebhaKey].count = 0; // تصفير تلقائي
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        alert(`ما شاء الله! أنجزت هدف (${currentSebhaKey})`);
+        sebhaData[currentSebhaKey].count = 0; 
     }
+    
+    updateSebhaUI();
+    saveSebhaToFirebase();
+}
 
-    document.getElementById('sebhaCounter').innerText = sebhaData[currentSebhaKey].count;
-    saveSebhaData();
+function updateSebhaUI() {
+    const item = sebhaData[currentSebhaKey];
+    document.getElementById('sebhaCounter').innerText = item.count;
+    
+    // تحديث البار والنسبة
+    const percent = Math.min((item.count / item.goal) * 100, 100);
+    document.getElementById('sebhaBar').style.width = percent + "%";
+    document.getElementById('progress-text').innerText = `التقدم: ${Math.floor(percent)}%`;
 }
 
 function updateGoal() {
     let val = parseInt(document.getElementById('sebhaGoal').value);
     if (val > 0) {
         sebhaData[currentSebhaKey].goal = val;
-        saveSebhaData();
+        updateSebhaUI();
+        saveSebhaToFirebase();
     }
 }
 
 function resetSebha() {
     if(confirm(`هل تريد تصفير عداد ${currentSebhaKey}؟`)) {
         sebhaData[currentSebhaKey].count = 0;
-        document.getElementById('sebhaCounter').innerText = 0;
-        saveSebhaData();
+        updateSebhaUI();
+        saveSebhaToFirebase();
     }
 }
 
-// --- 4. الربط مع Firebase والحفظ المحلي ---
-async function saveSebhaData() {
-    // حفظ محلي فوري
-    localStorage.setItem('sebhaStore_v3', JSON.stringify(sebhaData));
-
-    // مزامنة مع Firebase (لو متاح ومسجل دخول)
+// دالة الحفظ المزدوج (محلي + فايربيس)
+async function saveSebhaToFirebase() {
+    localStorage.setItem('sebhaData_Final', JSON.stringify(sebhaData));
+    
     if (typeof auth !== "undefined" && auth.currentUser) {
         try {
-            const { doc, setDoc } = window.firebaseFirestore; // تأكد من استيرادها
-            await setDoc(doc(db, "users", auth.currentUser.uid), {
+            // استخدام الدوال من الكود الخاص بك في index.html
+            const userRef = window.doc(window.db, "users", auth.currentUser.uid);
+            await window.setDoc(userRef, {
                 sebha: sebhaData,
-                lastSync: new Date()
+                lastUpdate: new Date()
             }, { merge: true });
-        } catch (err) {
-            console.warn("فشلت المزامنة السحابية، تم الحفظ محلياً فقط.");
-        }
+        } catch (e) { console.warn("Firebase Sync Error: ", e); }
     }
 }
 
-// إغلاق القوائم عند الضغط في أي مكان
-window.addEventListener('click', () => {
-    document.getElementById("sebhaDropdown")?.classList.remove("show-dropdown");
+// لإغلاق القوائم عند النقر خارجها
+window.addEventListener('click', function(e) {
+    if (!e.target.matches('.dropdown-btn')) {
+        document.getElementById("sebhaDropdown")?.classList.remove("show-dropdown");
+    }
 });
 
 // --- 6. الوضع الداكن والخط والتبديل ---
