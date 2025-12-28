@@ -4,6 +4,7 @@ const audio = document.getElementById('audioPlayer');
 const playBtn = document.getElementById('playBtn');
 const seekSlider = document.getElementById('seekSlider');
 const notifySound = document.getElementById('notificationSound');
+let ayahTimings = [];
 // بيانات السبحة المتعددة
 let currentSebhaType = 'tasbih';
 let sebhaCounters = JSON.parse(localStorage.getItem('sebhaCounters')) || {
