@@ -316,10 +316,12 @@ function resetSebha() {
 function saveSebhaData() {
     localStorage.setItem('sebhaCounters', JSON.stringify(sebhaCounters));
     
-    if (typeof saveProgress === 'function') {
-        saveProgress('sebha', sebhaCounters);
+    // حفظ في السحابة
+    if (typeof window.saveToCloud === 'function') {
+        window.saveToCloud('sebha', sebhaCounters);
     }
 }
+
 
 // العودة لقائمة الأقسام
 function backToSebhaCategories() {
@@ -863,6 +865,11 @@ function markFullJuzDone() {
         saveAchievements();
         
         localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
+// أضف هذا السطر
+if (typeof window.saveToCloud === 'function') {
+    window.saveToCloud('khatma', khatmaData);
+}
+
         updateKhatmaUI();
         closeKhatmaReading();
     }
@@ -902,12 +909,12 @@ checkDailyAzkarReset(); // عند التحميل
 function saveAchievements() {
     localStorage.setItem('achievements', JSON.stringify(achievements));
     
-    // حفظ في Firebase للمسجلين
-    const user = auth?.currentUser;
-    if (user && typeof saveProgress === 'function') {
-        saveProgress('achievements', achievements);
+    // حفظ في السحابة
+    if (typeof window.saveToCloud === 'function') {
+        window.saveToCloud('achievements', achievements);
     }
 }
+
 
 
 // فتح قسم الإنجازات
