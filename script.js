@@ -65,30 +65,33 @@ function filterSurahs() {
 
 function openSurah(id, name) {
     currentSurahId = id;
-    // إغلاق القائمة الجانبية إذا كانت مفتوحة
     document.getElementById('sideMenu').classList.remove('open');
     
-    // إخفاء قائمة السور والفهرس الموضوعي
     document.getElementById('full-quran-view').style.display = 'none';
     document.getElementById('topics-view').style.display = 'none';
-    
-    // إظهار واحة عرض السورة (الآيات والمشغل)
     document.getElementById('quran-view').style.display = 'block';
     document.getElementById('current-surah-title').innerText = name;
     
     updateAudioSource();
     
-    // جلب الآيات من الرابط
+    // جلب الآيات
     fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
-        document.getElementById('ayahsContainer').innerHTML = data.data.ayahs.map(a => 
-            `${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span>`
+        const ayahs = data.data.ayahs;
+        
+        // عرض الآيات مع ID لكل آية
+        document.getElementById('ayahsContainer').innerHTML = ayahs.map((a, index) => 
+            `<span class="ayah-text" id="ayah-${index}" data-index="${index}">${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span></span>`
         ).join(' ');
+        
+        // ربط حدث التمييز التلقائي بالصوت
+        setupAyahHighlighting(ayahs.length);
     });
-// داخل دالة openSurah(id, name)
-if (typeof checkKhatmaProgress === "function") {
-    checkKhatmaProgress(id);
+
+    if (typeof checkKhatmaProgress === "function") {
+        checkKhatmaProgress(id);
+    }
 }
-}
+
 
 
 
