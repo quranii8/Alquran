@@ -522,15 +522,69 @@ function resetAllSebhaAutomated() {
 }
 
 setInterval(updateCountdown, 1000);
+// ============= دالة التبديل بين الأقسام (موحدة ونهائية) =============
+function switchMainTab(t) {
+    // 1. تحديث شكل الأزرار
+    document.querySelectorAll('.main-nav button').forEach(b => {
+        b.classList.remove('active');
+    });
+    
+    const activeTab = document.getElementById(t + 'Tab');
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+
+    // 2. قائمة كل الأقسام
+    const allSections = [
+        'quran-section', 
+        'azkar-section', 
+        'sebha-section', 
+        'prayer-section', 
+        'qibla-section',
+        'khatma-section',
+        'achievements-section'
+    ];
+
+    // 3. إخفاء الكل
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = 'none';
+    });
+
+    // 4. إظهار المطلوب
+    const targetSection = document.getElementById(t + '-section');
+    if (targetSection) {
+        targetSection.style.display = 'block';
+    }
+
+    // 5. وظائف خاصة
+    if (t === 'qibla' && typeof getQibla === 'function') getQibla();
+    if (t === 'prayer' && typeof fetchPrayers === 'function') fetchPrayers();
+    if (t === 'khatma' && typeof updateKhatmaUI === 'function') updateKhatmaUI();
+    
+    // 6. القرآن
+    if (t === 'quran') {
+        if (document.getElementById('full-quran-view')) 
+            document.getElementById('full-quran-view').style.display = 'block';
+        if (document.getElementById('topics-view')) 
+            document.getElementById('topics-view').style.display = 'none';
+        if (document.getElementById('quran-view')) 
+            document.getElementById('quran-view').style.display = 'none';
+        if (document.getElementById('mushaf-view')) 
+            document.getElementById('mushaf-view').style.display = 'none';
+    }
+    
+    // 7. السبحة
+    if (t === 'sebha') {
+        if (document.getElementById('sebha-categories')) 
+            document.getElementById('sebha-categories').style.display = 'grid';
+        if (document.getElementById('sebha-main-view')) 
+            document.getElementById('sebha-main-view').style.display = 'none';
+    }
+}
 
 // --- 6. الوضع الداكن والخط والتبديل ---
-function switchMainTab(t) {
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab').classList.add('active');
-    ['quran-section', 'azkar-section', 'sebha-section'].forEach(s => { 
-        document.getElementById(s).style.display = s.startsWith(t) ? 'block' : 'none'; 
-    });
-}
+
 
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 function changeFontSize(d) { 
@@ -678,37 +732,7 @@ function handleCompass(e) {
 }
 
 // دالة التبديل الشاملة (تأكد أنها الوحيدة في الملف)
-function switchMainTab(t) {
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab')?.classList.add('active');
 
-    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section'];
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
-    });
-    
-    if(t === 'qibla') getQibla();
-    if(t === 'prayer') fetchPrayers();
-}
-// دالة جلب آية اليوم بناءً على تاريخ اليوم
-async function loadDailyAyah() {
-    try {
-        const now = new Date();
-        // استخدام رقم اليوم في السنة للحصول على آية متجددة يومياً
-        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-        
-        const response = await fetch(`https://api.alquran.cloud/v1/ayah/${dayOfYear}/ar.alafasy`);
-        const data = await response.json();
-        
-        if(data.code === 200) {
-            document.getElementById('daily-text').innerText = data.data.text;
-            document.getElementById('daily-ref').innerText = `[سورة ${data.data.surah.name} - آية ${data.data.numberInSurah}]`;
-        }
-    } catch (error) {
-        document.getElementById('daily-text').innerText = "فذكر بالقرآن من يخاف وعيد";
-    }
-}
 
 // دالة نسخ الآية
 function copyDailyAyah() {
@@ -872,133 +896,6 @@ function showMain() {
     
     // مسح التمييزات
     document.querySelectorAll('.ayah-active').forEach(el => el.classList.remove('ayah-active'));
-}
-
-function switchMainTab(t) {
-    // 1. تحديث شكل الأزرار في القائمة العلوية
-    document.querySelectorAll('.main-nav button').forEach(b => {
-        b.classList.remove('active');
-    });
-    
-    // تأكد أن الـ ID الخاص بالزر يطابق (اسم القسم + Tab)
-    const activeTab = document.getElementById(t + 'Tab');
-    if (activeTab) {
-        activeTab.classList.add('active');
-    }
-
-    // 2. مصفوفة بكل الأقسام الرئيسية لضمان إخفاء غير المطلوب
-    const allSections = [
-        'quran-section', 
-        'azkar-section', 
-        'sebha-section', 
-        'prayer-section', 
-        'qibla-section'
-    ];
-
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) {
-            // إظهار القسم إذا كان يبدأ بنفس اسم التاب المختار، وإخفاء الباقي
-            el.style.display = s.startsWith(t) ? 'block' : 'none';
-        }
-    });
-
-    // 3. تشغيل الدوال الخاصة بالأقسام التي تحتاج تحديث لحظي عند الفتح
-    if (t === 'qibla') {
-        if (typeof getQibla === 'function') {
-            getQibla(); // جلب إحداثيات القبلة
-        }
-    }
-    
-    if (t === 'prayer') {
-        if (typeof fetchPrayers === 'function') {
-            fetchPrayers(); // تحديث مواقيت الصلاة والعداد التنازلي
-        }
-    }
-
-    // 4. ملاحظة هامة للفهرس: عند الانتقال لقسم القرآن من زر خارجي
-    // نضمن دائماً ظهور المصحف الكامل وإخفاء الفهرس والقارئ كحالة افتراضية
-    if (t === 'quran') {
-        const fullView = document.getElementById('full-quran-view');
-        const topicsView = document.getElementById('topics-view');
-        const quranView = document.getElementById('quran-view');
-
-        if (fullView) fullView.style.display = 'block';
-        if (topicsView) topicsView.style.display = 'none';
-        if (quranView) quranView.style.display = 'none';
-    }
-        // للسبحة: نعرض قائمة الاختيار
-    if(t === 'sebha') {
-        document.getElementById('sebha-categories').style.display = 'grid';
-        document.getElementById('sebha-main-view').style.display = 'none';
-    }
-}
-function switchMainTab(t) {
-    // 1. تغيير حالة الأزرار العلوية
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab')?.classList.add('active');
-
-    // 2. قائمة الأقسام مع إضافة قسم الختمة الجديد
-    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section'];
-
-    // 3. التبديل بين الأقسام
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
-    });
-
-    // 4. تشغيل وظائف الأقسام الخاصة
-    if (t === 'qibla') getQibla();
-    if (t === 'prayer') fetchPrayers();
-    if (t === 'khatma' && typeof updateKhatmaUI === 'function') updateKhatmaUI();
-    
-    // 5. تصفير واجهة القرآن عند العودة لها
-    if (t === 'quran') {
-        document.getElementById('full-quran-view').style.display = 'block';
-        document.getElementById('topics-view').style.display = 'none';
-        document.getElementById('quran-view').style.display = 'none';
-    }
-}
-// بيانات الختمة
-// 1. إدارة بيانات الختمة في الذاكرة
-let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || {
-    currentJuz: 1,
-    lastAyahIndex: 0,
-    lastUpdate: new Date().toDateString()
-};
-
-let currentJuzAyahs = [];
-
-// 2. دالة بدء القراءة وجلب الجزء
-async function startKhatmaReading() {
-    document.getElementById('khatma-intro').style.display = 'none';
-    document.getElementById('khatma-reading-area').style.display = 'block';
-    
-    const juzId = khatmaData.currentJuz;
-    const displayArea = document.getElementById('khatma-ayahs-display');
-    displayArea.innerHTML = "<p style='text-align:center;'>جاري جلب وردك اليومي...</p>";
-
-    try {
-        const res = await fetch(`https://api.alquran.cloud/v1/juz/${juzId}/quran-simple`);
-        const data = await res.json();
-        currentJuzAyahs = data.data.ayahs;
-        
-        displayArea.innerHTML = currentJuzAyahs.map((a, index) => {
-            return `${a.text} <span class="ayah-mark" id="mark-${index}" onclick="saveCheckpoint(${index})" style="color:var(--gold); cursor:pointer; font-weight:bold; border:1px solid #ddd; padding:2px 5px; border-radius:5px; margin:0 5px; display:inline-block;">(${a.numberInSurah})</span>`;
-        }).join(' ');
-
-        // استعادة آخر نقطة توقف
-        if(khatmaData.lastAyahIndex > 0) {
-            saveCheckpoint(khatmaData.lastAyahIndex);
-            // تمرير التصفح تلقائياً لآخر آية
-            setTimeout(() => {
-                const lastMark = document.getElementById(`mark-${khatmaData.lastAyahIndex}`);
-                if(lastMark) lastMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 500);
-        }
-    } catch (e) {
-        displayArea.innerText = "تعذر تحميل الورد، تأكد من الإنترنت.";
-    }
 }
 
 // 3. حفظ "علامة الوصول" وتحديث البار الداخلي
