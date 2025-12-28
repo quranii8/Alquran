@@ -4,7 +4,6 @@ const audio = document.getElementById('audioPlayer');
 const playBtn = document.getElementById('playBtn');
 const seekSlider = document.getElementById('seekSlider');
 const notifySound = document.getElementById('notificationSound');
-let ayahTimings = [];
 // بيانات السبحة المتعددة
 let currentSebhaType = 'tasbih';
 let sebhaCounters = JSON.parse(localStorage.getItem('sebhaCounters')) || {
@@ -64,7 +63,7 @@ function filterSurahs() {
     displaySurahs(allSurahs.filter(s => s.name.includes(term))); 
 }
 
- // متغير عام لحفظ توقيت الآيات
+let ayahTimings = []; // متغير عام لحفظ توقيت الآيات
 
 function openSurah(id, name) {
     currentSurahId = id;
@@ -97,127 +96,33 @@ function openSurah(id, name) {
     }
 }
 
-// دالة جلب توقيت الآيات من API
-async function fetchAyahTimings(surahId) {
-    const reciter = document.getElementById('reciterSelect').value;
-    
-    // مطابقة أسماء القراء مع API التوقيت
-    const reciterMap = {
-        'afs': 'ar.alafasy',
-        'minsh': 'ar.minshawi',
-        'basit': 'ar.abdulbasitmurattal',
-        'husr': 'ar.husary',
-        'maher': 'ar.maher',
-        'qtm': 'ar.nasser_alqatami',
-        'yasser': 'ar.yasser_dossari'
-    };
-    
-    const reciterCode = reciterMap[reciter] || 'ar.alafasy';
-    
-    try {
-        // جلب ملف التوقيت من everyayah.com
-        const response = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}/${reciterCode}`);
-        const data = await response.json();
-        
-        if (data.code === 200) {
-            // حساب التوقيت التقريبي لكل آية (بناءً على طول الآية)
-            ayahTimings = calculateApproximateTimings(data.data.ayahs);
-            setupAyahHighlightingWithTimings();
-        } else {
-            // فشل جلب التوقيت - استخدام الطريقة القديمة
-            setupAyahHighlighting(data.data.numberOfAyahs);
-        }
-    } catch (e) {
-        console.log("استخدام التوقيت التقريبي");
-        // استخدام طريقة احتياطية
-        const ayahsCount = document.querySelectorAll('.ayah-item').length;
-        ayahTimings = calculateFallbackTimings(ayahsCount);
-        setupAyahHighlightingWithTimings();
-    }
-}
-
-// حساب توقيت تقريبي بناءً على طول النص
-function calculateApproximateTimings(ayahs) {
-    const timings = [];
-    let totalLength = 0;
-    
-    // حساب الطول الكلي
-    ayahs.forEach(a => totalLength += a.text.length);
-    
-    let cumulativeTime = 0;
-    ayahs.forEach((a, index) => {
-        const ayahRatio = a.text.length / totalLength;
-        const duration = audio.duration || 300; // افتراضي 5 دقائق
-        const ayahDuration = duration * ayahRatio;
-        
-        timings.push({
-            index: index,
-            start: cumulativeTime,
-            end: cumulativeTime + ayahDuration
-        });
-        
-        cumulativeTime += ayahDuration;
-    });
-    
-    return timings;
-}
-
-// طريقة احتياطية للتوقيت
-function calculateFallbackTimings(count) {
-    const timings = [];
-    const allAyahs = document.querySelectorAll('.ayah-item');
-    let totalLength = 0;
-    
-    allAyahs.forEach(a => totalLength += a.textContent.length);
-    
-    let cumulativeTime = 0;
-    allAyahs.forEach((ayahEl, index) => {
-        const ayahRatio = ayahEl.textContent.length / totalLength;
-        const duration = audio.duration || 300;
-        const ayahDuration = duration * ayahRatio;
-        
-        timings.push({
-            index: index,
-            start: cumulativeTime,
-            end: cumulativeTime + ayahDuration
-        });
-        
-        cumulativeTime += ayahDuration;
-    });
-    
-    return timings;
-}
 
 
 // دالة تمييز الآيات أثناء القراءة// دالة تمييز الآيات أثناء القراءة - نسخة بسيطة
-// تمييز الآيات بناءً على التوقيت الفعلي
-function setupAyahHighlightingWithTimings() {
+function setupAyahHighlighting(totalAyahs) {
     const audio = document.getElementById('audioPlayer');
-    let currentAyahIndex = -1;
+    let currentAyahIndex = 0;
     
     audio.ontimeupdate = () => {
-        if (audio.duration && ayahTimings.length > 0) {
-            const currentTime = audio.currentTime;
+        if (audio.duration) {
+            // حساب تقدم الصوت
+            const progress = audio.currentTime / audio.duration;
+            const newAyahIndex = Math.floor(progress * totalAyahs);
             
-            // البحث عن الآية الحالية بناءً على الوقت
-            for (let i = 0; i < ayahTimings.length; i++) {
-                if (currentTime >= ayahTimings[i].start && currentTime < ayahTimings[i].end) {
-                    if (i !== currentAyahIndex) {
-                        // إزالة التمييز من الآية السابقة
-                        const allAyahs = document.querySelectorAll('.ayah-item');
-                        if (currentAyahIndex >= 0 && allAyahs[currentAyahIndex]) {
-                            allAyahs[currentAyahIndex].classList.remove('ayah-active');
-                        }
-                        
-                        // تمييز الآية الجديدة
-                        if (allAyahs[i]) {
-                            allAyahs[i].classList.add('ayah-active');
-                        }
-                        
-                        currentAyahIndex = i;
-                    }
-                    break;
+            // لو انتقلنا لآية جديدة
+            if (newAyahIndex !== currentAyahIndex && newAyahIndex < totalAyahs) {
+                // إزالة التمييز من الآية السابقة
+                const allAyahs = document.querySelectorAll('.ayah-item');
+                if (allAyahs[currentAyahIndex]) {
+                    allAyahs[currentAyahIndex].classList.remove('ayah-active');
                 }
+                
+                // تمييز الآية الجديدة
+                if (allAyahs[newAyahIndex]) {
+                    allAyahs[newAyahIndex].classList.add('ayah-active');
+                }
+                
+                currentAyahIndex = newAyahIndex;
             }
             
             // تحديث شريط التقدم
@@ -227,21 +132,12 @@ function setupAyahHighlightingWithTimings() {
         }
     };
     
-    // عند تحميل الصوت - حساب التوقيتات
-    audio.onloadedmetadata = () => {
-        const ayahsCount = document.querySelectorAll('.ayah-item').length;
-        if (ayahTimings.length === 0 || ayahTimings.length !== ayahsCount) {
-            ayahTimings = calculateFallbackTimings(ayahsCount);
-        }
-    };
-    
     // إزالة التمييز عند انتهاء السورة
     audio.onended = () => {
         document.querySelectorAll('.ayah-item').forEach(el => el.classList.remove('ayah-active'));
-        currentAyahIndex = -1;
+        currentAyahIndex = 0;
     };
 }
-
 
 
 
@@ -256,16 +152,7 @@ function updateAudioSource() {
     const r = document.getElementById('reciterSelect').value;
     const srv = { 'afs': '8', 'minsh': '10', 'basit': '7', 'husr': '13', 'maher': '12', 'qtm': '11', 'yasser': '11' };
     audio.src = `https://server${srv[r]}.mp3quran.net/${r}/${currentSurahId.toString().padStart(3, '0')}.mp3`;
-    
-    // إعادة حساب التوقيتات عند تغيير القارئ
-    audio.onloadedmetadata = () => {
-        if (currentSurahId) {
-            fetchAyahTimings(currentSurahId);
-        }
-    };
-    
     if (!audio.paused) audio.play();
-}
 }
 
 function toggleAudio() { 
