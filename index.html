@@ -83,7 +83,17 @@
 </div>
 
         <button id="azkarTab" onclick="switchMainTab('azkar')">قسم الأذكار</button>
-        <button id="sebhaTab" onclick="switchMainTab('sebha')">السبحة</button>
+       <div class="quran-menu-wrapper">
+    <button id="sebhaTab" class="dropbtn" onclick="toggleSebhaDropdown(event)">السبحة ▾</button>
+    <div id="sebhaDropdown" class="dropdown-content">
+        <a href="javascript:void(0)" onclick="selectSebhaType('tasbih')">📿 التسبيح</a>
+        <a href="javascript:void(0)" onclick="selectSebhaType('istighfar')">🤲 الاستغفار</a>
+        <a href="javascript:void(0)" onclick="selectSebhaType('tahmid')">❤️ التحميد</a>
+        <a href="javascript:void(0)" onclick="selectSebhaType('takbir')">☝️ التكبير</a>
+        <a href="javascript:void(0)" onclick="selectSebhaType('salah')">🕌 الصلاة على النبي</a>
+    </div>
+</div>
+
         <button id="prayerTab" onclick="switchMainTab('prayer')">مواقيت الصلاة</button>
 <button id="qiblaTab" onclick="switchMainTab('qibla')">اتجاه القبلة</button>
 <button id="khatmaTab" onclick="switchMainTab('khatma')">تحدي الختمة 🏆</button>
