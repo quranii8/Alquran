@@ -896,7 +896,7 @@ function checkDailyAzkarReset() {
 }
 setInterval(checkDailyAzkarReset, 60000); // كل دقيقة
 checkDailyAzkarReset(); // عند التحميل
-// ================= دوال قسم الإنجازات =================
+// ================= دوال قسم الإنجازات =================// ================= دوال قسم الإنجازات =================
 
 // حفظ الإنجازات
 function saveAchievements() {
@@ -929,7 +929,7 @@ function openAchievements() {
 // إغلاق قسم الإنجازات
 function closeAchievements() {
     document.getElementById('achievements-section').style.display = 'none';
-    switchMainTab('quran'); // العودة للقرآن
+    switchMainTab('quran');
 }
 
 // تحديث واجهة الإنجازات
@@ -959,4 +959,5 @@ function updateAchievementsUI() {
         document.getElementById('days-count').innerText = '0';
     }
 }
+
 
