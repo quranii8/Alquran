@@ -1125,7 +1125,7 @@ function updateAchievementsUI() {
 let currentPage = 1;
 let userBookmark = null;
 
-// تحميل العلامة المحفوظة
+// 1. تحميل العلامة المحفوظة من الذاكرة
 function loadBookmark() {
     const saved = localStorage.getItem('mushafBookmark');
     if (saved) {
@@ -1134,13 +1134,15 @@ function loadBookmark() {
     }
 }
 
-// فتح المصحف الورقي
+// 2. فتح المصحف الورقي
 function openMushaf() {
     loadBookmark();
     
-    // إذا في علامة محفوظة، نفتح عندها
+    // إذا وجدت علامة محفوظة، ابدأ منها، وإلا ابدأ من صفحة 1
     if (userBookmark) {
         currentPage = userBookmark;
+    } else {
+        currentPage = 1;
     }
     
     updateMushafPage();
@@ -1148,32 +1150,41 @@ function openMushaf() {
     checkBookmarkStatus();
 }
 
-// تحديث صورة الصفحة
-// تحديث صورة الصفحة
+// 3. التحديث لعرض الصور المحلية (IMG_XXXX.JPG) من GitHub
 function updateMushafPage() {
-    const pageNum = currentPage.toString().padStart(3, '0');
+    // حساب رقم الملف: صفحة 1 هي IMG_0275
+    const fileNumber = (274 + currentPage).toString().padStart(4, '0');
     
-    // استخدام API من موقع قرآن كلاود (مصدر موثوق)
-    const imgUrl = `https://cdn.qurancdn.com/images/w/${currentPage}.png`;
+    // المسار للصور الموجودة في GitHub بجانب ملف الـ script
+    const imgUrl = `./IMG_${fileNumber}.JPG`; 
     
     const imgElement = document.getElementById('mushafPage');
+    
+    // تأثير اختفاء بسيط عند التحميل
+    imgElement.style.opacity = "0.4";
     imgElement.src = imgUrl;
     
-    // إضافة معالج للخطأ
+    imgElement.onload = function() {
+        imgElement.style.opacity = "1";
+    };
+
     imgElement.onerror = function() {
-        console.error('فشل تحميل الصفحة');
-        // محاولة مصدر بديل
-        this.src = `https://equran.id/images/pages/page${pageNum}.png`;
+        // محاولة إذا كان الامتداد بحروف صغيرة .jpg
+        if (this.src.endsWith('.JPG')) {
+            this.src = `./IMG_${fileNumber}.jpg`;
+        } else {
+            console.error('فشل تحميل الصورة: ' + fileNumber);
+        }
     };
     
+    // تحديث رقم الصفحة في الواجهة (من 569)
     document.getElementById('currentPageNum').innerText = currentPage;
     checkBookmarkStatus();
 }
 
-
-// الصفحة التالية
+// 4. الصفحة التالية (الحد الأقصى 569)
 function nextPage() {
-    if (currentPage < 604) {
+    if (currentPage < 569) {
         currentPage++;
         document.getElementById('mushafPage').classList.add('flip-left');
         setTimeout(() => {
@@ -1183,7 +1194,7 @@ function nextPage() {
     }
 }
 
-// الصفحة السابقة
+// 5. الصفحة السابقة
 function prevPage() {
     if (currentPage > 1) {
         currentPage--;
@@ -1195,56 +1206,51 @@ function prevPage() {
     }
 }
 
-// الذهاب لصفحة معينة
+// 6. الانتقال لصفحة محددة
 function goToPage() {
     const input = document.getElementById('pageInput');
     const page = parseInt(input.value);
     
-    if (page >= 1 && page <= 604) {
+    if (page >= 1 && page <= 569) {
         currentPage = page;
         updateMushafPage();
         input.value = '';
     } else {
-        alert('رقم الصفحة يجب أن يكون بين 1 و 604');
+        alert('رقم الصفحة يجب أن يكون بين 1 و 569');
     }
 }
 
-// تبديل العلامة
+// 7. حفظ أو إزالة العلامة المرجعية
 function toggleBookmark() {
     if (userBookmark === currentPage) {
-        // إزالة العلامة
         userBookmark = null;
         localStorage.removeItem('mushafBookmark');
         alert('تم إزالة العلامة ✓');
     } else {
-        // إضافة علامة
         userBookmark = currentPage;
         localStorage.setItem('mushafBookmark', currentPage);
-        
-        // حفظ في السحابة
-        if (typeof window.saveToCloud === 'function') {
-            window.saveToCloud('mushafBookmark', currentPage);
-        }
-        
         alert('تم حفظ العلامة في صفحة ' + currentPage + ' ✓');
     }
-    
     checkBookmarkStatus();
 }
 
-// التحقق من حالة العلامة
+// 8. تحديث شكل زر العلامة
 function checkBookmarkStatus() {
     const btn = document.getElementById('bookmarkBtn');
+    if (!btn) return;
+
     if (userBookmark === currentPage) {
         btn.classList.add('active');
-        btn.innerText = '🔖 محفوظة';
+        btn.innerHTML = '🔖 محفوظة';
+        btn.style.color = "#ffcc00"; // لون ذهبي للعلامة
     } else {
         btn.classList.remove('active');
-        btn.innerText = '🔖 حفظ';
+        btn.innerHTML = '🔖 حفظ';
+        btn.style.color = ""; 
     }
 }
 
-// الذهاب للعلامة المحفوظة
+// 9. الذهاب للعلامة
 function goToBookmark() {
     if (userBookmark) {
         currentPage = userBookmark;
@@ -1254,74 +1260,67 @@ function goToBookmark() {
     }
 }
 
-// إعداد التقليب بالسحب
+// 10. إعداد السحب باللمس (Swipe)
 function setupSwipeGestures() {
     const container = document.getElementById('mushafContainer');
+    if (!container) return;
+
     let touchStartX = 0;
     let touchEndX = 0;
     
     container.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
-    });
+    }, {passive: true});
     
     container.addEventListener('touchend', (e) => {
         touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    });
-    
-    function handleSwipe() {
         const swipeThreshold = 50;
         const diff = touchStartX - touchEndX;
         
         if (Math.abs(diff) > swipeThreshold) {
-            if (diff > 0) {
-                // سحب لليسار = الصفحة التالية
-                nextPage();
-            } else {
-                // سحب لليمين = الصفحة السابقة
-                prevPage();
-            }
+            if (diff > 0) nextPage(); // سحب لليسار
+            else prevPage(); // سحب لليمين
         }
-    }
+    }, {passive: true});
 }
 
-// إغلاق المصحف
+// 11. إغلاق وإدارة القوائم
 function closeMushaf() {
     document.getElementById('mushaf-view').style.display = 'none';
     document.getElementById('full-quran-view').style.display = 'block';
 }
 
-// تحديث دالة selectQuranOption
 function selectQuranOption(option) {
-    document.getElementById("quranDropdown").classList.remove("show-dropdown");
-    switchMainTab('quran'); 
+    // إغلاق القائمة المنسدلة
+    const dropdown = document.getElementById("quranDropdown");
+    if(dropdown) dropdown.classList.remove("show-dropdown");
 
-    const fullView = document.getElementById('full-quran-view');
-    const topicsView = document.getElementById('topics-view');
-    const quranView = document.getElementById('quran-view');
-    const mushafView = document.getElementById('mushaf-view');
+    // تبديل التبويبات (تأكد من وجود دالة switchMainTab في مشروعك)
+    if (typeof switchMainTab === 'function') switchMainTab('quran'); 
+
+    const views = {
+        full: document.getElementById('full-quran-view'),
+        topics: document.getElementById('topics-view'),
+        quran: document.getElementById('quran-view'),
+        mushaf: document.getElementById('mushaf-view')
+    };
+    
     const searchBox = document.querySelector('.search-box');
 
-    if (option === 'quran') {
-        fullView.style.display = 'block';
-        topicsView.style.display = 'none';
-        quranView.style.display = 'none';
-        mushafView.style.display = 'none';
-        if (searchBox) searchBox.style.display = 'block';
-        displaySurahs(allSurahs); 
-        document.getElementById('searchInput').value = '';
-    } else if (option === 'topics') {
-        fullView.style.display = 'none';
-        topicsView.style.display = 'block';
-        quranView.style.display = 'none';
-        mushafView.style.display = 'none';
-        if (searchBox) searchBox.style.display = 'none';
-    } else if (option === 'mushaf') {
-        fullView.style.display = 'none';
-        topicsView.style.display = 'none';
-        quranView.style.display = 'none';
-        mushafView.style.display = 'block';
-        if (searchBox) searchBox.style.display = 'none';
+    // إخفاء الكل أولاً
+    Object.values(views).forEach(v => { if(v) v.style.display = 'none'; });
+
+    if (option === 'mushaf') {
+        if(views.mushaf) views.mushaf.style.display = 'block';
+        if(searchBox) searchBox.style.display = 'none';
         openMushaf();
+    } else if (option === 'topics') {
+        if(views.topics) views.topics.style.display = 'block';
+        if(searchBox) searchBox.style.display = 'none';
+    } else {
+        if(views.full) views.full.style.display = 'block';
+        if(searchBox) searchBox.style.display = 'block';
+        if(typeof displaySurahs === 'function') displaySurahs(window.allSurahs || []);
     }
 }
+
