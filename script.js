@@ -98,7 +98,9 @@ function openSurah(id, name) {
     }
 }
 async function fetchAyahTimings(surahId, reciterCode) {
-    // روابط ملفات التوقيتات لكل قارئ (من EveryAyah)
+    ayahTimings = [];
+    
+    // ✅ روابط بديلة أفضل
     const timingUrls = {
         'afs': `https://everyayah.com/data/Alafasy_128kbps/${surahId.toString().padStart(3, '0')}.txt`,
         'minsh': `https://everyayah.com/data/Minshawy_Mujawwad_128kbps/${surahId.toString().padStart(3, '0')}.txt`,
@@ -110,23 +112,39 @@ async function fetchAyahTimings(surahId, reciterCode) {
     const url = timingUrls[reciterCode];
     
     if (!url) {
-        console.log("⚠️ لا توجد توقيتات لهذا القارئ");
-        ayahTimings = [];
+        console.warn("⚠️ لا توجد توقيتات لهذا القارئ:", reciterCode);
         return;
     }
 
     try {
-        const response = await fetch(url);
+        console.log("🔄 جاري جلب التوقيتات من:", url);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'default'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
         const text = await response.text();
         
-        // تحليل الملف: كل سطر = بداية آية (بالثواني)
+        if (!text || text.trim() === '') {
+            throw new Error('الملف فارغ');
+        }
+        
         ayahTimings = text.trim().split('\n').map(time => parseFloat(time));
-        console.log("✅ تم تحميل التوقيتات الدقيقة:", ayahTimings.length, "آية");
+        console.log("✅ تم تحميل التوقيتات بنجاح:", ayahTimings.length, "آية");
+        
     } catch (error) {
-        console.log("⚠️ فشل تحميل التوقيتات، سنستخدم التخمين");
+        console.error("❌ خطأ في تحميل التوقيتات:", error.message);
+        console.log("⚠️ سنستخدم التخمين البسيط");
         ayahTimings = [];
     }
 }
+
 
 function setupAyahHighlighting(totalAyahs) {
     const audio = document.getElementById('audioPlayer');
