@@ -901,3 +901,67 @@ function checkDailyAzkarReset() {
 }
 setInterval(checkDailyAzkarReset, 60000); // كل دقيقة
 checkDailyAzkarReset(); // عند التحميل
+// ================= دوال قسم الإنجازات =================
+
+// حفظ الإنجازات
+function saveAchievements() {
+    localStorage.setItem('achievements', JSON.stringify(achievements));
+    
+    // حفظ على Firebase للمسجلين
+    if (typeof saveProgress === 'function') {
+        saveProgress('achievements', achievements);
+    }
+}
+
+// فتح قسم الإنجازات
+function openAchievements() {
+    document.getElementById('sideMenu').classList.remove('open');
+    
+    // إخفاء كل الأقسام
+    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section'];
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = 'none';
+    });
+    
+    // إظهار قسم الإنجازات
+    document.getElementById('achievements-section').style.display = 'block';
+    
+    // تحديث البيانات
+    updateAchievementsUI();
+}
+
+// إغلاق قسم الإنجازات
+function closeAchievements() {
+    document.getElementById('achievements-section').style.display = 'none';
+    switchMainTab('quran'); // العودة للقرآن
+}
+
+// تحديث واجهة الإنجازات
+function updateAchievementsUI() {
+    // عرض الإحصائيات
+    document.getElementById('total-tasbih').innerText = achievements.tasbih.toLocaleString();
+    document.getElementById('total-istighfar').innerText = achievements.istighfar.toLocaleString();
+    document.getElementById('total-tahmid').innerText = achievements.tahmid.toLocaleString();
+    document.getElementById('total-takbir').innerText = achievements.takbir.toLocaleString();
+    document.getElementById('total-salah').innerText = achievements.salah.toLocaleString();
+    document.getElementById('total-awrad').innerText = achievements.awrad.toLocaleString();
+    document.getElementById('total-azkar').innerText = achievements.azkar.toLocaleString();
+    
+    // عرض تاريخ التسجيل
+    if (achievements.memberSince) {
+        const memberDate = new Date(achievements.memberSince);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('member-since').innerText = memberDate.toLocaleDateString('ar-SA', options);
+        
+        // حساب عدد الأيام
+        const now = new Date();
+        const diffTime = Math.abs(now - memberDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        document.getElementById('days-count').innerText = diffDays.toLocaleString();
+    } else {
+        document.getElementById('member-since').innerText = 'غير مسجل';
+        document.getElementById('days-count').innerText = '0';
+    }
+}
+
