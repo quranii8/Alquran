@@ -78,12 +78,14 @@ function openSurah(id, name) {
     fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
         const ayahs = data.data.ayahs;
         
-        // عرض الآيات مع ID لكل آية
-        document.getElementById('ayahsContainer').innerHTML = ayahs.map((a, index) => 
-            `<span class="ayah-text" id="ayah-${index}" data-index="${index}">${a.text} <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span></span>`
-        ).join(' ');
+        // عرض الآيات بشكل طبيعي مع كلاس ayah-item لكل آية
+        const ayahsHTML = ayahs.map((a, index) => {
+            return `<span class="ayah-item" data-index="${index}">${a.text}</span> <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span> `;
+        }).join('');
         
-        // ربط حدث التمييز التلقائي بالصوت
+        document.getElementById('ayahsContainer').innerHTML = ayahsHTML;
+        
+        // ربط التمييز بالصوت
         setupAyahHighlighting(ayahs.length);
     });
 
@@ -91,6 +93,7 @@ function openSurah(id, name) {
         checkKhatmaProgress(id);
     }
 }
+
 
 // دالة تمييز الآيات أثناء القراءة
 function setupAyahHighlighting(totalAyahs) {
