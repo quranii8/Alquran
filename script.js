@@ -1210,37 +1210,68 @@ function closeMushaf() {
     document.getElementById('full-quran-view').style.display = 'block';
 }
 
-function selectQuranOption(option) {
-    // إغلاق القائمة المنسدلة
-    const dropdown = document.getElementById("quranDropdown");
-    if(dropdown) dropdown.classList.remove("show-dropdown");
 
-    // تبديل التبويبات (تأكد من وجود دالة switchMainTab في مشروعك)
-    if (typeof switchMainTab === 'function') switchMainTab('quran'); 
+// ===== الدوال الناقصة =====
 
-    const views = {
-        full: document.getElementById('full-quran-view'),
-        topics: document.getElementById('topics-view'),
-        quran: document.getElementById('quran-view'),
-        mushaf: document.getElementById('mushaf-view')
-    };
-    
-    const searchBox = document.querySelector('.search-box');
-
-    // إخفاء الكل أولاً
-    Object.values(views).forEach(v => { if(v) v.style.display = 'none'; });
-
-    if (option === 'mushaf') {
-        if(views.mushaf) views.mushaf.style.display = 'block';
-        if(searchBox) searchBox.style.display = 'none';
-        openMushaf();
-    } else if (option === 'topics') {
-        if(views.topics) views.topics.style.display = 'block';
-        if(searchBox) searchBox.style.display = 'none';
-    } else {
-        if(views.full) views.full.style.display = 'block';
-        if(searchBox) searchBox.style.display = 'block';
-        if(typeof displaySurahs === 'function') displaySurahs(window.allSurahs || []);
+// دالة جلب آية اليوم
+async function loadDailyAyah() {
+    try {
+        const now = new Date();
+        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+        
+        const response = await fetch(`https://api.alquran.cloud/v1/ayah/${dayOfYear}/ar.alafasy`);
+        const data = await response.json();
+        
+        if(data.code === 200) {
+            document.getElementById('daily-text').innerText = data.data.text;
+            document.getElementById('daily-ref').innerText = `[سورة ${data.data.surah.name} - آية ${data.data.numberInSurah}]`;
+        }
+    } catch (error) {
+        document.getElementById('daily-text').innerText = "فَذَكِّرْ بِالْقُرْآنِ مَن يَخَافُ وَعِيدِ";
     }
+}
+
+// بيانات الختمة
+let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || {
+    currentJuz: 1,
+    lastAyahIndex: 0,
+    lastUpdate: new Date().toDateString()
+};
+
+let currentJuzAyahs = [];
+
+// دالة بدء القراءة
+async function startKhatmaReading() {
+    document.getElementById('khatma-intro').style.display = 'none';
+    document.getElementById('khatma-reading-area').style.display = 'block';
+    
+    const juzId = khatmaData.currentJuz;
+    const displayArea = document.getElementById('khatma-ayahs-display');
+    displayArea.innerHTML = "<p style='text-align:center;'>جاري جلب وردك اليومي...</p>";
+
+    try {
+        const res = await fetch(`https://api.alquran.cloud/v1/juz/${juzId}/quran-simple`);
+        const data = await res.json();
+        currentJuzAyahs = data.data.ayahs;
+        
+        displayArea.innerHTML = currentJuzAyahs.map((a, index) => {
+            return `${a.text} <span class="ayah-mark" id="mark-${index}" onclick="saveCheckpoint(${index})" style="color:var(--gold); cursor:pointer; font-weight:bold; border:1px solid #ddd; padding:2px 5px; border-radius:5px; margin:0 5px; display:inline-block;">(${a.numberInSurah})</span>`;
+        }).join(' ');
+
+        if(khatmaData.lastAyahIndex > 0) {
+            saveCheckpoint(khatmaData.lastAyahIndex);
+            setTimeout(() => {
+                const lastMark = document.getElementById(`mark-${khatmaData.lastAyahIndex}`);
+                if(lastMark) lastMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+        }
+    } catch (e) {
+        displayArea.innerText = "تعذر تحميل الورد، تأكد من الإنترنت.";
+    }
+}
+
+// دالة طلب الإشعارات
+function requestNotify() {
+    requestNotificationPermission();
 }
 
