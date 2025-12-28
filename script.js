@@ -220,58 +220,95 @@ function resetAzkarProgress() {
 }
 
 // --- 5. السبحة والعداد التلقائي ---
-let sCount = parseInt(localStorage.getItem('sebhaCount')) || 0;
-let sGoal = parseInt(localStorage.getItem('sebhaGoal')) || 100;
+// --- 5. السبحة المتعددة ---
 
-function updateGoal() {
-    sGoal = parseInt(document.getElementById('sebhaGoal').value);
-    localStorage.setItem('sebhaGoal', sGoal);
-    updateProgress();
-
-    // حفظ الهدف على Firebase لو المستخدم مسجل دخول
-    if (typeof saveProgress === 'function') {
-        saveProgress('sebha', { count: sCount, goal: sGoal });
-    }
+// دالة إظهار/إخفاء القائمة المنسدلة
+function toggleSebhaDropdown(event) {
+    event.stopPropagation();
+    document.getElementById("sebhaDropdown").classList.toggle("show-dropdown");
 }
 
-function incrementSebha() {
-    sCount++;
-    document.getElementById('sebhaCounter').innerText = sCount;
-    localStorage.setItem('sebhaCount', sCount);
-    updateProgress();
+// دالة اختيار نوع السبحة
+function selectSebhaType(type) {
+    document.getElementById("sebhaDropdown").classList.remove("show-dropdown");
+    currentSebhaType = type;
+    switchMainTab('sebha');
     
-    // حفظ التقدم على Firebase لو المستخدم مسجل دخول
-    if (typeof saveProgress === 'function') {
-        saveProgress('sebha', { count: sCount, goal: sGoal });
-    }
+    document.getElementById('sebha-categories').style.display = 'none';
+    document.getElementById('sebha-main-view').style.display = 'block';
+    
+    updateSebhaUI();
+}
 
-    if (sCount === sGoal) {
+// تحديث واجهة السبحة
+function updateSebhaUI() {
+    const data = sebhaCounters[currentSebhaType];
+    const info = sebhaTexts[currentSebhaType];
+    
+    document.getElementById('sebha-type-title').innerText = info.emoji + ' ' + info.title;
+    document.getElementById('sebha-type-text').innerText = info.text;
+    document.getElementById('sebhaCounter').innerText = data.count;
+    document.getElementById('sebhaGoal').value = data.goal;
+    
+    updateSebhaProgress();
+}
+
+// تحديث الهدف
+function updateGoal() {
+    const newGoal = parseInt(document.getElementById('sebhaGoal').value);
+    sebhaCounters[currentSebhaType].goal = newGoal;
+    saveSebhaData();
+    updateSebhaProgress();
+}
+
+// زيادة العداد
+function incrementSebha() {
+    sebhaCounters[currentSebhaType].count++;
+    document.getElementById('sebhaCounter').innerText = sebhaCounters[currentSebhaType].count;
+    saveSebhaData();
+    updateSebhaProgress();
+    
+    if (sebhaCounters[currentSebhaType].count === sebhaCounters[currentSebhaType].goal) {
         document.querySelector('.sebha-circle').classList.add('goal-reached');
         playNotify(); 
     }
 }
 
-function updateProgress() {
-    let percent = Math.min((sCount / sGoal) * 100, 100);
+// تحديث البار
+function updateSebhaProgress() {
+    const data = sebhaCounters[currentSebhaType];
+    let percent = Math.min((data.count / data.goal) * 100, 100);
     const bar = document.getElementById('sebhaBar');
     if(bar) bar.style.width = percent + "%";
 }
 
+// تصفير السبحة الحالية
 function resetSebha() {
-    if(confirm("تصفير السبحة؟")) {
-        sCount = 0;
+    if(confirm("تصفير " + sebhaTexts[currentSebhaType].title + "؟")) {
+        sebhaCounters[currentSebhaType].count = 0;
         document.getElementById('sebhaCounter').innerText = 0;
         document.querySelector('.sebha-circle').classList.remove('goal-reached');
-        localStorage.setItem('sebhaCount', 0);
-        updateProgress();
-
-        // حفظ التصفير على Firebase لو المستخدم مسجل دخول
-        if (typeof saveProgress === 'function') {
-            saveProgress('sebha', { count: sCount, goal: sGoal });
-        }
+        saveSebhaData();
+        updateSebhaProgress();
     }
 }
 
+// حفظ بيانات السبحة
+function saveSebhaData() {
+    localStorage.setItem('sebhaCounters', JSON.stringify(sebhaCounters));
+    
+    if (typeof saveProgress === 'function') {
+        saveProgress('sebha', sebhaCounters);
+    }
+}
+
+// العودة لقائمة الأقسام
+function backToSebhaCategories() {
+    document.getElementById('sebha-categories').style.display = 'grid';
+    document.getElementById('sebha-main-view').style.display = 'none';
+}
+
+// العداد التنازلي
 function updateCountdown() {
     const now = new Date();
     const tomorrow = new Date();
@@ -279,7 +316,7 @@ function updateCountdown() {
     tomorrow.setHours(0, 0, 0, 0);
     const diff = tomorrow - now;
 
-    if (diff <= 0) { resetSebhaAutomated(); }
+    if (diff <= 0) { resetAllSebhaAutomated(); }
 
     const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
     const m = Math.floor((diff / (1000 * 60)) % 60);
@@ -291,11 +328,12 @@ function updateCountdown() {
     }
 }
 
-function resetSebhaAutomated() {
-    sCount = 0;
-    document.getElementById('sebhaCounter').innerText = 0;
-    localStorage.setItem('sebhaCount', 0);
-    updateProgress();
+// تصفير تلقائي لكل الأقسام
+function resetAllSebhaAutomated() {
+    Object.keys(sebhaCounters).forEach(key => {
+        sebhaCounters[key].count = 0;
+    });
+    saveSebhaData();
 }
 
 setInterval(updateCountdown, 1000);
