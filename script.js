@@ -203,18 +203,18 @@ function resetAzkarProgress() {
 }
 
 // --- 5. السبحة والعداد التلقائي ---
-// --- نظام السبحة الاحترافي الجديد ---
-let currentSebhaKey = 'تسبيح'; 
-let allSebhaData = JSON.parse(localStorage.getItem('allSebhaData')) || {
-    'تسبيح': { count: 0, text: 'سبحان الله' },
-    'استغفار': { count: 0, text: 'أستغفر الله' },
-    'تحميد': { count: 0, text: 'الحمد لله' },
-    'تكبير': { count: 0, text: 'الله أكبر' },
-    'صلاة على النبي': { count: 0, text: 'اللهم صلِ على محمد' }
+// --- 1. إعدادات البيانات الأساسية ---
+let currentSebhaKey = 'تسبيح';
+let sebhaData = JSON.parse(localStorage.getItem('sebhaStore_v3')) || {
+    'تسبيح': { count: 0, goal: 100, text: 'سبحان الله' },
+    'استغفار': { count: 0, goal: 100, text: 'أستغفر الله' },
+    'تحميد': { count: 0, goal: 100, text: 'الحمد لله' },
+    'تكبير': { count: 0, goal: 100, text: 'الله أكبر' }
 };
 
-function toggleSebhaDropdown(event) {
-    event.stopPropagation();
+// --- 2. التحكم بالقائمة المنسدلة ---
+function toggleSebhaDropdown(e) {
+    e.stopPropagation();
     document.getElementById("sebhaDropdown").classList.toggle("show-dropdown");
 }
 
@@ -222,80 +222,66 @@ function selectSebhaType(key, text) {
     currentSebhaKey = key;
     document.getElementById('current-sebha-label').innerText = key;
     document.getElementById('active-zekr-text').innerText = text;
-    document.getElementById('sebhaCounter').innerText = allSebhaData[key].count;
+    document.getElementById('sebhaCounter').innerText = sebhaData[key].count;
+    document.getElementById('sebhaGoal').value = sebhaData[key].goal;
     document.getElementById("sebhaDropdown").classList.remove("show-dropdown");
-    updateProgress();
 }
 
+// --- 3. منطق العد والتصفير التلقائي ---
 function incrementSebha() {
-    allSebhaData[currentSebhaKey].count++;
-    document.getElementById('sebhaCounter').innerText = allSebhaData[currentSebhaKey].count;
+    sebhaData[currentSebhaKey].count++;
     
-    // حفظ البيانات
-    localStorage.setItem('allSebhaData', JSON.stringify(allSebhaData));
-    
-    // تحديث الإنجازات (اختياري لو أردت حساب المجموع الكلي)
-    let total = parseInt(localStorage.getItem('sebhaCount') || 0);
-    localStorage.setItem('sebhaCount', total + 1);
+    // فحص الوصول للهدف
+    if (sebhaData[currentSebhaKey].count >= sebhaData[currentSebhaKey].goal) {
+        playNotify();
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
+        alert(`تم بحمد الله الوصول لهدف ${currentSebhaKey} (${sebhaData[currentSebhaKey].goal})`);
+        sebhaData[currentSebhaKey].count = 0; // تصفير تلقائي
+    }
 
-    updateProgress();
-    
-    // صوت التنبيه عند الوصول لمضاعفات الـ 33 أو الـ 100
-    if (allSebhaData[currentSebhaKey].count % 33 === 0) playNotify();
+    document.getElementById('sebhaCounter').innerText = sebhaData[currentSebhaKey].count;
+    saveSebhaData();
 }
 
-function updateProgress() {
-    let goal = parseInt(document.getElementById('sebhaGoal').value) || 100;
-    let percent = Math.min((allSebhaData[currentSebhaKey].count / goal) * 100, 100);
-    document.getElementById('sebhaBar').style.width = percent + "%";
+function updateGoal() {
+    let val = parseInt(document.getElementById('sebhaGoal').value);
+    if (val > 0) {
+        sebhaData[currentSebhaKey].goal = val;
+        saveSebhaData();
+    }
 }
 
 function resetSebha() {
-    if(confirm(`تصفير عداد ${currentSebhaKey}؟`)) {
-        allSebhaData[currentSebhaKey].count = 0;
+    if(confirm(`هل تريد تصفير عداد ${currentSebhaKey}؟`)) {
+        sebhaData[currentSebhaKey].count = 0;
         document.getElementById('sebhaCounter').innerText = 0;
-        localStorage.setItem('allSebhaData', JSON.stringify(allSebhaData));
-        updateProgress();
+        saveSebhaData();
     }
 }
 
-// تعديل بسيط لإغلاق القوائم عند الضغط خارجها
-window.onclick = function(event) {
-    if (!event.target.matches('.dropdown-btn')) {
-        document.getElementById("quranDropdown")?.classList.remove("show-dropdown");
-        document.getElementById("sebhaDropdown")?.classList.remove("show-dropdown");
+// --- 4. الربط مع Firebase والحفظ المحلي ---
+async function saveSebhaData() {
+    // حفظ محلي فوري
+    localStorage.setItem('sebhaStore_v3', JSON.stringify(sebhaData));
+
+    // مزامنة مع Firebase (لو متاح ومسجل دخول)
+    if (typeof auth !== "undefined" && auth.currentUser) {
+        try {
+            const { doc, setDoc } = window.firebaseFirestore; // تأكد من استيرادها
+            await setDoc(doc(db, "users", auth.currentUser.uid), {
+                sebha: sebhaData,
+                lastSync: new Date()
+            }, { merge: true });
+        } catch (err) {
+            console.warn("فشلت المزامنة السحابية، تم الحفظ محلياً فقط.");
+        }
     }
 }
 
-}
-
-function updateCountdown() {
-    const now = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(now.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    const diff = tomorrow - now;
-
-    if (diff <= 0) { resetSebhaAutomated(); }
-
-    const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const m = Math.floor((diff / (1000 * 60)) % 60);
-    const s = Math.floor((diff / 1000) % 60);
-
-    const timerDisplay = document.getElementById('countdown-timer');
-    if(timerDisplay) {
-        timerDisplay.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    }
-}
-
-function resetSebhaAutomated() {
-    sCount = 0;
-    document.getElementById('sebhaCounter').innerText = 0;
-    localStorage.setItem('sebhaCount', 0);
-    updateProgress();
-}
-
-setInterval(updateCountdown, 1000);
+// إغلاق القوائم عند الضغط في أي مكان
+window.addEventListener('click', () => {
+    document.getElementById("sebhaDropdown")?.classList.remove("show-dropdown");
+});
 
 // --- 6. الوضع الداكن والخط والتبديل ---
 function switchMainTab(t) {
