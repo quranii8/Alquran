@@ -222,9 +222,6 @@ function countZekr(id) {
         }
     }
 }
-
-}
-
 function backToAzkarCats() { 
     document.getElementById('azkarCats').style.display = 'grid'; 
     document.getElementById('azkar-content').style.display = 'none'; 
