@@ -95,7 +95,7 @@ function openSurah(id, name) {
 }
 
 
-// دالة تمييز الآيات أثناء القراءة
+// دالة تمييز الآيات أثناء القراءة// دالة تمييز الآيات أثناء القراءة - نسخة بسيطة
 function setupAyahHighlighting(totalAyahs) {
     const audio = document.getElementById('audioPlayer');
     let currentAyahIndex = 0;
@@ -109,16 +109,14 @@ function setupAyahHighlighting(totalAyahs) {
             // لو انتقلنا لآية جديدة
             if (newAyahIndex !== currentAyahIndex && newAyahIndex < totalAyahs) {
                 // إزالة التمييز من الآية السابقة
-                const oldAyah = document.getElementById(`ayah-${currentAyahIndex}`);
-                if (oldAyah) oldAyah.classList.remove('ayah-active');
+                const allAyahs = document.querySelectorAll('.ayah-item');
+                if (allAyahs[currentAyahIndex]) {
+                    allAyahs[currentAyahIndex].classList.remove('ayah-active');
+                }
                 
                 // تمييز الآية الجديدة
-                const newAyah = document.getElementById(`ayah-${newAyahIndex}`);
-                if (newAyah) {
-                    newAyah.classList.add('ayah-active');
-                    
-                    // التمرير التلقائي للآية
-                    newAyah.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (allAyahs[newAyahIndex]) {
+                    allAyahs[newAyahIndex].classList.add('ayah-active');
                 }
                 
                 currentAyahIndex = newAyahIndex;
@@ -133,14 +131,8 @@ function setupAyahHighlighting(totalAyahs) {
     
     // إزالة التمييز عند انتهاء السورة
     audio.onended = () => {
-        const lastAyah = document.getElementById(`ayah-${currentAyahIndex}`);
-        if (lastAyah) lastAyah.classList.remove('ayah-active');
+        document.querySelectorAll('.ayah-item').forEach(el => el.classList.remove('ayah-active'));
         currentAyahIndex = 0;
-    };
-    
-    // إزالة التمييز عند الإيقاف
-    audio.onpause = () => {
-        // لا نزيل التمييز عند الإيقاف المؤقت، بس عند الإيقاف النهائي
     };
 }
 
