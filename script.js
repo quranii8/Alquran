@@ -100,61 +100,64 @@ function openSurah(id, name) {
 }
 
 
-async function fetchAyahTimings(surahId, reciterCode) {
-    ayahTimings = [];
+function setupAyahHighlighting(totalAyahs) {
+    const audio = document.getElementById('audioPlayer');
+    let currentAyahIndex = 0;
     
-    // ✅ روابط مباشرة من EveryAyah (نستخدم CORS proxy)
-    const reciterPaths = {
-        'afs': 'Alafasy_128kbps',
-        'minsh': 'Minshawy_Mujawwad_128kbps',
-        'basit': 'Abdul_Basit_Mujawwad_128kbps',
-        'husr': 'Husary_128kbps',
-        'maher': 'Maher_AlMuaiqly_128kbps'
+    // ✅ إذا ما في توقيتات دقيقة = نوقف كل شي
+    if (ayahTimings.length === 0) {
+        console.log("⚠️ ما في توقيتات دقيقة، التمييز معطّل");
+        return; // ❌ نخرج من الدالة - ما نشغل أي تمييز
+    }
+    
+    console.log("✅ توقيتات دقيقة موجودة، التمييز مفعّل!");
+    
+    audio.ontimeupdate = () => {
+        if (audio.duration) {
+            const currentTime = audio.currentTime;
+            let newAyahIndex = 0;
+            
+            // ✅ استخدام التوقيتات الدقيقة فقط
+            for (let i = 0; i < ayahTimings.length; i++) {
+                if (currentTime >= ayahTimings[i]) {
+                    newAyahIndex = i;
+                } else {
+                    break;
+                }
+            }
+            
+            // تحديث التمييز
+            if (newAyahIndex !== currentAyahIndex && newAyahIndex < totalAyahs) {
+                const allAyahs = document.querySelectorAll('.ayah-item');
+                
+                if (allAyahs[currentAyahIndex]) {
+                    allAyahs[currentAyahIndex].classList.remove('ayah-active');
+                }
+                
+                if (allAyahs[newAyahIndex]) {
+                    allAyahs[newAyahIndex].classList.add('ayah-active');
+                    allAyahs[newAyahIndex].scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }
+                
+                currentAyahIndex = newAyahIndex;
+            }
+            
+            // تحديث شريط التقدم
+            seekSlider.value = (audio.currentTime / audio.duration) * 100;
+            document.getElementById('currentTime').innerText = formatTime(audio.currentTime);
+            document.getElementById('durationTime').innerText = formatTime(audio.duration);
+        }
     };
     
-    const reciterPath = reciterPaths[reciterCode];
-    
-    if (!reciterPath) {
-        console.warn("⚠️ لا توجد توقيتات لهذا القارئ، سنستخدم الحساب الذكي");
-        return;
-    }
-    
-    try {
-        const surahNum = surahId.toString().padStart(3, '0');
-        
-        // ✅ استخدام CORS proxy للوصول للملفات
-        const url = `https://corsproxy.io/?https://everyayah.com/data/${reciterPath}/${surahNum}.txt`;
-        
-        console.log("🔄 جاري تحميل التوقيتات الدقيقة...");
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const text = await response.text();
-        
-        if (!text || text.trim() === '') {
-            throw new Error('الملف فارغ');
-        }
-        
-        // ✅ تحليل التوقيتات (كل سطر = وقت بداية آية بالميلي ثانية)
-        const lines = text.trim().split('\n');
-        ayahTimings = lines.map(line => {
-            const time = parseFloat(line.trim());
-            return time / 1000; // تحويل من ميلي ثانية إلى ثانية
-        });
-        
-        console.log("✅ نجاح! تم تحميل", ayahTimings.length, "توقيت دقيق");
-        console.log("📊 مثال:", ayahTimings.slice(0, 3).map(t => t.toFixed(2) + "s"));
-        
-    } catch (error) {
-        console.error("❌ فشل:", error.message);
-        console.log("⚠️ سنستخدم الحساب الذكي");
-        ayahTimings = [];
-    }
+    audio.onended = () => {
+        document.querySelectorAll('.ayah-item').forEach(el => el.classList.remove('ayah-active'));
+        currentAyahIndex = 0;
+    };
 }
+
 
 
 function setupAyahHighlighting(totalAyahs) {
