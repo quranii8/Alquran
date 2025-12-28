@@ -1149,16 +1149,27 @@ function openMushaf() {
 }
 
 // تحديث صورة الصفحة
+// تحديث صورة الصفحة
 function updateMushafPage() {
     const pageNum = currentPage.toString().padStart(3, '0');
-    // استخدام API المصحف من موقع tanzil.net
-    const imgUrl = `https://www.searchtruth.com/quran/images2/large/page-${pageNum}.jpg`;
     
-    document.getElementById('mushafPage').src = imgUrl;
+    // استخدام API من موقع قرآن كلاود (مصدر موثوق)
+    const imgUrl = `https://cdn.qurancdn.com/images/w/${currentPage}.png`;
+    
+    const imgElement = document.getElementById('mushafPage');
+    imgElement.src = imgUrl;
+    
+    // إضافة معالج للخطأ
+    imgElement.onerror = function() {
+        console.error('فشل تحميل الصفحة');
+        // محاولة مصدر بديل
+        this.src = `https://equran.id/images/pages/page${pageNum}.png`;
+    };
+    
     document.getElementById('currentPageNum').innerText = currentPage;
-    
     checkBookmarkStatus();
 }
+
 
 // الصفحة التالية
 function nextPage() {
