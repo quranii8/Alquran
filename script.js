@@ -64,6 +64,40 @@ function filterSurahs() {
 }
 
 let ayahTimings = []; // متغير عام لحفظ توقيت الآيات
+// دالة جلب التوقيتات الدقيقة للآيات
+async function fetchAyahTimings(surahId, reciter) {
+    try {
+        const response = await fetch(`https://api.alquran.cloud/v1/surah/${surahId}`);
+        const data = await response.json();
+        const ayahs = data.data.ayahs;
+        
+        // حساب وزن كل آية (طول النص + عدد الكلمات)
+        const weights = ayahs.map(a => {
+            const words = a.text.split(' ').length;
+            const chars = a.text.length;
+            return words * 2 + chars; // وزن ذكي
+        });
+        
+        const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+        
+        // توزيع الوقت بناءً على الأوزان (كنسب من 0 إلى 1)
+        ayahTimings = [0];
+        let accumulated = 0;
+        weights.forEach((weight, index) => {
+            if (index < weights.length - 1) {
+                accumulated += weight;
+                const ratio = accumulated / totalWeight;
+                ayahTimings.push(ratio);
+            }
+        });
+        
+        console.log("✅ تم حساب التوقيتات المحسّنة للآيات");
+        
+    } catch (error) {
+        console.error("❌ خطأ في جلب التوقيتات:", error);
+        ayahTimings = [];
+    }
+}
 
 function openSurah(id, name) {
     currentSurahId = id;
@@ -104,128 +138,46 @@ function setupAyahHighlighting(totalAyahs) {
     const audio = document.getElementById('audioPlayer');
     let currentAyahIndex = 0;
     
-    // ✅ إذا ما في توقيتات دقيقة = نوقف كل شي
-    if (ayahTimings.length === 0) {
-        console.log("⚠️ ما في توقيتات دقيقة، التمييز معطّل");
-        return; // ❌ نخرج من الدالة - ما نشغل أي تمييز
-    }
-    
-    console.log("✅ توقيتات دقيقة موجودة، التمييز مفعّل!");
-    
     audio.ontimeupdate = () => {
-        if (audio.duration) {
-            const currentTime = audio.currentTime;
-            let newAyahIndex = 0;
-            
-            // ✅ استخدام التوقيتات الدقيقة فقط
-            for (let i = 0; i < ayahTimings.length; i++) {
-                if (currentTime >= ayahTimings[i]) {
-                    newAyahIndex = i;
-                } else {
-                    break;
-                }
-            }
-            
-            // تحديث التمييز
-            if (newAyahIndex !== currentAyahIndex && newAyahIndex < totalAyahs) {
-                const allAyahs = document.querySelectorAll('.ayah-item');
-                
-                if (allAyahs[currentAyahIndex]) {
-                    allAyahs[currentAyahIndex].classList.remove('ayah-active');
-                }
-                
-                if (allAyahs[newAyahIndex]) {
-                    allAyahs[newAyahIndex].classList.add('ayah-active');
-                    allAyahs[newAyahIndex].scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center' 
-                    });
-                }
-                
-                currentAyahIndex = newAyahIndex;
-            }
-            
-            // تحديث شريط التقدم
-            seekSlider.value = (audio.currentTime / audio.duration) * 100;
-            document.getElementById('currentTime').innerText = formatTime(audio.currentTime);
-            document.getElementById('durationTime').innerText = formatTime(audio.duration);
-        }
-    };
-    
-    audio.onended = () => {
-        document.querySelectorAll('.ayah-item').forEach(el => el.classList.remove('ayah-active'));
-        currentAyahIndex = 0;
-    };
-}
-
-
-
-function setupAyahHighlighting(totalAyahs) {
-    const audio = document.getElementById('audioPlayer');
-    let currentAyahIndex = 0;
-    
-    audio.ontimeupdate = () => {
-        if (audio.duration) {
-            const currentTime = audio.currentTime;
-            let newAyahIndex = 0;
-            
-            // ✅ إذا عندنا توقيتات دقيقة
-            if (ayahTimings.length > 0) {
-                // نلقى الآية الحالية بناءً على الوقت الفعلي
-                for (let i = 0; i < ayahTimings.length; i++) {
-                    if (currentTime >= ayahTimings[i]) {
-                        newAyahIndex = i;
-                    } else {
-                        break;
-                    }
-                }
+        if (!audio.duration || ayahTimings.length === 0) return;
+        
+        const currentTime = audio.currentTime;
+        const duration = audio.duration;
+        const progress = currentTime / duration; // النسبة من 0 إلى 1
+        
+        // إيجاد الآية الحالية بناءً على التقدم
+        let newAyahIndex = 0;
+        for (let i = 0; i < ayahTimings.length; i++) {
+            if (progress >= ayahTimings[i]) {
+                newAyahIndex = i;
             } else {
-                // الحساب الذكي كخيار احتياطي
-                const allAyahs = document.querySelectorAll('.ayah-item');
-                let totalLength = 0;
-                let ayahLengths = [];
-                
-                allAyahs.forEach(ayah => {
-                    const length = ayah.textContent.trim().length;
-                    ayahLengths.push(length);
-                    totalLength += length;
-                });
-                
-                let accumulatedTime = 0;
-                for (let i = 0; i < ayahLengths.length; i++) {
-                    const ayahDuration = (ayahLengths[i] / totalLength) * audio.duration;
-                    accumulatedTime += ayahDuration;
-                    if (currentTime < accumulatedTime) {
-                        newAyahIndex = i;
-                        break;
-                    }
-                }
+                break;
             }
-            
-            // تحديث التمييز
-            if (newAyahIndex !== currentAyahIndex && newAyahIndex < totalAyahs) {
-                const allAyahs = document.querySelectorAll('.ayah-item');
-                
-                if (allAyahs[currentAyahIndex]) {
-                    allAyahs[currentAyahIndex].classList.remove('ayah-active');
-                }
-                
-                if (allAyahs[newAyahIndex]) {
-                    allAyahs[newAyahIndex].classList.add('ayah-active');
-                    allAyahs[newAyahIndex].scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center' 
-                    });
-                }
-                
-                currentAyahIndex = newAyahIndex;
-            }
-            
-            // تحديث شريط التقدم
-            seekSlider.value = (audio.currentTime / audio.duration) * 100;
-            document.getElementById('currentTime').innerText = formatTime(audio.currentTime);
-            document.getElementById('durationTime').innerText = formatTime(audio.duration);
         }
+        
+        // تحديث التمييز
+        if (newAyahIndex !== currentAyahIndex && newAyahIndex < totalAyahs) {
+            const allAyahs = document.querySelectorAll('.ayah-item');
+            
+            if (allAyahs[currentAyahIndex]) {
+                allAyahs[currentAyahIndex].classList.remove('ayah-active');
+            }
+            
+            if (allAyahs[newAyahIndex]) {
+                allAyahs[newAyahIndex].classList.add('ayah-active');
+                allAyahs[newAyahIndex].scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }
+            
+            currentAyahIndex = newAyahIndex;
+        }
+        
+        // تحديث شريط التقدم
+        seekSlider.value = progress * 100;
+        document.getElementById('currentTime').innerText = formatTime(currentTime);
+        document.getElementById('durationTime').innerText = formatTime(duration);
     };
     
     audio.onended = () => {
@@ -233,6 +185,7 @@ function setupAyahHighlighting(totalAyahs) {
         currentAyahIndex = 0;
     };
 }
+
 
 
 
