@@ -485,21 +485,31 @@ function saveKhatmaProgress() {
   onAuthStateChanged(auth, (user) => {
     const profileCard = document.getElementById('userProfile');
     const guestCard = document.getElementById('loginGuest');
+    const achievementsBtn = document.getElementById('achievementsBtn');  // 👈 جديد
 
     if (user) {
       profileCard.style.display = 'block';
       guestCard.style.display = 'none';
+      achievementsBtn.style.display = 'block';  // 👈 جديد - إظهار زر الإنجازات
 
       document.getElementById('userName').textContent = user.displayName || '';
       document.getElementById('userEmail').textContent = user.email || '';
       document.getElementById('userPhoto').src = user.photoURL || '';
+      
+      // 👈 جديد - حفظ تاريخ أول تسجيل دخول
+      if (!achievements.memberSince) {
+        achievements.memberSince = new Date().toISOString();
+        saveAchievements();
+      }
 
       console.log("Logged in:", user.email);
     } else {
       profileCard.style.display = 'none';
       guestCard.style.display = 'block';
+      achievementsBtn.style.display = 'none';  // 👈 جديد - إخفاء زر الإنجازات
     }
   });
+
 
   /* زر تسجيل الدخول */window.loginAndSync = async function () {
   try {
