@@ -103,52 +103,54 @@ function openSurah(id, name) {
 async function fetchAyahTimings(surahId, reciterCode) {
     ayahTimings = [];
     
-    // ✅ قاعدة بيانات التوقيتات البديلة
-    const reciterMapping = {
-        'afs': 'Alafasy_128kbps',
-        'minsh': 'Minshawy_Mujawwad_128kbps',
-        'basit': 'Abdul_Basit_Mujawwad_128kbps',
-        'husr': 'Husary_128kbps',
-        'maher': 'Maher_AlMuaiqly_128kbps'
+    // ✅ معرّفات القراء في Quran.com API
+    const reciterIds = {
+        'afs': 7,      // العفاسي
+        'minsh': 4,    // المنشاوي
+        'basit': 1,    // عبد الباسط
+        'husr': 2,     // الحصري
+        'maher': 5     // المعيقلي
     };
     
-    const reciterFolder = reciterMapping[reciterCode];
+    const reciterId = reciterIds[reciterCode];
     
-    if (!reciterFolder) {
-        console.warn("⚠️ لا توجد توقيتات لهذا القارئ");
+    if (!reciterId) {
+        console.warn("⚠️ لا توجد توقيتات دقيقة لهذا القارئ، سنستخدم الحساب الذكي");
         return;
     }
     
-    // ✅ استخدام رابط بديل من GitHub Raw
-    const surahNum = surahId.toString().padStart(3, '0');
-    const url = `https://raw.githubusercontent.com/islamic-network/timing/master/${reciterFolder}/${surahNum}.txt`;
-    
     try {
-        console.log("🔄 جاري تحميل التوقيتات من:", url);
+        console.log("🔄 جاري تحميل التوقيتات الدقيقة...");
         
+        // ✅ جلب معلومات السورة مع التوقيتات
+        const url = `https://api.quran.com/api/v4/chapter_recitations/${reciterId}/${surahId}`;
         const response = await fetch(url);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
         
-        const text = await response.text();
+        const data = await response.json();
         
-        if (!text || text.trim() === '') {
-            throw new Error('الملف فارغ');
+        // ✅ استخراج توقيتات الآيات
+        if (data.audio_file && data.audio_file.verse_timings) {
+            const timings = data.audio_file.verse_timings;
+            
+            // تحويل التوقيتات إلى ثواني
+            ayahTimings = timings.map(t => {
+                const [start] = t.timestamp_from.split(',').map(Number);
+                return start / 1000; // تحويل من ميلي ثانية
+            });
+            
+            console.log("✅ تم تحميل التوقيتات الدقيقة بنجاح:", ayahTimings.length, "آية");
+            console.log("📊 أول 3 توقيتات:", ayahTimings.slice(0, 3));
+        } else {
+            throw new Error('لا توجد توقيتات في الاستجابة');
         }
-        
-        // ✅ تحليل التوقيتات (كل سطر = وقت بداية آية بالميلي ثانية)
-        ayahTimings = text.trim().split('\n').map(line => {
-            const time = parseFloat(line.trim());
-            return time / 1000; // تحويل من ميلي ثانية إلى ثانية
-        });
-        
-        console.log("✅ تم تحميل التوقيتات بنجاح:", ayahTimings.length, "آية");
         
     } catch (error) {
         console.error("❌ فشل تحميل التوقيتات:", error.message);
-        console.log("⚠️ سنستخدم الحساب الذكي");
+        console.log("⚠️ سنستخدم الحساب الذكي بناءً على طول الآيات");
         ayahTimings = [];
     }
 }
