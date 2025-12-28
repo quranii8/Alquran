@@ -417,17 +417,16 @@
 <audio id="notificationSound" src="https://www.soundjay.com/buttons/sounds/button-37a.mp3"></audio>
 <script src="script.js"></script>
 <audio id="azanSound" src="https://www.islamcan.com/common/makkah.mp3" preload="auto"></audio>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
   /* Firebase Config */
   const firebaseConfig = {
@@ -444,143 +443,152 @@ import {
   const db = getFirestore(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
-// دالة عامة لحفظ أي تقدم في Firestore
-async function saveProgress(type, data) {
-  const user = auth.currentUser;
-  if (!user) return;
+  
+  // جعل المتغيرات متاحة عالمياً
+  window.firebaseAuth = auth;
+  window.firebaseDb = db;
 
-  try {
-    await setDoc(
-      doc(db, "users", user.uid),
-      { 
-        [type]: data, 
-        lastSync: new Date(),
-        email: user.email,
-        displayName: user.displayName
-      },
-      { merge: true }
-    );
-    console.log(`✅ ${type} تم الحفظ في السحابة`);
-  } catch (e) {
-    console.error(`❌ خطأ في حفظ ${type}:`, e);
+  // دالة حفظ البيانات في Firebase
+  window.saveToCloud = async function(type, data) {
+    const user = auth.currentUser;
+    if (!user) {
+      console.log("⚠️ لم يتم تسجيل الدخول");
+      return;
+    }
+
+    try {
+      await setDoc(
+        doc(db, "users", user.uid),
+        { 
+          [type]: data, 
+          lastSync: new Date().toISOString(),
+          email: user.email,
+          displayName: user.displayName
+        },
+        { merge: true }
+      );
+      console.log(`✅ تم حفظ ${type} في السحابة`);
+    } catch (e) {
+      console.error(`❌ خطأ في حفظ ${type}:`, e);
+    }
+  };
+
+  // دالة تحميل البيانات من Firebase
+  async function loadUserData(userId) {
+    try {
+      console.log("📥 جاري تحميل بياناتك...");
+      const userDoc = await getDoc(doc(db, "users", userId));
+      
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        
+        // تحميل الإنجازات
+        if (data.achievements) {
+          window.achievements = data.achievements;
+          localStorage.setItem('achievements', JSON.stringify(data.achievements));
+          console.log("✅ تم تحميل الإنجازات من السحابة");
+        }
+        
+        // تحميل الختمة
+        if (data.khatma) {
+          window.khatmaData = data.khatma;
+          localStorage.setItem('khatmaProgress', JSON.stringify(data.khatma));
+          if (typeof updateKhatmaUI === 'function') {
+            setTimeout(() => updateKhatmaUI(), 500);
+          }
+          console.log("✅ تم تحميل تقدم الختمة من السحابة");
+        }
+        
+        // تحميل السبحة
+        if (data.sebha) {
+          window.sebhaCounters = data.sebha;
+          localStorage.setItem('sebhaCounters', JSON.stringify(data.sebha));
+          console.log("✅ تم تحميل عدادات السبحة من السحابة");
+        }
+        
+        // تحديث واجهة الإنجازات
+        if (typeof updateAchievementsUI === 'function') {
+          setTimeout(() => updateAchievementsUI(), 800);
+        }
+        
+        alert("🎉 تم تحميل جميع بياناتك من السحابة!");
+        return true;
+        
+      } else {
+        console.log("📝 حساب جديد - سيتم إنشاء ملفك في السحابة");
+        
+        // حفظ تاريخ العضوية لأول مرة
+        if (window.achievements && !window.achievements.memberSince) {
+          window.achievements.memberSince = new Date().toISOString();
+          localStorage.setItem('achievements', JSON.stringify(window.achievements));
+          await window.saveToCloud('achievements', window.achievements);
+        }
+        
+        return false;
+      }
+    } catch (e) {
+      console.error("❌ خطأ في تحميل البيانات:", e);
+      alert("⚠️ حدث خطأ في تحميل بياناتك من السحابة");
+      return false;
+    }
   }
-}
 
-// ================= التسبيح =================
-function saveSebhaProgress() {
-  const counter = parseInt(document.getElementById('sebhaCounter').textContent) || 0;
-  saveProgress('sebha', { count: counter, goal: parseInt(document.getElementById('sebhaGoal').value) });
-}
-
-// ================= الأذكار =================
-function saveAzkarProgress() {
-  const azkarData = {}; // هيكل بياناتك للأذكار
-  const azkarList = document.querySelectorAll('#azkarList .azkar-item');
-  azkarList.forEach(item => {
-    azkarData[item.dataset.id] = item.dataset.done === 'true';
-  });
-  saveProgress('azkar', azkarData);
-}
-
-// ================= الختمة =================
-function saveKhatmaProgress() {
-  const khatmaData = JSON.parse(localStorage.getItem('khatmaProgress') || '{}');
-  saveProgress('khatma', khatmaData);
-}
-  /* مراقب الحالة – هذا هو المهم */
-onAuthStateChanged(auth, async (user) => {
+  /* مراقب حالة تسجيل الدخول */
+  onAuthStateChanged(auth, async (user) => {
     const profileCard = document.getElementById('userProfile');
     const guestCard = document.getElementById('loginGuest');
     const achievementsBtn = document.getElementById('achievementsBtn');
 
     if (user) {
-        profileCard.style.display = 'block';
-        guestCard.style.display = 'none';
-        achievementsBtn.style.display = 'block';
+      // إظهار بطاقة المستخدم
+      profileCard.style.display = 'block';
+      guestCard.style.display = 'none';
+      achievementsBtn.style.display = 'block';
 
-        document.getElementById('userName').textContent = user.displayName || '';
-        document.getElementById('userEmail').textContent = user.email || '';
-        document.getElementById('userPhoto').src = user.photoURL || '';
-        
-        // 🔥 الجزء الجديد - استرجاع البيانات من Firebase
-        try {
-            const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                
-                // استرجاع الإنجازات
-                if (data.achievements) {
-                    achievements = data.achievements;
-                    localStorage.setItem('achievements', JSON.stringify(achievements));
-                }
-                
-                // استرجاع تقدم الختمة
-                if (data.khatma) {
-                    khatmaData = data.khatma;
-                    localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
-                }
-                
-                // استرجاع السبحة
-                if (data.sebha) {
-                    sebhaCounters = data.sebha;
-                    localStorage.setItem('sebhaCounters', JSON.stringify(sebhaCounters));
-                }
-                
-                console.log("✅ تم استرجاع بياناتك من السحابة");
-            } else {
-                // أول مرة يسجل دخول - حفظ تاريخ العضوية
-                if (!achievements.memberSince) {
-                    achievements.memberSince = new Date().toISOString();
-                    saveAchievements();
-                }
-            }
-        } catch (e) {
-            console.error("خطأ في استرجاع البيانات:", e);
-        }
-        
+      document.getElementById('userName').textContent = user.displayName || 'مستخدم';
+      document.getElementById('userEmail').textContent = user.email || '';
+      document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/60';
+      
+      console.log("✅ مرحباً", user.displayName || user.email);
+      
+      // تحميل البيانات من السحابة
+      await loadUserData(user.uid);
+      
     } else {
-        profileCard.style.display = 'none';
-        guestCard.style.display = 'block';
-        achievementsBtn.style.display = 'none';
+      // وضع الضيف
+      profileCard.style.display = 'none';
+      guestCard.style.display = 'block';
+      achievementsBtn.style.display = 'none';
+      console.log("👤 تصفح كضيف");
     }
-});
+  });
 
-
-
-  /* زر تسجيل الدخول */window.loginAndSync = async function () {
-  try {
-    const result = await signInWithPopup(auth, provider);
-
-    const localData = localStorage.getItem('khatmaProgress');
-    if (localData) {
-      await setDoc(
-        doc(db, "users", result.user.uid),
-        {
-          displayName: result.user.displayName,
-          email: result.user.email,
-          khatma: JSON.parse(localData),
-          lastSync: new Date()
-        },
-        { merge: true }
-      );
+  /* تسجيل الدخول */
+  window.loginAndSync = async function() {
+    try {
+      console.log("🔐 جاري تسجيل الدخول...");
+      const result = await signInWithPopup(auth, provider);
+      
+      // تحميل البيانات بعد تسجيل الدخول
+      await loadUserData(result.user.uid);
+      
+    } catch (e) {
+      console.error("❌ خطأ في تسجيل الدخول:", e);
+      alert("❌ فشل تسجيل الدخول، تأكد من الاتصال بالإنترنت");
     }
-  } catch (e) {
-    console.error(e);
-    alert("فشل تسجيل الدخول");
-  }
-};
+  };
 
-  /* بعد الرجوع من Google */
-  
   /* تسجيل الخروج */
-  window.logout = function () {
-    if (confirm("تسجيل خروج؟")) {
-      signOut(auth).then(() => location.reload());
+  window.logout = function() {
+    if (confirm("هل تريد تسجيل الخروج؟\n\n(ملاحظة: بياناتك محفوظة في السحابة)")) {
+      signOut(auth).then(() => {
+        localStorage.clear();
+        location.reload();
+      });
     }
   };
 </script>
+
 
 
 
