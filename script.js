@@ -209,6 +209,11 @@ function countZekr(id) {
     let c = parseInt(el.innerText);
     if (c > 0) {
         c--; el.innerText = c;
+        
+        // إضافة للإنجازات (كل ضغطة = +1)
+        achievements.azkar++;
+        saveAchievements();
+        
         localStorage.setItem(`zekr_${id}`, c);
         localStorage.setItem('lastAzkarUpdate', new Date().toISOString());
         if (c === 0) {
@@ -216,6 +221,8 @@ function countZekr(id) {
             playNotify(); 
         }
     }
+}
+
 }
 
 function backToAzkarCats() { 
