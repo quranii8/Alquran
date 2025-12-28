@@ -64,7 +64,7 @@ function filterSurahs() {
     displaySurahs(allSurahs.filter(s => s.name.includes(term))); 
 }
 
-let ayahTimings = []; // متغير عام لحفظ توقيت الآيات
+ // متغير عام لحفظ توقيت الآيات
 
 function openSurah(id, name) {
     currentSurahId = id;
