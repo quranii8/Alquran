@@ -902,11 +902,13 @@ checkDailyAzkarReset(); // عند التحميل
 function saveAchievements() {
     localStorage.setItem('achievements', JSON.stringify(achievements));
     
-    // حفظ على Firebase للمسجلين
-    if (typeof saveProgress === 'function') {
+    // حفظ في Firebase للمسجلين
+    const user = auth?.currentUser;
+    if (user && typeof saveProgress === 'function') {
         saveProgress('achievements', achievements);
     }
 }
+
 
 // فتح قسم الإنجازات
 function openAchievements() {
