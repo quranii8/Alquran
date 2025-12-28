@@ -64,7 +64,7 @@ function filterSurahs() {
     displaySurahs(allSurahs.filter(s => s.name.includes(term))); 
 }
 
-let ayahTimings = []; // متغير عام لحفظ توقيت الآيات
+ متغير عام لحفظ توقيت الآيات
 
 function openSurah(id, name) {
     currentSurahId = id;
@@ -262,7 +262,6 @@ function updateAudioSource() {
         if (currentSurahId) {
             fetchAyahTimings(currentSurahId);
         }
-    };
     
     if (!audio.paused) audio.play();
 }
@@ -273,13 +272,6 @@ function toggleAudio() {
     else { audio.pause(); playBtn.innerText = "▷"; } 
 }
 
-audio.ontimeupdate = () => { 
-    if (audio.duration) { 
-        seekSlider.value = (audio.currentTime / audio.duration) * 100; 
-        document.getElementById('currentTime').innerText = formatTime(audio.currentTime); 
-        document.getElementById('durationTime').innerText = formatTime(audio.duration); 
-    } 
-};
 
 function seekAudio() { audio.currentTime = (seekSlider.value / 100) * audio.duration; }
 function formatTime(s) { const m = Math.floor(s/60); const sc = Math.floor(s%60); return `${m}:${sc<10?'0'+sc:sc}`; }
