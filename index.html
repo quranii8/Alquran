@@ -482,33 +482,65 @@ function saveKhatmaProgress() {
   saveProgress('khatma', khatmaData);
 }
   /* مراقب الحالة – هذا هو المهم */
-  onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     const profileCard = document.getElementById('userProfile');
     const guestCard = document.getElementById('loginGuest');
-    const achievementsBtn = document.getElementById('achievementsBtn');  // 👈 جديد
+    const achievementsBtn = document.getElementById('achievementsBtn');
 
     if (user) {
-      profileCard.style.display = 'block';
-      guestCard.style.display = 'none';
-      achievementsBtn.style.display = 'block';  // 👈 جديد - إظهار زر الإنجازات
+        profileCard.style.display = 'block';
+        guestCard.style.display = 'none';
+        achievementsBtn.style.display = 'block';
 
-      document.getElementById('userName').textContent = user.displayName || '';
-      document.getElementById('userEmail').textContent = user.email || '';
-      document.getElementById('userPhoto').src = user.photoURL || '';
-      
-      // 👈 جديد - حفظ تاريخ أول تسجيل دخول
-      if (!achievements.memberSince) {
-        achievements.memberSince = new Date().toISOString();
-        saveAchievements();
-      }
-
-      console.log("Logged in:", user.email);
+        document.getElementById('userName').textContent = user.displayName || '';
+        document.getElementById('userEmail').textContent = user.email || '';
+        document.getElementById('userPhoto').src = user.photoURL || '';
+        
+        // 🔥 الجزء الجديد - استرجاع البيانات من Firebase
+        try {
+            const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                
+                // استرجاع الإنجازات
+                if (data.achievements) {
+                    achievements = data.achievements;
+                    localStorage.setItem('achievements', JSON.stringify(achievements));
+                }
+                
+                // استرجاع تقدم الختمة
+                if (data.khatma) {
+                    khatmaData = data.khatma;
+                    localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
+                }
+                
+                // استرجاع السبحة
+                if (data.sebha) {
+                    sebhaCounters = data.sebha;
+                    localStorage.setItem('sebhaCounters', JSON.stringify(sebhaCounters));
+                }
+                
+                console.log("✅ تم استرجاع بياناتك من السحابة");
+            } else {
+                // أول مرة يسجل دخول - حفظ تاريخ العضوية
+                if (!achievements.memberSince) {
+                    achievements.memberSince = new Date().toISOString();
+                    saveAchievements();
+                }
+            }
+        } catch (e) {
+            console.error("خطأ في استرجاع البيانات:", e);
+        }
+        
     } else {
-      profileCard.style.display = 'none';
-      guestCard.style.display = 'block';
-      achievementsBtn.style.display = 'none';  // 👈 جديد - إخفاء زر الإنجازات
+        profileCard.style.display = 'none';
+        guestCard.style.display = 'block';
+        achievementsBtn.style.display = 'none';
     }
-  });
+});
+
 
 
   /* زر تسجيل الدخول */window.loginAndSync = async function () {
