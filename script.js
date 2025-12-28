@@ -514,13 +514,7 @@ function resetAllSebhaAutomated() {
 setInterval(updateCountdown, 1000);
 
 // --- 6. الوضع الداكن والخط والتبديل ---
-function switchMainTab(t) {
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab').classList.add('active');
-    ['quran-section', 'azkar-section', 'sebha-section'].forEach(s => { 
-        document.getElementById(s).style.display = s.startsWith(t) ? 'block' : 'none'; 
-    });
-}
+
 
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 function changeFontSize(d) { 
@@ -866,12 +860,7 @@ function showMain() {
     document.querySelectorAll('.ayah-active').forEach(el => el.classList.remove('ayah-active'));
 }
 
-function switchMainTab(t) {
-    // 1. تحديث شكل الأزرار في القائمة العلوية
-    document.querySelectorAll('.main-nav button').forEach(b => {
-        b.classList.remove('active');
-    });
-    
+
     // تأكد أن الـ ID الخاص بالزر يطابق (اسم القسم + Tab)
     const activeTab = document.getElementById(t + 'Tab');
     if (activeTab) {
