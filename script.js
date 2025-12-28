@@ -1,9 +1,27 @@
 let allSurahs = [], currentSurahId = 1;
 let isMuted = localStorage.getItem('isMuted') === 'true';
-const audio = document.getElementById('audioPlayer');
-const playBtn = document.getElementById('playBtn');
-const seekSlider = document.getElementById('seekSlider');
-const notifySound = document.getElementById('notificationSound');
+
+// تعريف العناصر بعد تحميل الصفحة
+let audio, playBtn, seekSlider, notifySound;
+
+// تهيئة العناصر عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    audio = document.getElementById('audioPlayer');
+    playBtn = document.getElementById('playBtn');
+    seekSlider = document.getElementById('seekSlider');
+    notifySound = document.getElementById('notificationSound');
+    
+    // تهيئة الأزرار
+    if(document.getElementById('muteBtn')) {
+        document.getElementById('muteBtn').innerText = isMuted ? "🔇" : "🔊";
+    }
+    
+    // تحميل الأقسام الأخرى
+    loadDailyAyah();
+    checkDailyAzkarReset();
+    updateCountdown();
+    updateKhatmaUI();
+});
 // بيانات السبحة المتعددة
 let currentSebhaType = 'tasbih';
 let sebhaCounters = JSON.parse(localStorage.getItem('sebhaCounters')) || {
@@ -34,14 +52,21 @@ let achievements = JSON.parse(localStorage.getItem('achievements')) || {
 };
 
 // --- 1. القائمة الجانبية والإعدادات ---
-function toggleMenu() { document.getElementById('sideMenu').classList.toggle('open'); }
+// --- 1. القائمة الجانبية والإعدادات ---
+function toggleMenu() { 
+    const menu = document.getElementById('sideMenu');
+    if(menu) menu.classList.toggle('open'); 
+}
+
 function toggleMute() { 
     isMuted = !isMuted; 
     localStorage.setItem('isMuted', isMuted); 
-    document.getElementById('muteBtn').innerText = isMuted ? "🔇" : "🔊"; 
+    const muteBtn = document.getElementById('muteBtn');
+    if(muteBtn) muteBtn.innerText = isMuted ? "🔇" : "🔊"; 
 }
+
 function playNotify() { 
-    if (!isMuted) { 
+    if (!isMuted && notifySound) { 
         notifySound.currentTime = 0; 
         notifySound.play().catch(e => console.log("Audio play failed")); 
     } 
@@ -515,9 +540,7 @@ function changeFontSize(d) {
 }
 
 // --- تهيئة التشغيل ---
-document.getElementById('muteBtn').innerText = isMuted ? "🔇" : "🔊";
 
-updateCountdown();
 let prayerTimesData = null;
 
 // 1. جلب المواقيت بناءً على موقع المستخدم
