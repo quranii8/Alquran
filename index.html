@@ -88,10 +88,12 @@
 <div class="quran-menu-wrapper">
     <button id="quranTab" class="active dropbtn" onclick="toggleQuranDropdown(event)">القرآن الكريم ▾</button>
     <div id="quranDropdown" class="dropdown-content">
-        <a href="javascript:void(0)" onclick="selectQuranOption('quran')">المصحف كاملاً</a>
-        <a href="javascript:void(0)" onclick="selectQuranOption('topics')">الفهرس الموضوعي</a>
+        <a href="javascript:void(0)" onclick="selectQuranOption('quran')">📚 المصحف كاملاً</a>
+        <a href="javascript:void(0)" onclick="selectQuranOption('topics')">📑 الفهرس الموضوعي</a>
+        <a href="javascript:void(0)" onclick="selectQuranOption('mushaf')">📖 المصحف الورقي</a>
     </div>
 </div>
+
 
         <button id="azkarTab" onclick="switchMainTab('azkar')">قسم الأذكار</button>
        <div class="quran-menu-wrapper">
@@ -185,8 +187,33 @@
         </div>
         <button onclick="selectQuranOption('quran')" style="margin: 30px auto; display: block; background:var(--gold); color:var(--dark-teal); border:none; padding:12px 25px; border-radius:12px; cursor:pointer; font-family:'Amiri', serif; font-weight:bold;">العودة للمصحف الكامل</button>
     </div>
-
+<!-- قسم المصحف الورقي -->
+<div id="mushaf-view" style="display:none;">
+    <div class="mushaf-header">
+        <button onclick="closeMushaf()" class="back-btn">↩ رجوع</button>
+        <h2>📖 المصحف الورقي</h2>
+        <button onclick="toggleBookmark()" id="bookmarkBtn" class="bookmark-btn">🔖</button>
+    </div>
+    
+    <div class="mushaf-page-number">
+        <span>صفحة <span id="currentPageNum">1</span> من 604</span>
+    </div>
+    
+    <div class="mushaf-container" id="mushafContainer">
+        <img id="mushafPage" src="" alt="صفحة القرآن" class="mushaf-page-img">
+        
+        <!-- أزرار التنقل -->
+        <button class="mushaf-nav prev" onclick="prevPage()">→</button>
+        <button class="mushaf-nav next" onclick="nextPage()">←</button>
+    </div>
+    
+    <div class="mushaf-controls">
+        <button onclick="goToBookmark()">الذهاب للعلامة 🔖</button>
+        <input type="number" id="pageInput" placeholder="رقم الصفحة" min="1" max="604">
+        <button onclick="goToPage()">انتقال</button>
+    </div>
 </div>
+
 
 <!-- ================= الأذكار ================= -->
 <div id="azkar-section" style="display:none;">
