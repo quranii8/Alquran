@@ -355,10 +355,8 @@ function changeFontSize(d) {
 }
 
 // --- تهيئة التشغيل ---
-document.getElementById('sebhaCounter').innerText = sCount;
-document.getElementById('sebhaGoal').value = sGoal;
 document.getElementById('muteBtn').innerText = isMuted ? "🔇" : "🔊";
-updateProgress();
+
 updateCountdown();
 let prayerTimesData = null;
 
@@ -736,6 +734,11 @@ function switchMainTab(t) {
         if (fullView) fullView.style.display = 'block';
         if (topicsView) topicsView.style.display = 'none';
         if (quranView) quranView.style.display = 'none';
+    }
+        // للسبحة: نعرض قائمة الاختيار
+    if(t === 'sebha') {
+        document.getElementById('sebha-categories').style.display = 'grid';
+        document.getElementById('sebha-main-view').style.display = 'none';
     }
 }
 function switchMainTab(t) {
