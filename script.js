@@ -750,10 +750,19 @@ function returnToAllTopics() {
 function showMain() { 
     document.getElementById('full-quran-view').style.display = 'block'; 
     document.getElementById('quran-view').style.display = 'none'; 
-    document.getElementById('topics-view').style.display = 'none'; 
-    if(audio) audio.pause(); 
+    document.getElementById('topics-view').style.display = 'none';
+    
+    if(audio) {
+        audio.pause();
+        audio.currentTime = 0;
+    }
+    
     if(playBtn) playBtn.innerText = "▷";
+    
+    // مسح التمييزات
+    document.querySelectorAll('.ayah-active').forEach(el => el.classList.remove('ayah-active'));
 }
+
 function switchMainTab(t) {
     // 1. تحديث شكل الأزرار في القائمة العلوية
     document.querySelectorAll('.main-nav button').forEach(b => {
