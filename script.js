@@ -203,94 +203,85 @@ function resetAzkarProgress() {
 }
 
 // --- 5. السبحة والعداد التلقائي ---
-// --- 1. إعدادات البيانات الأساسية ---
-// --- نظام السبحة السحابي المطور ---
-let currentSebhaKey = 'تسبيح';
-let sebhaData = JSON.parse(localStorage.getItem('sebhaData_Final')) || {
-    'تسبيح': { count: 0, goal: 100, text: 'سبحان الله' },
-    'استغفار': { count: 0, goal: 100, text: 'أستغفر الله' },
-    'تحميد': { count: 0, goal: 100, text: 'الحمد لله' },
-    'تكبير': { count: 0, goal: 100, text: 'الله أكبر' }
-};
+let sCount = parseInt(localStorage.getItem('sebhaCount')) || 0;
+let sGoal = parseInt(localStorage.getItem('sebhaGoal')) || 100;
 
-function toggleSebhaDropdown(e) {
-    e.stopPropagation();
-    document.getElementById("sebhaDropdown").classList.toggle("show-dropdown");
-}
+function updateGoal() {
+    sGoal = parseInt(document.getElementById('sebhaGoal').value);
+    localStorage.setItem('sebhaGoal', sGoal);
+    updateProgress();
 
-function selectSebhaType(key, text) {
-    currentSebhaKey = key;
-    document.getElementById('current-sebha-label').innerText = key;
-    document.getElementById('active-zekr-text').innerText = text;
-    document.getElementById('sebhaGoal').value = sebhaData[key].goal;
-    updateSebhaUI();
-    document.getElementById("sebhaDropdown").classList.remove("show-dropdown");
+    // حفظ الهدف على Firebase لو المستخدم مسجل دخول
+    if (typeof saveProgress === 'function') {
+        saveProgress('sebha', { count: sCount, goal: sGoal });
+    }
 }
 
 function incrementSebha() {
-    sebhaData[currentSebhaKey].count++;
+    sCount++;
+    document.getElementById('sebhaCounter').innerText = sCount;
+    localStorage.setItem('sebhaCount', sCount);
+    updateProgress();
     
-    // نظام التصفير التلقائي عند الهدف
-    if (sebhaData[currentSebhaKey].count >= sebhaData[currentSebhaKey].goal) {
-        playNotify();
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        alert(`ما شاء الله! أنجزت هدف (${currentSebhaKey})`);
-        sebhaData[currentSebhaKey].count = 0; 
+    // حفظ التقدم على Firebase لو المستخدم مسجل دخول
+    if (typeof saveProgress === 'function') {
+        saveProgress('sebha', { count: sCount, goal: sGoal });
     }
-    
-    updateSebhaUI();
-    saveSebhaToFirebase();
+
+    if (sCount === sGoal) {
+        document.querySelector('.sebha-circle').classList.add('goal-reached');
+        playNotify(); 
+    }
 }
 
-function updateSebhaUI() {
-    const item = sebhaData[currentSebhaKey];
-    document.getElementById('sebhaCounter').innerText = item.count;
-    
-    // تحديث البار والنسبة
-    const percent = Math.min((item.count / item.goal) * 100, 100);
-    document.getElementById('sebhaBar').style.width = percent + "%";
-    document.getElementById('progress-text').innerText = `التقدم: ${Math.floor(percent)}%`;
-}
-
-function updateGoal() {
-    let val = parseInt(document.getElementById('sebhaGoal').value);
-    if (val > 0) {
-        sebhaData[currentSebhaKey].goal = val;
-        updateSebhaUI();
-        saveSebhaToFirebase();
-    }
+function updateProgress() {
+    let percent = Math.min((sCount / sGoal) * 100, 100);
+    const bar = document.getElementById('sebhaBar');
+    if(bar) bar.style.width = percent + "%";
 }
 
 function resetSebha() {
-    if(confirm(`هل تريد تصفير عداد ${currentSebhaKey}؟`)) {
-        sebhaData[currentSebhaKey].count = 0;
-        updateSebhaUI();
-        saveSebhaToFirebase();
+    if(confirm("تصفير السبحة؟")) {
+        sCount = 0;
+        document.getElementById('sebhaCounter').innerText = 0;
+        document.querySelector('.sebha-circle').classList.remove('goal-reached');
+        localStorage.setItem('sebhaCount', 0);
+        updateProgress();
+
+        // حفظ التصفير على Firebase لو المستخدم مسجل دخول
+        if (typeof saveProgress === 'function') {
+            saveProgress('sebha', { count: sCount, goal: sGoal });
+        }
     }
 }
 
-// دالة الحفظ المزدوج (محلي + فايربيس)
-async function saveSebhaToFirebase() {
-    localStorage.setItem('sebhaData_Final', JSON.stringify(sebhaData));
-    
-    if (typeof auth !== "undefined" && auth.currentUser) {
-        try {
-            // استخدام الدوال من الكود الخاص بك في index.html
-            const userRef = window.doc(window.db, "users", auth.currentUser.uid);
-            await window.setDoc(userRef, {
-                sebha: sebhaData,
-                lastUpdate: new Date()
-            }, { merge: true });
-        } catch (e) { console.warn("Firebase Sync Error: ", e); }
+function updateCountdown() {
+    const now = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(now.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const diff = tomorrow - now;
+
+    if (diff <= 0) { resetSebhaAutomated(); }
+
+    const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const m = Math.floor((diff / (1000 * 60)) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+
+    const timerDisplay = document.getElementById('countdown-timer');
+    if(timerDisplay) {
+        timerDisplay.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 }
 
-// لإغلاق القوائم عند النقر خارجها
-window.addEventListener('click', function(e) {
-    if (!e.target.matches('.dropdown-btn')) {
-        document.getElementById("sebhaDropdown")?.classList.remove("show-dropdown");
-    }
-});
+function resetSebhaAutomated() {
+    sCount = 0;
+    document.getElementById('sebhaCounter').innerText = 0;
+    localStorage.setItem('sebhaCount', 0);
+    updateProgress();
+}
+
+setInterval(updateCountdown, 1000);
 
 // --- 6. الوضع الداكن والخط والتبديل ---
 function switchMainTab(t) {
@@ -318,7 +309,6 @@ let prayerTimesData = null;
 
 // 1. جلب المواقيت بناءً على موقع المستخدم
 function fetchPrayers() {
-    const statusText = document.getElementById('next-prayer-name');
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
             const url = `https://api.aladhan.com/v1/timings?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&method=4`;
@@ -327,19 +317,9 @@ function fetchPrayers() {
                 updatePrayerUI();
                 startPrayerCountdown();
             });
-        }, () => {
-            // لو رفض المستخدم الموقع، نستخدم مكة المكرمة افتراضياً
-            statusText.innerText = "تم استخدام موقع افتراضي (مكة)";
-            fetch(`https://api.aladhan.com/v1/timings?latitude=21.4225&longitude=39.8262&method=4`)
-                .then(res => res.json()).then(data => {
-                    prayerTimesData = data.data.timings;
-                    updatePrayerUI();
-                    startPrayerCountdown();
-                });
         });
     }
 }
-
 
 // 2. تحديث جدول الأوقات
 function updatePrayerUI() {
@@ -479,7 +459,9 @@ function switchMainTab(t) {
 async function loadDailyAyah() {
     try {
         const now = new Date();
+        // استخدام رقم اليوم في السنة للحصول على آية متجددة يومياً
         const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+        
         const response = await fetch(`https://api.alquran.cloud/v1/ayah/${dayOfYear}/ar.alafasy`);
         const data = await response.json();
         
@@ -831,28 +813,3 @@ function checkDailyAzkarReset() {
 }
 setInterval(checkDailyAzkarReset, 60000); // كل دقيقة
 checkDailyAzkarReset(); // عند التحميل
-window.addEventListener('DOMContentLoaded', () => {
-    loadDailyAyah();
-    fetchPrayers();
-    if(typeof updateKhatmaUI === 'function') updateKhatmaUI();
-    if(typeof updateSebhaUI === 'function') updateSebhaUI();
-});
-function switchMainTab(t) {
-    // تحديث الأزرار
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab')?.classList.add('active');
-
-    // إظهار القسم المطلوب (مطابق للـ IDs في الـ HTML الخاص بك)
-    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section'];
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
-    });
-
-    // تشغيل وظائف الأقسام الخاصة عند فتحها
-    if (t === 'qibla') getQibla();
-    if (t === 'prayer') fetchPrayers();
-    if (t === 'khatma') updateKhatmaUI();
-    if (t === 'sebha') updateSebhaUI();
-}
-
