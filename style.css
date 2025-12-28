@@ -428,19 +428,9 @@ body.dark-mode .achievement-label {
 }
 
  /* تمييز الآية النشطة */
+/* تمييز الآية النشطة - بسيط جداً */
 .ayah-active {
     color: var(--gold) !important;
-    font-weight: bold;
-    font-size: 1.9rem !important; /* حجم أكبر شوي */
-    text-shadow: 0 0 15px rgba(201, 176, 122, 0.8); /* توهج أقوى */
-    background: linear-gradient(180deg, transparent 50%, rgba(201, 176, 122, 0.25) 50%);
-    padding: 5px 8px;
-    border-radius: 8px;
-    transition: all 0.4s ease;
-    animation: pulse-gold 1.5s infinite; /* نبض خفيف */
+    transition: color 0.3s ease;
 }
 
-@keyframes pulse-gold {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.85; }
-}
