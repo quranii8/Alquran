@@ -4,6 +4,23 @@ const audio = document.getElementById('audioPlayer');
 const playBtn = document.getElementById('playBtn');
 const seekSlider = document.getElementById('seekSlider');
 const notifySound = document.getElementById('notificationSound');
+// بيانات السبحة المتعددة
+let currentSebhaType = 'tasbih';
+let sebhaCounters = JSON.parse(localStorage.getItem('sebhaCounters')) || {
+    tasbih: { count: 0, goal: 100 },
+    istighfar: { count: 0, goal: 100 },
+    tahmid: { count: 0, goal: 100 },
+    takbir: { count: 0, goal: 100 },
+    salah: { count: 0, goal: 100 }
+};
+
+const sebhaTexts = {
+    tasbih: { title: 'التسبيح', text: 'سُبْحَانَ اللَّهِ', emoji: '📿' },
+    istighfar: { title: 'الاستغفار', text: 'أَسْتَغْفِرُ اللَّهَ', emoji: '🤲' },
+    tahmid: { title: 'التحميد', text: 'الْحَمْدُ لِلَّهِ', emoji: '❤️' },
+    takbir: { title: 'التكبير', text: 'اللَّهُ أَكْبَرُ', emoji: '☝️' },
+    salah: { title: 'الصلاة على النبي', text: 'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ', emoji: '🕌' }
+};
 
 // --- 1. القائمة الجانبية والإعدادات ---
 function toggleMenu() { document.getElementById('sideMenu').classList.toggle('open'); }
