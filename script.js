@@ -86,7 +86,8 @@ function openSurah(id, name) {
         }).join('');
         
         document.getElementById('ayahsContainer').innerHTML = ayahsHTML;
-        
+            
+            setupAyahHighlighting(ayahs.length);
         // جلب توقيت الآيات للقارئ الحالي
         fetchAyahTimings(id);
     });
@@ -94,6 +95,8 @@ function openSurah(id, name) {
     if (typeof checkKhatmaProgress === "function") {
         checkKhatmaProgress(id);
     }
+
+
 }
 
 
@@ -132,7 +135,6 @@ function setupAyahHighlighting(totalAyahs) {
         }
     };
     
-    // إزالة التمييز عند انتهاء السورة
     audio.onended = () => {
         document.querySelectorAll('.ayah-item').forEach(el => el.classList.remove('ayah-active'));
         currentAyahIndex = 0;
@@ -160,13 +162,6 @@ function toggleAudio() {
     else { audio.pause(); playBtn.innerText = "▷"; } 
 }
 
-audio.ontimeupdate = () => { 
-    if (audio.duration) { 
-        seekSlider.value = (audio.currentTime / audio.duration) * 100; 
-        document.getElementById('currentTime').innerText = formatTime(audio.currentTime); 
-        document.getElementById('durationTime').innerText = formatTime(audio.duration); 
-    } 
-};
 
 function seekAudio() { audio.currentTime = (seekSlider.value / 100) * audio.duration; }
 function formatTime(s) { const m = Math.floor(s/60); const sc = Math.floor(s%60); return `${m}:${sc<10?'0'+sc:sc}`; }
