@@ -76,53 +76,101 @@ function openSurah(id, name) {
     
     updateAudioSource();
     
-    // جلب الآيات
     fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
         const ayahs = data.data.ayahs;
         
-        // عرض الآيات بشكل طبيعي
         const ayahsHTML = ayahs.map((a, index) => {
             return `<span class="ayah-item" data-index="${index}">${a.text}</span> <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span> `;
         }).join('');
         
         document.getElementById('ayahsContainer').innerHTML = ayahsHTML;
-            
+        
+        // ✅ جلب التوقيتات أولاً
+        const reciter = document.getElementById('reciterSelect').value;
+        fetchAyahTimings(id, reciter).then(() => {
+            // ثم تفعيل التمييز
             setupAyahHighlighting(ayahs.length);
-        // جلب توقيت الآيات للقارئ الحالي
-        fetchAyahTimings(id);
+        });
     });
 
     if (typeof checkKhatmaProgress === "function") {
         checkKhatmaProgress(id);
     }
-
-
 }
 
 
+}
+async function fetchAyahTimings(surahId, reciterCode) {
+    // روابط ملفات التوقيتات لكل قارئ (من EveryAyah)
+    const timingUrls = {
+        'afs': `https://everyayah.com/data/Alafasy_128kbps/${surahId.toString().padStart(3, '0')}.txt`,
+        'minsh': `https://everyayah.com/data/Minshawy_Mujawwad_128kbps/${surahId.toString().padStart(3, '0')}.txt`,
+        'basit': `https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps/${surahId.toString().padStart(3, '0')}.txt`,
+        'husr': `https://everyayah.com/data/Husary_128kbps/${surahId.toString().padStart(3, '0')}.txt`,
+        'maher': `https://everyayah.com/data/Maher_AlMuaiqly_128kbps/${surahId.toString().padStart(3, '0')}.txt`,
+    };
 
-// دالة تمييز الآيات أثناء القراءة// دالة تمييز الآيات أثناء القراءة - نسخة بسيطة
+    const url = timingUrls[reciterCode];
+    
+    if (!url) {
+        console.log("⚠️ لا توجد توقيتات لهذا القارئ");
+        ayahTimings = [];
+        return;
+    }
+
+    try {
+        const response = await fetch(url);
+        const text = await response.text();
+        
+        // تحليل الملف: كل سطر = بداية آية (بالثواني)
+        ayahTimings = text.trim().split('\n').map(time => parseFloat(time));
+        console.log("✅ تم تحميل التوقيتات الدقيقة:", ayahTimings.length, "آية");
+    } catch (error) {
+        console.log("⚠️ فشل تحميل التوقيتات، سنستخدم التخمين");
+        ayahTimings = [];
+    }
+}
+
 function setupAyahHighlighting(totalAyahs) {
     const audio = document.getElementById('audioPlayer');
     let currentAyahIndex = 0;
     
     audio.ontimeupdate = () => {
         if (audio.duration) {
-            // حساب تقدم الصوت
-            const progress = audio.currentTime / audio.duration;
-            const newAyahIndex = Math.floor(progress * totalAyahs);
+            const currentTime = audio.currentTime;
+            let newAyahIndex = 0;
             
-            // لو انتقلنا لآية جديدة
+            // إذا عندنا توقيتات دقيقة
+            if (ayahTimings.length > 0) {
+                // نلقى الآية الحالية بناءً على الوقت الفعلي
+                for (let i = 0; i < ayahTimings.length; i++) {
+                    if (currentTime >= ayahTimings[i]) {
+                        newAyahIndex = i;
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                // التخمين البسيط (كما هو)
+                const progress = currentTime / audio.duration;
+                newAyahIndex = Math.floor(progress * totalAyahs);
+            }
+            
+            // تحديث التمييز
             if (newAyahIndex !== currentAyahIndex && newAyahIndex < totalAyahs) {
-                // إزالة التمييز من الآية السابقة
                 const allAyahs = document.querySelectorAll('.ayah-item');
+                
                 if (allAyahs[currentAyahIndex]) {
                     allAyahs[currentAyahIndex].classList.remove('ayah-active');
                 }
                 
-                // تمييز الآية الجديدة
                 if (allAyahs[newAyahIndex]) {
                     allAyahs[newAyahIndex].classList.add('ayah-active');
+                    // سكرول تلقائي للآية
+                    allAyahs[newAyahIndex].scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
                 }
                 
                 currentAyahIndex = newAyahIndex;
@@ -154,8 +202,13 @@ function updateAudioSource() {
     const r = document.getElementById('reciterSelect').value;
     const srv = { 'afs': '8', 'minsh': '10', 'basit': '7', 'husr': '13', 'maher': '12', 'qtm': '11', 'yasser': '11' };
     audio.src = `https://server${srv[r]}.mp3quran.net/${r}/${currentSurahId.toString().padStart(3, '0')}.mp3`;
+    
+    // ✅ جلب توقيتات القارئ الجديد
+    fetchAyahTimings(currentSurahId, r);
+    
     if (!audio.paused) audio.play();
 }
+
 
 function toggleAudio() { 
     if (audio.paused) { audio.play(); playBtn.innerText = "||"; } 
