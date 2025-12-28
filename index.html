@@ -447,19 +447,25 @@ import {
 // دالة عامة لحفظ أي تقدم في Firestore
 async function saveProgress(type, data) {
   const user = auth.currentUser;
-  if (!user) return; // لو الضيف ما نحفظ
+  if (!user) return;
 
   try {
     await setDoc(
       doc(db, "users", user.uid),
-      { [type]: data, lastSync: new Date() },
+      { 
+        [type]: data, 
+        lastSync: new Date(),
+        email: user.email,
+        displayName: user.displayName
+      },
       { merge: true }
     );
-    console.log(`${type} synced to cloud`);
+    console.log(`✅ ${type} تم الحفظ في السحابة`);
   } catch (e) {
-    console.error(`Error syncing ${type}:`, e);
+    console.error(`❌ خطأ في حفظ ${type}:`, e);
   }
 }
+
 // ================= التسبيح =================
 function saveSebhaProgress() {
   const counter = parseInt(document.getElementById('sebhaCounter').textContent) || 0;
