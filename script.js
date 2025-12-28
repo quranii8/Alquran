@@ -831,3 +831,10 @@ function checkDailyAzkarReset() {
 }
 setInterval(checkDailyAzkarReset, 60000); // كل دقيقة
 checkDailyAzkarReset(); // عند التحميل
+window.addEventListener('DOMContentLoaded', () => {
+    loadDailyAyah();
+    fetchPrayers();
+    if(typeof updateKhatmaUI === 'function') updateKhatmaUI();
+    if(typeof updateSebhaUI === 'function') updateSebhaUI();
+});
+
