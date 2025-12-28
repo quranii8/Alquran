@@ -837,4 +837,22 @@ window.addEventListener('DOMContentLoaded', () => {
     if(typeof updateKhatmaUI === 'function') updateKhatmaUI();
     if(typeof updateSebhaUI === 'function') updateSebhaUI();
 });
+function switchMainTab(t) {
+    // تحديث الأزرار
+    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(t + 'Tab')?.classList.add('active');
+
+    // إظهار القسم المطلوب (مطابق للـ IDs في الـ HTML الخاص بك)
+    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section'];
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
+    });
+
+    // تشغيل وظائف الأقسام الخاصة عند فتحها
+    if (t === 'qibla') getQibla();
+    if (t === 'prayer') fetchPrayers();
+    if (t === 'khatma') updateKhatmaUI();
+    if (t === 'sebha') updateSebhaUI();
+}
 
