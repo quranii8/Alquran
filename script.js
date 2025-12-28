@@ -4,7 +4,6 @@ const audio = document.getElementById('audioPlayer');
 const playBtn = document.getElementById('playBtn');
 const seekSlider = document.getElementById('seekSlider');
 const notifySound = document.getElementById('notificationSound');
-let ayahTimings = [];
 // بيانات السبحة المتعددة
 let currentSebhaType = 'tasbih';
 let sebhaCounters = JSON.parse(localStorage.getItem('sebhaCounters')) || {
@@ -103,6 +102,53 @@ function openSurah(id, name) {
         checkKhatmaProgress(id);
     }
 }
+// تمييز الآيات - طريقة بسيطة جداً
+function setupSimpleHighlighting() {
+    let currentIndex = -1;
+    
+    audio.ontimeupdate = () => {
+        if (!audio.duration) return;
+        
+        const allAyahs = document.querySelectorAll('.ayah-item');
+        if (allAyahs.length === 0) return;
+        
+        // حساب الآية الحالية بناءً على طول النص
+        const totalLength = parseInt(allAyahs[0].getAttribute('data-total'));
+        let accumulated = 0;
+        
+        for (let i = 0; i < allAyahs.length; i++) {
+            const len = parseInt(allAyahs[i].getAttribute('data-length'));
+            const startTime = (accumulated / totalLength) * audio.duration;
+            const endTime = ((accumulated + len) / totalLength) * audio.duration;
+            
+            if (audio.currentTime >= startTime && audio.currentTime < endTime) {
+                if (i !== currentIndex) {
+                    // إزالة التمييز القديم
+                    if (currentIndex >= 0 && allAyahs[currentIndex]) {
+                        allAyahs[currentIndex].classList.remove('ayah-active');
+                    }
+                    
+                    // تمييز الآية الجديدة
+                    allAyahs[i].classList.add('ayah-active');
+                    currentIndex = i;
+                }
+                break;
+            }
+            
+            accumulated += len;
+        }
+        
+        // تحديث الشريط
+        seekSlider.value = (audio.currentTime / audio.duration) * 100;
+        document.getElementById('currentTime').innerText = formatTime(audio.currentTime);
+        document.getElementById('durationTime').innerText = formatTime(audio.duration);
+    };
+    
+    audio.onended = () => {
+        document.querySelectorAll('.ayah-item').forEach(el => el.classList.remove('ayah-active'));
+        currentIndex = -1;
+    };
+}
 
 
 
@@ -117,15 +163,7 @@ function updateAudioSource() {
     const r = document.getElementById('reciterSelect').value;
     const srv = { 'afs': '8', 'minsh': '10', 'basit': '7', 'husr': '13', 'maher': '12', 'qtm': '11', 'yasser': '11' };
     audio.src = `https://server${srv[r]}.mp3quran.net/${r}/${currentSurahId.toString().padStart(3, '0')}.mp3`;
-    
-    // إعادة حساب التوقيتات عند تغيير القارئ
-    audio.onloadedmetadata = () => {
-        if (currentSurahId) {
-            fetchAyahTimings(currentSurahId);
-        }
-    
     if (!audio.paused) audio.play();
-}
 }
 
 function toggleAudio() { 
