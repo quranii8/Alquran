@@ -427,4 +427,13 @@ body.dark-mode .achievement-label {
     color: #aaa;
 }
 
- 
+ /* تمييز الآية النشطة */
+.ayah-active {
+    color: var(--gold) !important;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(201, 176, 122, 0.5);
+    transition: all 0.3s ease;
+    background: linear-gradient(180deg, transparent 60%, rgba(201, 176, 122, 0.15) 60%);
+    padding: 2px 5px;
+    border-radius: 5px;
+}
