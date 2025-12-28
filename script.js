@@ -97,9 +97,6 @@ function openSurah(id, name) {
         checkKhatmaProgress(id);
     }
 }
-
-
-}
 async function fetchAyahTimings(surahId, reciterCode) {
     // روابط ملفات التوقيتات لكل قارئ (من EveryAyah)
     const timingUrls = {
