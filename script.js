@@ -276,6 +276,11 @@ function updateGoal() {
 function incrementSebha() {
     sebhaCounters[currentSebhaType].count++;
     document.getElementById('sebhaCounter').innerText = sebhaCounters[currentSebhaType].count;
+    
+    // إضافة للإنجازات
+    achievements[currentSebhaType]++;
+    saveAchievements();
+    
     saveSebhaData();
     updateSebhaProgress();
     
@@ -283,6 +288,7 @@ function incrementSebha() {
         document.querySelector('.sebha-circle').classList.add('goal-reached');
         playNotify(); 
     }
+}
 }
 
 // تحديث البار
