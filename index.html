@@ -188,28 +188,38 @@
     </div>
 </div>
 <!-- ================= السبحة ================= -->
-<div id="sebha-section" style="display:none;">
-    <div class="goal-setting">
-        الهدف اليومي:
-        <input type="number" id="sebhaGoal" value="100" min="1" onchange="updateGoal()">
+<section id="sebha-section" style="display:none; text-align:center; padding:20px;">
+    <div class="quran-dropdown-container" style="margin-bottom: 25px; position: relative; display: inline-block;">
+        <button class="dropdown-btn" onclick="toggleSebhaDropdown(event)">
+            <span id="current-sebha-label">تسبيح</span> ▾
+        </button>
+        <div id="sebhaDropdown" class="dropdown-content">
+            <a href="javascript:void(0)" onclick="selectSebhaType('تسبيح', 'سبحان الله')">تسبِيح</a>
+            <a href="javascript:void(0)" onclick="selectSebhaType('استغفار', 'أستغفر الله')">استغفار</a>
+            <a href="javascript:void(0)" onclick="selectSebhaType('تحميد', 'الحمد لله')">تحميد</a>
+            <a href="javascript:void(0)" onclick="selectSebhaType('تكبير', 'الله أكبر')">تكبير</a>
+        </div>
     </div>
 
-    <div class="progress-container">
-        <div id="sebhaBar" class="progress-bar"></div>
+    <div class="sebha-circle" onclick="incrementSebha()" style="margin: 0 auto; cursor:pointer; user-select: none;">
+        <div id="sebhaCounter" style="font-size: 3.5rem; color: var(--dark-teal); font-weight: bold;">0</div>
+        <div id="active-zekr-text" style="font-size: 1.2rem; color: var(--gold); margin-top: 5px;">سبحان الله</div>
     </div>
-
-    <div class="sebha-circle" onclick="incrementSebha()">
-        <span id="sebhaCounter">0</span>
-        <small id="sebhaStatus">اضغط للتسبيح</small>
+    
+    <div class="sebha-controls" style="margin-top:25px;">
+        <div style="background: rgba(201, 176, 122, 0.1); padding: 10px; border-radius: 12px; display: inline-block; margin-bottom: 15px;">
+            <span style="color:var(--dark-teal); font-weight: bold;">الهدف:</span>
+            <input type="number" id="sebhaGoal" value="100" onchange="updateGoal()" 
+                   style="width:60px; background:white; border:1px solid var(--gold); color:var(--dark-teal); text-align:center; border-radius:8px; font-weight:bold;">
+        </div>
+        <br>
+        <button class="menu-tool-btn" onclick="resetSebha()" 
+                style="background:#ff4d4d; color:white; border:none; padding:8px 25px; border-radius:25px; cursor:pointer; font-family:'Amiri'; shadow: 0 4px 10px rgba(255, 77, 77, 0.2);">
+            تصفير العداد
+        </button>
     </div>
+</section>
 
-    <button class="modern-reset-soft" onclick="resetSebha()">تصفير العداد</button>
-
-    <div class="timer-wrapper">
-        <span>التصفير التلقائي:</span>
-        <div id="countdown-timer" class="modern-timer">00:00:00</div>
-    </div>
-</div>
 <div id="prayer-section" style="display:none; text-align:center;">
     <div class="prayer-hero-card">
         <h3 id="next-prayer-name">جاري تحديد موقعك...</h3>
