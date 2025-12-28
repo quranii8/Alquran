@@ -318,6 +318,7 @@ let prayerTimesData = null;
 
 // 1. جلب المواقيت بناءً على موقع المستخدم
 function fetchPrayers() {
+    const statusText = document.getElementById('next-prayer-name');
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
             const url = `https://api.aladhan.com/v1/timings?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&method=4`;
@@ -326,9 +327,19 @@ function fetchPrayers() {
                 updatePrayerUI();
                 startPrayerCountdown();
             });
+        }, () => {
+            // لو رفض المستخدم الموقع، نستخدم مكة المكرمة افتراضياً
+            statusText.innerText = "تم استخدام موقع افتراضي (مكة)";
+            fetch(`https://api.aladhan.com/v1/timings?latitude=21.4225&longitude=39.8262&method=4`)
+                .then(res => res.json()).then(data => {
+                    prayerTimesData = data.data.timings;
+                    updatePrayerUI();
+                    startPrayerCountdown();
+                });
         });
     }
 }
+
 
 // 2. تحديث جدول الأوقات
 function updatePrayerUI() {
@@ -468,9 +479,7 @@ function switchMainTab(t) {
 async function loadDailyAyah() {
     try {
         const now = new Date();
-        // استخدام رقم اليوم في السنة للحصول على آية متجددة يومياً
         const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-        
         const response = await fetch(`https://api.alquran.cloud/v1/ayah/${dayOfYear}/ar.alafasy`);
         const data = await response.json();
         
