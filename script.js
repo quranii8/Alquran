@@ -293,8 +293,6 @@ function incrementSebha() {
         playNotify(); 
     }
 }
-}
-
 // تحديث البار
 function updateSebhaProgress() {
     const data = sebhaCounters[currentSebhaType];
