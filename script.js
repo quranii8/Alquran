@@ -1121,3 +1121,196 @@ function updateAchievementsUI() {
         document.getElementById('days-count').innerText = '0';
     }
 }
+// ===== المصحف الورقي =====
+let currentPage = 1;
+let userBookmark = null;
+
+// تحميل العلامة المحفوظة
+function loadBookmark() {
+    const saved = localStorage.getItem('mushafBookmark');
+    if (saved) {
+        userBookmark = parseInt(saved);
+        console.log("📖 العلامة المحفوظة: صفحة " + userBookmark);
+    }
+}
+
+// فتح المصحف الورقي
+function openMushaf() {
+    loadBookmark();
+    
+    // إذا في علامة محفوظة، نفتح عندها
+    if (userBookmark) {
+        currentPage = userBookmark;
+    }
+    
+    updateMushafPage();
+    setupSwipeGestures();
+    checkBookmarkStatus();
+}
+
+// تحديث صورة الصفحة
+function updateMushafPage() {
+    const pageNum = currentPage.toString().padStart(3, '0');
+    // استخدام API المصحف من موقع tanzil.net
+    const imgUrl = `https://www.searchtruth.com/quran/images2/large/page-${pageNum}.jpg`;
+    
+    document.getElementById('mushafPage').src = imgUrl;
+    document.getElementById('currentPageNum').innerText = currentPage;
+    
+    checkBookmarkStatus();
+}
+
+// الصفحة التالية
+function nextPage() {
+    if (currentPage < 604) {
+        currentPage++;
+        document.getElementById('mushafPage').classList.add('flip-left');
+        setTimeout(() => {
+            updateMushafPage();
+            document.getElementById('mushafPage').classList.remove('flip-left');
+        }, 200);
+    }
+}
+
+// الصفحة السابقة
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        document.getElementById('mushafPage').classList.add('flip-right');
+        setTimeout(() => {
+            updateMushafPage();
+            document.getElementById('mushafPage').classList.remove('flip-right');
+        }, 200);
+    }
+}
+
+// الذهاب لصفحة معينة
+function goToPage() {
+    const input = document.getElementById('pageInput');
+    const page = parseInt(input.value);
+    
+    if (page >= 1 && page <= 604) {
+        currentPage = page;
+        updateMushafPage();
+        input.value = '';
+    } else {
+        alert('رقم الصفحة يجب أن يكون بين 1 و 604');
+    }
+}
+
+// تبديل العلامة
+function toggleBookmark() {
+    if (userBookmark === currentPage) {
+        // إزالة العلامة
+        userBookmark = null;
+        localStorage.removeItem('mushafBookmark');
+        alert('تم إزالة العلامة ✓');
+    } else {
+        // إضافة علامة
+        userBookmark = currentPage;
+        localStorage.setItem('mushafBookmark', currentPage);
+        
+        // حفظ في السحابة
+        if (typeof window.saveToCloud === 'function') {
+            window.saveToCloud('mushafBookmark', currentPage);
+        }
+        
+        alert('تم حفظ العلامة في صفحة ' + currentPage + ' ✓');
+    }
+    
+    checkBookmarkStatus();
+}
+
+// التحقق من حالة العلامة
+function checkBookmarkStatus() {
+    const btn = document.getElementById('bookmarkBtn');
+    if (userBookmark === currentPage) {
+        btn.classList.add('active');
+        btn.innerText = '🔖 محفوظة';
+    } else {
+        btn.classList.remove('active');
+        btn.innerText = '🔖 حفظ';
+    }
+}
+
+// الذهاب للعلامة المحفوظة
+function goToBookmark() {
+    if (userBookmark) {
+        currentPage = userBookmark;
+        updateMushafPage();
+    } else {
+        alert('لا توجد علامة محفوظة');
+    }
+}
+
+// إعداد التقليب بالسحب
+function setupSwipeGestures() {
+    const container = document.getElementById('mushafContainer');
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    container.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+    
+    container.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+    
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartX - touchEndX;
+        
+        if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0) {
+                // سحب لليسار = الصفحة التالية
+                nextPage();
+            } else {
+                // سحب لليمين = الصفحة السابقة
+                prevPage();
+            }
+        }
+    }
+}
+
+// إغلاق المصحف
+function closeMushaf() {
+    document.getElementById('mushaf-view').style.display = 'none';
+    document.getElementById('full-quran-view').style.display = 'block';
+}
+
+// تحديث دالة selectQuranOption
+function selectQuranOption(option) {
+    document.getElementById("quranDropdown").classList.remove("show-dropdown");
+    switchMainTab('quran'); 
+
+    const fullView = document.getElementById('full-quran-view');
+    const topicsView = document.getElementById('topics-view');
+    const quranView = document.getElementById('quran-view');
+    const mushafView = document.getElementById('mushaf-view');
+    const searchBox = document.querySelector('.search-box');
+
+    if (option === 'quran') {
+        fullView.style.display = 'block';
+        topicsView.style.display = 'none';
+        quranView.style.display = 'none';
+        mushafView.style.display = 'none';
+        if (searchBox) searchBox.style.display = 'block';
+        displaySurahs(allSurahs); 
+        document.getElementById('searchInput').value = '';
+    } else if (option === 'topics') {
+        fullView.style.display = 'none';
+        topicsView.style.display = 'block';
+        quranView.style.display = 'none';
+        mushafView.style.display = 'none';
+        if (searchBox) searchBox.style.display = 'none';
+    } else if (option === 'mushaf') {
+        fullView.style.display = 'none';
+        topicsView.style.display = 'none';
+        quranView.style.display = 'none';
+        mushafView.style.display = 'block';
+        if (searchBox) searchBox.style.display = 'none';
+        openMushaf();
+    }
+}
