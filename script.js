@@ -862,11 +862,17 @@ function markFullJuzDone() {
     if(confirm("هل أنهيت قراءة الجزء بالكامل؟ سيتم نقلك للجزء التالي.")) {
         khatmaData.currentJuz++;
         khatmaData.lastAyahIndex = 0;
+        
+        // إضافة للإنجازات (ورد واحد = جزء واحد)
+        achievements.awrad++;
+        saveAchievements();
+        
         localStorage.setItem('khatmaProgress', JSON.stringify(khatmaData));
         updateKhatmaUI();
         closeKhatmaReading();
     }
 }
+
 
 function closeKhatmaReading() {
     document.getElementById('khatma-intro').style.display = 'block';
