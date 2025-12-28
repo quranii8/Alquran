@@ -63,6 +63,8 @@ function filterSurahs() {
     displaySurahs(allSurahs.filter(s => s.name.includes(term))); 
 }
 
+let ayahTimings = []; // متغير عام لحفظ توقيت الآيات
+
 function openSurah(id, name) {
     currentSurahId = id;
     document.getElementById('sideMenu').classList.remove('open');
@@ -78,21 +80,22 @@ function openSurah(id, name) {
     fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
         const ayahs = data.data.ayahs;
         
-        // عرض الآيات بشكل طبيعي مع كلاس ayah-item لكل آية
+        // عرض الآيات بشكل طبيعي
         const ayahsHTML = ayahs.map((a, index) => {
             return `<span class="ayah-item" data-index="${index}">${a.text}</span> <span style="color:var(--gold); font-size: 1.1rem;">(${a.numberInSurah})</span> `;
         }).join('');
         
         document.getElementById('ayahsContainer').innerHTML = ayahsHTML;
         
-        // ربط التمييز بالصوت
-        setupAyahHighlighting(ayahs.length);
+        // جلب توقيت الآيات للقارئ الحالي
+        fetchAyahTimings(id);
     });
 
     if (typeof checkKhatmaProgress === "function") {
         checkKhatmaProgress(id);
     }
 }
+
 
 
 // دالة تمييز الآيات أثناء القراءة// دالة تمييز الآيات أثناء القراءة - نسخة بسيطة
