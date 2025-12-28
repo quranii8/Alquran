@@ -1323,4 +1323,34 @@ function selectQuranOption(option) {
         if(typeof displaySurahs === 'function') displaySurahs(window.allSurahs || []);
     }
 }
+// قائمة القرآن المنسدلة
+function toggleQuranDropdown(event) {
+    event.stopPropagation();
+    document.getElementById('quranDropdown').classList.toggle('show-dropdown');
+}
 
+// اختيار نوع عرض القرآن
+function selectQuranOption(type) {
+    // إغلاق القائمة
+    document.getElementById('quranDropdown').classList.remove('show-dropdown');
+
+    // إخفاء كل مشاهد القرآن
+    document.getElementById('full-quran-view').style.display = 'none';
+    document.getElementById('topics-view').style.display = 'none';
+    document.getElementById('mushaf-view').style.display = 'none';
+    document.getElementById('quran-view').style.display = 'none';
+
+    // إظهار القسم المناسب
+    if (type === 'quran') {
+        document.getElementById('full-quran-view').style.display = 'block';
+    } 
+    else if (type === 'topics') {
+        document.getElementById('topics-view').style.display = 'block';
+    } 
+    else if (type === 'mushaf') {
+        document.getElementById('mushaf-view').style.display = 'block';
+    }
+
+    // تفعيل تبويب القرآن
+    switchMainTab('quran');
+}
