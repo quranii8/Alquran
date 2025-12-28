@@ -21,6 +21,17 @@ const sebhaTexts = {
     takbir: { title: 'التكبير', text: 'اللَّهُ أَكْبَرُ', emoji: '☝️' },
     salah: { title: 'الصلاة على النبي', text: 'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ', emoji: '🕌' }
 };
+// بيانات الإنجازات
+let achievements = JSON.parse(localStorage.getItem('achievements')) || {
+    tasbih: 0,
+    istighfar: 0,
+    tahmid: 0,
+    takbir: 0,
+    salah: 0,
+    awrad: 0,
+    azkar: 0,
+    memberSince: null
+};
 
 // --- 1. القائمة الجانبية والإعدادات ---
 function toggleMenu() { document.getElementById('sideMenu').classList.toggle('open'); }
