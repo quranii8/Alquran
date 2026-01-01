@@ -18,7 +18,34 @@ body { font-family: 'Amiri', serif; background: var(--bg); color: var(--dark-tea
 
 /* الهيدر */
 header { background: var(--dark-teal); color: var(--gold); padding: 20px 10px; text-align: center; border-bottom: 5px solid var(--gold); }
-.main-nav { display: flex; justify-content: center; gap: 8px; margin-top: 15px; }
+..main-nav {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 10px 5px;
+    -webkit-overflow-scrolling: touch; /* سلاسة السحب في iOS */
+    scroll-behavior: smooth;
+    white-space: nowrap;
+}
+
+/* إخفاء scrollbar لكن السحب يشتغل */
+.main-nav::-webkit-scrollbar {
+    display: none;
+}
+
+.main-nav {
+    -ms-overflow-style: none;  /* IE و Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* منع الأزرار من الانكماش */
+.main-nav button {
+    flex-shrink: 0;
+    min-width: fit-content;
+}
+
 .main-nav button { background: transparent; border: 1.5px solid var(--gold); color: var(--gold); padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
 .main-nav button.active { background: var(--gold); color: var(--dark-teal); }
 
@@ -433,152 +460,516 @@ body.dark-mode .achievement-label {
     color: var(--gold) !important;
     transition: color 0.3s ease;
 }
-/* قسم المصحف الورقي */
-#mushaf-view {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
+/* ================= إشعارات الشارات والترقيات ================= */
+
+.badge-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    animation: badgeSlideIn 0.5s ease-out;
+}
+
+.badge-popup {
+    background: linear-gradient(135deg, #2F5F63, #1a3f42);
+    color: var(--gold);
+    padding: 30px 40px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    border: 3px solid var(--gold);
+    min-width: 280px;
+}
+
+.badge-popup.level-up {
+    background: linear-gradient(135deg, #C9B07A, #d4af37);
+    color: var(--dark-teal);
+    border-color: var(--dark-teal);
+}
+
+.badge-emoji {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    animation: badgeBounce 0.6s ease-in-out;
+}
+
+.badge-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.badge-name {
+    font-size: 1.6rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.badge-desc {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+@keyframes badgeSlideIn {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes badgeBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+/* فصل البسملة عن الآيات */
+/* تنسيق البسملة المنفصلة */
+.basmala-separate {
+    display: block;
+    text-align: center;
+    font-size: 2rem;
+    color: var(--gold);
+    font-weight: bold;
+    margin: 20px 0 30px 0;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(201, 176, 122, /* إخفاء البسملة الزرقاء من النص */
+.ayah-text .ayah-item:first-child {
+    font-size: 0 !important;
+    display: inline !important;
+}
+
+/* إخفاء البسملة الزرقاء من النص */
+.ayah-text .ayah-item:first-child {
+    font-size: 0 !important;
+    display: inline !important;
+}
+
+.ayah-text .ayah-item:first-child::after {
+    content: attr(data-clean-text);
+    font-size: 1.7rem;
+}
+
+/* أو الحل الأبسط: */
+.ayah-text span:first-of-type {
+    text-indent: -9999px;
+    display: inline-block;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+}
+/* ==========================================
+   المصحف الورقي - Paper Mushaf
+   ========================================== */
+
+/* ==========================================
+   المصحف الورقي - Paper Mushaf
+   ========================================== */
+
+#paper-mushaf-view {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #f5f5f5;
+    z-index: 9999;
+    flex-direction: column;
 }
 
 .mushaf-header {
+    background: var(--dark-teal);
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: linear-gradient(135deg, var(--dark-teal), var(--gold));
-    border-radius: 15px;
-    color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    flex-shrink: 0;
 }
 
 .mushaf-header h2 {
+    color: var(--gold);
+    font-size: 1.3rem;
     margin: 0;
-    font-size: 1.5rem;
 }
 
-.bookmark-btn {
-    background: rgba(255,255,255,0.2);
-    border: 2px solid white;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 10px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.bookmark-btn.active {
-    background: gold;
-    border-color: gold;
-    transform: scale(1.1);
-}
-
-.mushaf-page-number {
-    text-align: center;
-    font-size: 1.1rem;
+.mushaf-back-btn,
+.mushaf-fullscreen-btn {
+    background: var(--gold);
     color: var(--dark-teal);
-    margin-bottom: 15px;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
     font-weight: bold;
+    font-family: 'Amiri', serif;
 }
 
-.mushaf-container {
+.mushaf-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: #e8e8e8;
+    min-height: 0;
+}
+
+.mushaf-page-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    background: #f5f5f5;
-    touch-action: pan-y;
+    min-height: 0;
+    max-height: 100%;
 }
 
-.mushaf-page-img {
-    width: 100%;
+#mushaf-page-img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
     height: auto;
-    display: block;
-    user-select: none;
-    -webkit-user-select: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border-radius: 5px;
+    background: white;
 }
 
-.mushaf-nav {
+.mushaf-page-loader {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
-    color: white;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(201, 176, 122, 0.3);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.mushaf-nav-btn {
+    background: var(--dark-teal);
+    color: var(--gold);
     border: none;
-    font-size: 2rem;
-    padding: 20px 15px;
+    padding: 15px 12px;
+    font-size: 1.5rem;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s;
-    z-index: 10;
+    flex-shrink: 0;
 }
 
-.mushaf-nav:hover {
-    background: rgba(0,0,0,0.8);
+.mushaf-footer {
+    background: white;
+    padding: 12px 15px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    flex-shrink: 0;
 }
 
-.mushaf-nav.prev {
-    right: 10px;
+.mushaf-page-info {
+    text-align: center;
+    font-size: 1rem;
+    margin-bottom: 8px;
 }
 
-.mushaf-nav.next {
-    left: 10px;
+.mushaf-page-info strong {
+    color: var(--dark-teal);
+    font-size: 1.2rem;
 }
 
 .mushaf-controls {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     justify-content: center;
-    margin-top: 20px;
+    align-items: center;
     flex-wrap: wrap;
 }
 
 .mushaf-controls button {
-    background: var(--dark-teal);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 1rem;
-    transition: all 0.3s;
-}
-
-.mushaf-controls button:hover {
     background: var(--gold);
-    transform: translateY(-2px);
+    color: var(--dark-teal);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    font-family: 'Amiri', serif;
+    font-weight: bold;
 }
 
-.mushaf-controls input {
-    width: 100px;
-    padding: 10px;
-    border: 2px solid var(--dark-teal);
-    border-radius: 10px;
+.mushaf-jump-container {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+#mushaf-page-input {
+    width: 60px;
+    padding: 8px;
+    border: 2px solid var(--gold);
+    border-radius: 6px;
     text-align: center;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
-/* تأثير التقليب */
-.mushaf-page-img.flip-left {
-    animation: flipLeft 0.4s ease-out;
+@media (max-width: 768px) {
+    .mushaf-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    .mushaf-nav-btn {
+        padding: 12px 10px;
+        font-size: 1.2rem;
+    }
+    
+    .mushaf-controls button {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+}
+/* أنيميشن مؤشر الصفحة */
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
 }
 
-.mushaf-page-img.flip-right {
-    animation: flipRight 0.4s ease-out;
+/* تحسين الصورة في ملء الشاشة */
+#mushaf-fullscreen-img {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+/* ==========================================
+   تحسينات الموبايل - Mobile Optimization
+   ========================================== */
+
+/* تصغير حجم الخطوط على الموبايل */
+@media (max-width: 768px) {
+    
+    /* الهيدر */
+    header h1 {
+        font-size: 1.5rem !important;
+    }
+    
+    /* الأزرار العلوية */
+    .main-nav {
+        gap: 4px !important;
+        flex-wrap: wrap !important;
+        padding: 0 5px !important;
+    }
+    
+    .main-nav button {
+        font-size: 0.75rem !important;
+        padding: 5px 10px !important;
+    }
+    
+    /* آية اليوم */
+    .daily-text {
+        font-size: 1.2rem !important;
+        line-height: 1.8 !important;
+        padding: 15px !important;
+    }
+    
+    .daily-card {
+        padding: 15px !important;
+        margin: 10px !important;
+    }
+    
+    /* كروت السور */
+    .surah-grid, .azkar-categories {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        padding: 5px !important;
+    }
+    
+    .surah-card, .category-card {
+        font-size: 0.85rem !important;
+        padding: 12px 8px !important;
+        min-height: 50px !important;
+    }
+    
+    /* الآيات */
+    .ayah-text {
+        font-size: 1.4rem !important;
+        line-height: 2 !important;
+        padding: 15px !important;
+        margin: 5px !important;
+    }
+    
+    /* الأذكار */
+    .zekr-text {
+        font-size: 1.2rem !important;
+        line-height: 1.8 !important;
+    }
+    
+    .zekr-card {
+        padding: 12px !important;
+        margin: 8px !important;
+    }
+    
+    /* السبحة */
+    .sebha-circle {
+        width: 150px !important;
+        height: 150px !important;
+        font-size: 2rem !important;
+    }
+    
+    #sebhaCounter {
+        font-size: 2.5rem !important;
+    }
+    
+    /* مواقيت الصلاة */
+    .prayer-detailed-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    
+    .big-timer {
+        font-size: 2rem !important;
+    }
+    
+    /* القبلة */
+    .compass {
+        width: 160px !important;
+        height: 160px !important;
+    }
+    
+    .qibla-degrees {
+        font-size: 1.5rem !important;
+    }
+    
+    /* الختمة */
+    #khatma-ayahs-display {
+        font-size: 1.3rem !important;
+        line-height: 2.2 !important;
+        padding: 15px !important;
+        max-height: 400px !important;
+    }
+    
+    /* الإنجازات */
+    .achievements-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    
+    .achievement-card {
+        padding: 15px 10px !important;
+    }
+    
+    .achievement-emoji {
+        font-size: 2rem !important;
+    }
+    
+    .achievement-count {
+        font-size: 1.5rem !important;
+    }
+    
+    /* المصحف الورقي */
+    #paper-mushaf-section {
+        padding: 10px !important;
+    }
+    
+    #paper-mushaf-section > div {
+        padding: 15px !important;
+        margin: 10px auto !important;
+    }
+    
+    #paper-mushaf-section h2 {
+        font-size: 1.2rem !important;
+    }
+    
+    #paper-mushaf-section button {
+        font-size: 0.85rem !important;
+        padding: 8px 15px !important;
+    }
+    
+    #mushaf-page-input {
+        width: 60px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    /* منع النص من الخروج */
+    body, div, p, span, h1, h2, h3, h4, h5, h6 {
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    
+    /* منع التمرير الأفقي */
+    body {
+        overflow-x: hidden !important;
+    }
+    
+    .container {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+    }
+    
+    /* القائمة الجانبية */
+    .side-menu {
+        width: 240px !important;
+        left: -260px !important;
+        padding: 20px !important;
+    }
+    
+    .menu-item {
+        margin: 20px 0 !important;
+        font-size: 0.9rem !important;
+    }
 }
 
-@keyframes flipLeft {
-    0% { transform: rotateY(0deg); opacity: 1; }
-    50% { transform: rotateY(-90deg); opacity: 0.5; }
-    100% { transform: rotateY(0deg); opacity: 1; }
+/* للشاشات الصغيرة جداً */
+@media (max-width: 400px) {
+    
+    header h1 {
+        font-size: 1.3rem !important;
+    }
+    
+    .main-nav button {
+        font-size: 0.7rem !important;
+        padding: 4px 8px !important;
+    }
+    
+    .surah-card, .category-card {
+        font-size: 0.8rem !important;
+        padding: 10px 6px !important;
+    }
+    
+    .ayah-text {
+        font-size: 1.2rem !important;
+    }
+    
+    .sebha-circle {
+        width: 130px !important;
+        height: 130px !important;
+    }
+    @media (max-width: 768px) {
+    .main-nav {
+        justify-content: flex-start !important;
+        padding: 10px 10px !important;
+    }
 }
-
-@keyframes flipRight {
-    0% { transform: rotateY(0deg); opacity: 1; }
-    50% { transform: rotateY(90deg); opacity: 0.5; }
-    100% { transform: rotateY(0deg); opacity: 1; }
 }
-
