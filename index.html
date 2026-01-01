@@ -1,12 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <!-- Google tag (gtag.js) -->
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4WXT2RQ0SV"></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-4WXT2RQ0SV');
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>حقيبة المؤمن - الإصدار الهيبة</title>
-    <!-- ✅ Console للموبايل والآيباد -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+    <!-- PWA Manifest -->
+<!-- PWA Support -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="theme-color" content="#2F5F63">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="حقيبة المؤمن">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -49,7 +68,6 @@
     <span>إشعارات النظام</span>
     <button class="menu-tool-btn" onclick="requestNotify()">🔔</button>
 </div>
-
     <div class="menu-item">
         <span>أصوات التنبيه</span>
         <button id="muteBtn" class="menu-tool-btn" onclick="toggleMute()">🔊</button>
@@ -88,12 +106,11 @@
 <div class="quran-menu-wrapper">
     <button id="quranTab" class="active dropbtn" onclick="toggleQuranDropdown(event)">القرآن الكريم ▾</button>
     <div id="quranDropdown" class="dropdown-content">
-        <a href="javascript:void(0)" onclick="selectQuranOption('quran')">📚 المصحف كاملاً</a>
-        <a href="javascript:void(0)" onclick="selectQuranOption('topics')">📑 الفهرس الموضوعي</a>
-        <a href="javascript:void(0)" onclick="selectQuranOption('mushaf')">📖 المصحف الورقي</a>
-    </div>
+    <a href="javascript:void(0)" onclick="selectQuranOption('quran')">المصحف كاملاً</a>
+    <a href="javascript:void(0)" onclick="selectQuranOption('paper-mushaf')">📜 المصحف الورقي</a>
+    <a href="javascript:void(0)" onclick="selectQuranOption('topics')">الفهرس الموضوعي</a>
 </div>
-
+</div>
 
         <button id="azkarTab" onclick="switchMainTab('azkar')">قسم الأذكار</button>
        <div class="quran-menu-wrapper">
@@ -187,32 +204,8 @@
         </div>
         <button onclick="selectQuranOption('quran')" style="margin: 30px auto; display: block; background:var(--gold); color:var(--dark-teal); border:none; padding:12px 25px; border-radius:12px; cursor:pointer; font-family:'Amiri', serif; font-weight:bold;">العودة للمصحف الكامل</button>
     </div>
-<!-- قسم المصحف الورقي -->
-<div id="mushaf-view" style="display:none;">
-    <div class="mushaf-header">
-        <button onclick="closeMushaf()" class="back-btn">↩ رجوع</button>
-        <h2>📖 المصحف الورقي</h2>
-        <button onclick="toggleBookmark()" id="bookmarkBtn" class="bookmark-btn">🔖</button>
-    </div>
-    
-    <div class="mushaf-page-number">
-        <span>صفحة <span id="currentPageNum">1</span> من 569</span>
-    </div>
-    
-    <div class="mushaf-container" id="mushafContainer">
-        <img id="mushafPage" src="" alt="صفحة القرآن" class="mushaf-page-img">
-        
-        <button class="mushaf-nav prev" onclick="prevPage()">→</button>
-        <button class="mushaf-nav next" onclick="nextPage()">←</button>
-    </div>
-    
-    <div class="mushaf-controls">
-        <button onclick="goToBookmark()">الذهاب للعلامة 🔖</button>
-        <input type="number" id="pageInput" placeholder="رقم الصفحة" min="1" max="569">
-        <button onclick="goToPage()">انتقال</button>
-    </div>
-</div>
 
+</div>
 
 <!-- ================= الأذكار ================= -->
 <div id="azkar-section" style="display:none;">
@@ -349,7 +342,7 @@
         </div>
     </div>
 </div>
-<!-- ================= قسم الإنجازات ================= -->
+<!-- ================= قسم الإنجازات ================= --><!-- ================= قسم الإنجازات ================= -->
 <div id="achievements-section" style="display:none; padding:20px;">
     <div style="text-align:center; margin-bottom:20px;">
         <button class="modern-back-btn" onclick="closeAchievements()">↩ العودة</button>
@@ -358,6 +351,38 @@
     <div class="daily-card shadow-lg" style="max-width: 900px; margin: auto;">
         <h2 style="color:var(--gold); text-align:center;">🏆 إنجازاتي الإيمانية</h2>
         
+        <!-- ✨ جديد: المستوى والـ XP -->
+        <div style="background: linear-gradient(135deg, var(--dark-teal), #1a3f42); padding: 20px; border-radius: 15px; margin: 20px 0; color: white; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">⭐</div>
+            <h3 style="margin: 5px 0; color: var(--gold);" id="current-level-title">المستوى 1</h3>
+            <p style="margin: 5px 0; font-size: 1.1rem;" id="current-level-xp">0 XP</p>
+            
+            <!-- شريط تقدم المستوى -->
+            <div style="background: rgba(255,255,255,0.2); height: 15px; border-radius: 10px; margin: 15px auto; max-width: 400px; overflow: hidden;">
+                <div id="level-progress-bar" style="background: var(--gold); height: 100%; width: 0%; transition: 0.5s;"></div>
+            </div>
+            <small id="next-level-text" style="opacity: 0.9;">100 XP للمستوى التالي</small>
+        </div>
+
+        <!-- ✨ جديد: السلسلة اليومية -->
+        <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); padding: 20px; border-radius: 15px; margin: 20px 0; color: white; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🔥</div>
+            <h3 style="margin: 5px 0;">السلسلة اليومية</h3>
+            <p style="font-size: 2.5rem; font-weight: bold; margin: 10px 0;" id="current-streak-display">0</p>
+            <p style="margin: 5px 0; font-size: 0.95rem;">يوم متواصل</p>
+            <small style="opacity: 0.9;">أطول سلسلة: <span id="longest-streak-display">0</span> يوم</small>
+        </div>
+
+        <!-- ✨ جديد: الشارات المحصلة -->
+        <div style="background: white; padding: 20px; border-radius: 15px; margin: 20px 0; border: 2px solid var(--gold);">
+            <h3 style="color: var(--dark-teal); text-align: center; margin-bottom: 15px;">🏅 الشارات المحصلة</h3>
+            <div id="badges-display" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; min-height: 80px;">
+                <p style="color: #999; width: 100%; text-align: center;">لم تحصل على أي شارة بعد</p>
+            </div>
+        </div>
+
+        <hr style="border: 1px solid rgba(201,176,122,0.3); margin: 30px 0;">
+
         <!-- معلومات العضوية -->
         <div style="background: rgba(47,95,99,0.05); padding: 15px; border-radius: 12px; margin: 20px 0; text-align:center;">
             <p style="font-size: 1.1rem; color: var(--dark-teal); margin: 5px;">
@@ -440,6 +465,7 @@
         </div>
     </div>
 </div>
+
 
 
 </div>
@@ -617,11 +643,119 @@
     }
   };
 </script>
+<!-- قسم المصحف الورقي -->
+<div id="paper-mushaf-section" style="display:none; padding: 20px;">
+    
+    <!-- كارد المصحف -->
+<div style="background: linear-gradient(90deg, #4A7C7E 0%, #7A9B7E 25%, #B8A676 50%, #D4B896 75%, #C9B07A 100%);
+ padding: 25px; border-radius: 20px; margin: 20px auto; max-width: 900px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+        
+        <!-- الهيدر -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <button onclick="saveMushafBookmark()" style="background: #F4C430; color: #2F5F63; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; font-family: 'Amiri', serif; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                🔖 محفوظة
+            </button>
+            
+            <h2 style="color: #F4C430; margin: 0; font-size: 1.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                📖 المصحف الورقي
+            </h2>
+            
+            <button onclick="closePaperMushaf()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 20px; border-radius: 12px; font-weight: bold; font-family: 'Amiri', serif; cursor: pointer;">
+                🏠 رجوع
+            </button>
+        </div>
+        
+        <!-- رقم الصفحة -->
+        <div style="text-align: center; color: white; font-size: 1.1rem; margin-bottom: 15px; font-weight: bold;">
+            صفحة <span id="mushaf-current-page">1</span> من 569
+        </div>
+        
+        <!-- منطقة الصورة -->
+        <div id="mushaf-normal-view" style="background: white; border-radius: 15px; padding: 20px; box-shadow: inset 0 4px 8px rgba(0,0,0,0.1); position: relative; min-height: 500px; display: flex; align-items: center; justify-content: center;">
+            
+            <!-- الأزرار الجانبية -->
+            <button onclick="prevMushafPage()" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: #6B5344; color: white; border: none; padding: 20px 15px; border-radius: 12px; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10;">
+                ←
+            </button>
+            
+            <button onclick="nextMushafPage()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #6B5344; color: white; border: none; padding: 20px 15px; border-radius: 12px; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10;">
+                →
+            </button>
+            
+            <!-- الصورة -->
+            <img id="mushaf-page-img" src="" alt="صفحة القرآن" onclick="openFullscreenMushaf()" style="max-width: 100%; max-height: 500px; width: auto; height: auto; box-shadow: 0 8px 20px rgba(0,0,0,0.2); border-radius: 8px; cursor: pointer;">
+            
+            <!-- Loader -->
+            <div id="mushaf-loader" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                <div style="width: 50px; height: 50px; border: 5px solid rgba(244, 196, 48, 0.3); border-top-color: #F4C430; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            </div>
+        </div>
+        
+        <!-- أزرار التحكم السفلية -->
+        <div style="display: flex; gap: 10px; justify-content: center; align-items: center; margin-top: 20px; flex-wrap: wrap;">
+            
+            <button onclick="openFullscreenMushaf()" style="background: #F4C430; color: #2F5F63; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; font-size: 1rem;">
+                ⛶ عرض بملء الشاشة
+            </button>
+            
+            <div style="display: flex; gap: 5px; align-items: center;">
+                <input type="number" id="mushaf-page-input" min="1" max="569" placeholder="رقم" style="width: 80px; padding: 10px; border: 2px solid #F4C430; border-radius: 8px; text-align: center; font-family: 'Amiri', serif; font-weight: bold;">
+                <button onclick="jumpToMushafPage()" style="background: #F4C430; color: #2F5F63; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;">
+                    انتقال
+                </button>
+            </div>
+            
+            <button onclick="loadMushafBookmark()" style="background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
+                🔖 الذهاب للعلامة
+            </button>
+        </div>
+        
+    </div>
+    
+</div>
 
-<script src="script.js"></script>
+<!-- شاشة ملء الشاشة -->
+<div id="mushaf-fullscreen-view" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999;">
+    
+    <!-- زر الخروج -->
+    <button onclick="closeFullscreenMushaf()" style="position: fixed; top: 15px; right: 15px; background: rgba(255,255,255,0.9); color: #333; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; z-index: 100000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;">
+        ×
+    </button>
+    
+    <!-- الصورة -->
+    <div id="mushaf-fullscreen-container" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; touch-action: pan-x;">
+        <img id="mushaf-fullscreen-img" src="" alt="صفحة القرآن" style="max-width: 100%; max-height: 100%; width: auto; height: auto; user-select: none;">
+    </div>
+    
+</div>
 
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+
+
+<script src="script.js?v=5"></script>
+
+
+
+
+
+
+<!-- Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/Quran.github.io/sw.js')
+      .then(reg => console.log('✅ Service Worker registered'))
+      .catch(err => console.log('❌ SW error:', err));
+  });
+}
+</script>
+<!-- اختبار الصور -->
 
 
 </body>
 </html>
-
