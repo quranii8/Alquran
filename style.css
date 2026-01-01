@@ -973,3 +973,30 @@ body.dark-mode .achievement-label {
     }
 }
 }
+/* ================= قسم حفظ القرآن ================= */
+
+.hifz-plan-card:hover {
+    border-color: var(--gold) !important;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(201, 176, 122, 0.3);
+}
+
+.hifz-plan-card.selected {
+    border-color: var(--dark-teal) !important;
+    background: rgba(47, 95, 99, 0.05) !important;
+}
+
+#hifz-ayahs-display {
+    direction: rtl;
+}
+
+/* دعم الوضع المظلم */
+body.dark-mode #hifz-ayahs-display {
+    background: #1a1a1a !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .hifz-plan-card {
+    background: #1a1a1a !important;
+    color: white !important;
+}
