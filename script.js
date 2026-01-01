@@ -1778,3 +1778,1139 @@ function showPageTransition(arrow) {
     // إزالة بعد ثانية
     setTimeout(() => indicator.remove(), 800);
 }
+// ==========================================
+// قسم حفظ القرآن - Hifz System
+// ==========================================
+
+// بيانات الحفظ
+let hifzData = JSON.parse(localStorage.getItem('hifzData')) || {
+    plan: null,
+    startDate: null,
+    currentPage: 1,
+    completedPages: [],
+    reviewedPages: {},
+    currentStreak: 0,
+    longestStreak: 0,
+    lastCompletedDate: null,
+    totalAyat: 0,
+    totalReviews: 0,
+    testScores: [],
+    totalTests: 0,
+    averageScore: 0,
+    earnedBadges: []
+};
+
+// جلب معلومات الصفحة من API
+async function getPageInfo(pageNumber) {
+    try {
+        const response = await fetch(`https://api.alquran.cloud/v1/page/${pageNumber}/quran-uthmani`);
+        const data = await response.json();
+        
+        if (data.code === 200 && data.data.ayahs.length > 0) {
+            const ayahs = data.data.ayahs;
+            const firstAyah = ayahs[0];
+            const lastAyah = ayahs[ayahs.length - 1];
+            
+            return {
+                surah: firstAyah.surah.number,
+                surahName: firstAyah.surah.name,
+                surahEnglishName: firstAyah.surah.englishName,
+                ayahStart: firstAyah.numberInSurah,
+                ayahEnd: lastAyah.numberInSurah,
+                totalAyahs: ayahs.length,
+                ayahs: ayahs
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error('Error fetching page info:', error);
+        return null;
+    }
+}
+
+// اختيار خطة الحفظ
+function selectHifzPlan(plan) {
+    document.querySelectorAll('.hifz-plan-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    event.currentTarget.classList.add('selected');
+    
+    hifzData.plan = plan;
+    hifzData.startDate = new Date().toISOString();
+    hifzData.currentPage = 1;
+    saveHifzData();
+    
+    setTimeout(() => {
+        document.getElementById('hifz-setup').style.display = 'none';
+        document.getElementById('hifz-main').style.display = 'block';
+        loadTodayHifz();
+        updateHifzStats();
+    }, 500);
+}
+
+// تحميل ورد اليوم
+async function loadTodayHifz() {
+    if (!hifzData.plan) {
+        document.getElementById('hifz-setup').style.display = 'block';
+        document.getElementById('hifz-main').style.display = 'none';
+        return;
+    }
+    
+    const currentPage = Math.ceil(hifzData.currentPage);
+    
+    if (currentPage > 604) {
+        document.getElementById('hifz-today-range').innerText = 'مبروك! أتممت حفظ القرآن كاملاً 🎉';
+        document.getElementById('hifz-ayahs-display').innerHTML = `
+            <div style="text-align:center; padding: 40px;">
+                <div style="font-size: 5rem; margin-bottom: 20px;">🎊</div>
+                <h2 style="color:var(--gold); margin-bottom: 15px;">ما شاء الله!</h2>
+                <p style="color:var(--dark-teal); font-size: 1.3rem;">أتممت حفظ القرآن الكريم كاملاً</p>
+                <p style="color:#666; font-size: 1rem; margin-top: 20px;">بارك الله في حفظك وثبتك عليه 💚</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const display = document.getElementById('hifz-ayahs-display');
+    display.innerHTML = '<p style="text-align:center; color:#999;">⏳ جاري تحميل ورد اليوم...</p>';
+    
+    const pageInfo = await getPageInfo(currentPage);
+    
+    if (!pageInfo) {
+        display.innerHTML = '<p style="text-align:center; color:#e74c3c;">تعذر تحميل الورد. تأكد من الاتصال بالإنترنت.</p>';
+        return;
+    }
+    
+    let ayahsToShow = pageInfo.ayahs;
+    if (hifzData.plan === 'quarter') {
+        ayahsToShow = pageInfo.ayahs.slice(0, Math.ceil(pageInfo.totalAyahs / 4));
+    } else if (hifzData.plan === 'half') {
+        ayahsToShow = pageInfo.ayahs.slice(0, Math.ceil(pageInfo.totalAyahs / 2));
+    }
+    
+    document.getElementById('hifz-today-range').innerText = `صفحة ${currentPage} - ${pageInfo.surahName}`;
+    document.getElementById('hifz-today-ayat-count').innerText = ayahsToShow.length;
+    
+    let html = '';
+    
+    if (pageInfo.ayahStart === 1 && pageInfo.surah !== 1 && pageInfo.surah !== 9) {
+        html += `<div style="text-align:center; color:var(--gold); font-size:2rem; margin:20px 0; font-weight:bold;">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
+    }
+    
+    ayahsToShow.forEach((ayah) => {
+        let text = ayah.text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '').trim();
+        
+        if (text.length > 0) {
+            html += `<span class="hifz-ayah">${text}</span> <span style="color:var(--gold); font-weight:bold; font-size:1.2rem; margin:0 8px;">﴿${ayah.numberInSurah}﴾</span> `;
+        }
+    });
+    
+    display.innerHTML = html;
+}
+
+// إتمام ورد اليوم
+async function markTodayComplete() {
+    const today = new Date().toDateString();
+    const currentPage = Math.ceil(hifzData.currentPage);
+    
+    if (hifzData.lastCompletedDate === today) {
+        alert('✅ لقد أتممت ورد اليوم بالفعل!\nبارك الله فيك 🌟');
+        return;
+    }
+    
+    const pageInfo = await getPageInfo(currentPage);
+    if (!pageInfo) {
+        alert('❌ حدث خطأ، حاول مرة أخرى');
+        return;
+    }
+    
+    let ayahsCompleted = pageInfo.totalAyahs;
+    if (hifzData.plan === 'quarter') {
+        ayahsCompleted = Math.ceil(pageInfo.totalAyahs / 4);
+    } else if (hifzData.plan === 'half') {
+        ayahsCompleted = Math.ceil(pageInfo.totalAyahs / 2);
+    }
+    
+    if (!hifzData.completedPages.includes(currentPage)) {
+        hifzData.completedPages.push(currentPage);
+    }
+    hifzData.lastCompletedDate = today;
+    hifzData.totalAyat += ayahsCompleted;
+    
+    updateStreak();
+    
+    if (hifzData.plan === 'quarter') {
+        hifzData.currentPage += 0.25;
+    } else if (hifzData.plan === 'half') {
+        hifzData.currentPage += 0.5;
+    } else {
+        hifzData.currentPage += 1;
+    }
+    
+    saveHifzData();
+    showHifzCelebration();
+    updateHifzStats();
+    checkHifzBadges();
+    
+    setTimeout(() => {
+        loadTodayHifz();
+    }, 2500);
+}
+
+// تحديث السلسلة
+function updateStreak() {
+    const today = new Date();
+    const lastDate = hifzData.lastCompletedDate ? new Date(hifzData.lastCompletedDate) : null;
+    
+    if (!lastDate) {
+        hifzData.currentStreak = 1;
+        hifzData.longestStreak = 1;
+        return;
+    }
+    
+    const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) {
+        hifzData.currentStreak++;
+        if (hifzData.currentStreak > hifzData.longestStreak) {
+            hifzData.longestStreak = hifzData.currentStreak;
+        }
+    } else if (diffDays > 1) {
+        hifzData.currentStreak = 1;
+    }
+}
+
+// تحديث الإحصائيات
+function updateHifzStats() {
+    const completedPages = hifzData.completedPages.length;
+    const totalPages = 604;
+    const progress = Math.min((completedPages / totalPages) * 100, 100);
+    
+    const progressBar = document.getElementById('hifz-total-progress');
+    if (progressBar) {
+        progressBar.style.width = progress.toFixed(1) + '%';
+        if (progress > 5) {
+            progressBar.innerText = progress.toFixed(1) + '%';
+        }
+    }
+    
+    const pagesCount = document.getElementById('hifz-pages-count');
+    if (pagesCount) pagesCount.innerText = completedPages;
+    
+    const daysCount = document.getElementById('hifz-days-count');
+    if (daysCount) daysCount.innerText = hifzData.currentStreak;
+    
+    const ayatCount = document.getElementById('hifz-ayat-count');
+    if (ayatCount) ayatCount.innerText = hifzData.totalAyat;
+    
+    const reviewsCount = document.getElementById('hifz-reviews-count');
+    if (reviewsCount) reviewsCount.innerText = hifzData.totalReviews;
+    
+    const avgScore = document.getElementById('hifz-average-score');
+    if (avgScore) avgScore.innerText = hifzData.averageScore + '%';
+    
+    const badgesCount = document.getElementById('hifz-badges-count');
+    if (badgesCount && hifzData.earnedBadges) {
+        badgesCount.innerText = hifzData.earnedBadges.length;
+    }
+}
+
+// احتفالية
+function showHifzCelebration() {
+    const celebration = document.createElement('div');
+    celebration.className = 'badge-notification';
+    celebration.innerHTML = `
+        <div class="badge-popup" style="background: linear-gradient(135deg, #27ae60, #2ecc71); color: white;">
+            <div class="badge-emoji">🎉</div>
+            <div class="badge-title">أحسنت!</div>
+            <div class="badge-name">أتممت ورد اليوم</div>
+            <div class="badge-desc">بارك الله في حفظك 💚</div>
+        </div>
+    `;
+    document.body.appendChild(celebration);
+    
+    playNotify();
+    
+    setTimeout(() => celebration.remove(), 3000);
+}
+
+// حفظ البيانات
+function saveHifzData() {
+    localStorage.setItem('hifzData', JSON.stringify(hifzData));
+    
+    if (typeof window.saveToCloud === 'function') {
+        window.saveToCloud('hifz', hifzData);
+    }
+}
+
+// تحديث دالة switchMainTab لدعم قسم الحفظ
+const originalSwitchMainTab = switchMainTab;
+switchMainTab = function(t) {
+    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+    const activeTab = document.getElementById(t + 'Tab');
+    if (activeTab) activeTab.classList.add('active');
+
+    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section', 'achievements-section', 'hifz-section'];
+    
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
+    });
+    
+    if (t === 'qibla' && typeof getQibla === 'function') getQibla();
+    if (t === 'prayer' && typeof fetchPrayers === 'function') fetchPrayers();
+    if (t === 'khatma' && typeof updateKhatmaUI === 'function') updateKhatmaUI();
+    if (t === 'hifz') initHifzSection();
+    
+    if (t === 'quran') {
+        const fullView = document.getElementById('full-quran-view');
+        const topicsView = document.getElementById('topics-view');
+        const quranView = document.getElementById('quran-view');
+
+        if (fullView) fullView.style.display = 'block';
+        if (topicsView) topicsView.style.display = 'none';
+        if (quranView) quranView.style.display = 'none';
+    }
+    
+    if(t === 'sebha') {
+        document.getElementById('sebha-categories').style.display = 'grid';
+        document.getElementById('sebha-main-view').style.display = 'none';
+    }
+};
+
+// تهيئة قسم الحفظ
+function initHifzSection() {
+    if (hifzData.plan) {
+        document.getElementById('hifz-setup').style.display = 'none';
+        document.getElementById('hifz-main').style.display = 'block';
+        loadTodayHifz();
+        updateHifzStats();
+    } else {
+        document.getElementById('hifz-setup').style.display = 'block';
+        document.getElementById('hifz-main').style.display = 'none';
+    }
+}
+// ==========================================
+// نظام المراجعة الذكية
+// ==========================================
+
+function getPagesNeedingReview() {
+    const today = new Date();
+    const needReview = [];
+    
+    hifzData.completedPages.forEach(pageNum => {
+        const lastReview = hifzData.reviewedPages[pageNum];
+        
+        if (!lastReview) {
+            needReview.push({ page: pageNum, priority: 10 });
+        } else {
+            const reviewDate = new Date(lastReview);
+            const daysSinceReview = Math.floor((today - reviewDate) / (1000 * 60 * 60 * 24));
+            
+            if (daysSinceReview >= 7) {
+                needReview.push({ page: pageNum, priority: 5 });
+            } else if (daysSinceReview >= 3) {
+                needReview.push({ page: pageNum, priority: 3 });
+            } else if (daysSinceReview >= 1) {
+                needReview.push({ page: pageNum, priority: 1 });
+            }
+        }
+    });
+    
+    needReview.sort((a, b) => b.priority - a.priority);
+    return needReview;
+}
+
+function selectReviewPages(count = 3) {
+    const needReview = getPagesNeedingReview();
+    return needReview.slice(0, count);
+}
+
+async function startReviewMode() {
+    const reviewPages = selectReviewPages(3);
+    
+    if (reviewPages.length === 0) {
+        alert('🎉 ممتاز!\nلا توجد صفحات تحتاج مراجعة حالياً');
+        return;
+    }
+    
+    document.getElementById('hifz-main').style.display = 'none';
+    
+    let reviewSection = document.getElementById('hifz-review');
+    if (!reviewSection) {
+        reviewSection = createReviewSection();
+        document.getElementById('hifz-section').appendChild(reviewSection);
+    }
+    
+    reviewSection.style.display = 'block';
+    displayReviewPages(reviewPages);
+}
+
+function createReviewSection() {
+    const section = document.createElement('div');
+    section.id = 'hifz-review';
+    section.style.display = 'none';
+    section.innerHTML = `
+        <div class="daily-card" style="max-width: 800px; margin: 20px auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: var(--gold); margin: 0;">🔁 المراجعة اليومية</h3>
+                <button onclick="closeReviewMode()" class="modern-back-btn">↩ رجوع</button>
+            </div>
+            
+            <div id="review-info" style="background: rgba(201, 176, 122, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
+                <p style="color: var(--dark-teal); font-weight: bold; margin: 5px 0;">مراجعة <span id="review-count">0</span> صفحات</p>
+                <small style="color: #666;">راجع الآيات وتأكد من حفظها</small>
+            </div>
+            
+            <div id="review-pages-container"></div>
+        </div>
+    `;
+    return section;
+}
+
+async function displayReviewPages(reviewPages) {
+    const container = document.getElementById('review-pages-container');
+    document.getElementById('review-count').innerText = reviewPages.length;
+    
+    container.innerHTML = '<p style="text-align:center; color:#999;">⏳ جاري التحميل...</p>';
+    
+    let html = '';
+    
+    for (let i = 0; i < reviewPages.length; i++) {
+        const item = reviewPages[i];
+        const pageInfo = await getPageInfo(item.page);
+        
+        if (pageInfo) {
+            const lastReview = hifzData.reviewedPages[item.page];
+            const daysSince = lastReview ? 
+                Math.floor((new Date() - new Date(lastReview)) / (1000 * 60 * 60 * 24)) : 
+                'لم تتم المراجعة';
+            
+            html += `
+                <div class="review-page-card" style="background: white; border: 2px solid var(--gold); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <h4 style="color: var(--dark-teal); margin: 0 0 5px 0;">صفحة ${item.page}</h4>
+                            <small style="color: #666;">${pageInfo.surahName} - ${pageInfo.totalAyahs} آيات</small>
+                        </div>
+                        <div style="text-align: left;">
+                            <div style="font-size: 0.85rem; color: #999;">آخر مراجعة:</div>
+                            <div style="font-size: 0.9rem; color: var(--gold); font-weight: bold;">${daysSince === 'لم تتم المراجعة' ? daysSince : daysSince + ' يوم'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="review-ayahs" style="background: #f9f9f9; padding: 20px; border-radius: 12px; font-size: 1.5rem; line-height: 2.3; text-align: justify; max-height: 300px; overflow-y: auto; font-family: 'Amiri', serif; margin-bottom: 15px;">
+                        ${generateAyahsHTML(pageInfo.ayahs, pageInfo)}
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button onclick="markPageReviewed(${item.page})" style="background: var(--dark-teal); color: var(--gold); border: none; padding: 10px 25px; border-radius: 20px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
+                            ✅ راجعت هذه الصفحة
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    container.innerHTML = html;
+}
+
+function generateAyahsHTML(ayahs, pageInfo) {
+    let html = '';
+    
+    if (pageInfo.ayahStart === 1 && pageInfo.surah !== 1 && pageInfo.surah !== 9) {
+        html += `<div style="text-align:center; color:var(--gold); font-size:1.8rem; margin:15px 0; font-weight:bold;">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
+    }
+    
+    ayahs.forEach((ayah) => {
+        let text = ayah.text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '').trim();
+        html += `<span>${text}</span> <span style="color:var(--gold); font-weight:bold; font-size:1.1rem; margin:0 8px;">﴿${ayah.numberInSurah}﴾</span> `;
+    });
+    
+    return html;
+}
+
+function markPageReviewed(pageNumber) {
+    hifzData.reviewedPages[pageNumber] = new Date().toISOString();
+    hifzData.totalReviews++;
+    saveHifzData();
+    
+    event.target.closest('.review-page-card').style.opacity = '0.3';
+    event.target.disabled = true;
+    event.target.innerText = '✅ تمت المراجعة';
+    
+    playNotify();
+    
+    setTimeout(() => {
+        const remaining = document.querySelectorAll('.review-page-card button:not(:disabled)').length;
+        if (remaining === 0) {
+            showReviewCompleteCelebration();
+        }
+    }, 500);
+}
+
+function showReviewCompleteCelebration() {
+    const celebration = document.createElement('div');
+    celebration.className = 'badge-notification';
+    celebration.innerHTML = `
+        <div class="badge-popup" style="background: linear-gradient(135deg, #3498db, #2980b9); color: white;">
+            <div class="badge-emoji">🎊</div>
+            <div class="badge-title">ممتاز!</div>
+            <div class="badge-name">أتممت المراجعة اليومية</div>
+            <div class="badge-desc">ثبّت الله حفظك 💙</div>
+        </div>
+    `;
+    document.body.appendChild(celebration);
+    
+    playNotify();
+    
+    setTimeout(() => {
+        celebration.remove();
+        closeReviewMode();
+    }, 3000);
+    
+    checkHifzBadges();
+}
+
+function closeReviewMode() {
+    document.getElementById('hifz-review').style.display = 'none';
+    document.getElementById('hifz-main').style.display = 'block';
+    updateHifzStats();
+}
+
+// ==========================================
+// نظام التسميع
+// ==========================================
+
+let currentTest = null;
+
+async function startTestMode() {
+    if (hifzData.completedPages.length === 0) {
+        alert('⚠️ لا توجد صفحات محفوظة للتسميع!\nاحفظ صفحات أولاً ثم جرّب التسميع');
+        return;
+    }
+    
+    const randomPage = hifzData.completedPages[Math.floor(Math.random() * hifzData.completedPages.length)];
+    showDifficultySelection(randomPage);
+}
+
+function showDifficultySelection(pageNumber) {
+    const modal = document.createElement('div');
+    modal.id = 'difficulty-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 20px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <h3 style="color: var(--dark-teal); text-align: center; margin-bottom: 25px;">🎯 اختر مستوى الصعوبة</h3>
+            
+            <div style="display: grid; gap: 15px;">
+                <div onclick="startTestWithDifficulty(${pageNumber}, 'easy')" style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 20px; border-radius: 15px; cursor: pointer; text-align: center; transition: 0.3s;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🌱</div>
+                    <h4 style="margin: 5px 0;">سهل</h4>
+                    <p style="margin: 5px 0; font-size: 0.9rem; opacity: 0.9;">إخفاء 20% من الكلمات</p>
+                </div>
+                
+                <div onclick="startTestWithDifficulty(${pageNumber}, 'medium')" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white; padding: 20px; border-radius: 15px; cursor: pointer; text-align: center; transition: 0.3s;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">⚡</div>
+                    <h4 style="margin: 5px 0;">متوسط</h4>
+                    <p style="margin: 5px 0; font-size: 0.9rem; opacity: 0.9;">إخفاء 50% من الكلمات</p>
+                </div>
+                
+                <div onclick="startTestWithDifficulty(${pageNumber}, 'hard')" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 20px; border-radius: 15px; cursor: pointer; text-align: center; transition: 0.3s;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🔥</div>
+                    <h4 style="margin: 5px 0;">صعب</h4>
+                    <p style="margin: 5px 0; font-size: 0.9rem; opacity: 0.9;">إخفاء 80% من الكلمات</p>
+                </div>
+            </div>
+            
+            <button onclick="document.getElementById('difficulty-modal').remove()" style="background: #95a5a6; color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; margin-top: 20px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
+                إلغاء
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+async function startTestWithDifficulty(pageNumber, difficulty) {
+    const modal = document.getElementById('difficulty-modal');
+    if (modal) modal.remove();
+    
+    const pageInfo = await getPageInfo(pageNumber);
+    if (!pageInfo) {
+        alert('❌ حدث خطأ في تحميل الصفحة');
+        return;
+    }
+    
+    document.getElementById('hifz-main').style.display = 'none';
+    
+    let testSection = document.getElementById('hifz-test');
+    if (!testSection) {
+        testSection = createTestSection();
+        document.getElementById('hifz-section').appendChild(testSection);
+    }
+    
+    testSection.style.display = 'block';
+    setupTest(pageInfo, difficulty);
+}
+
+function createTestSection() {
+    const section = document.createElement('div');
+    section.id = 'hifz-test';
+    section.style.display = 'none';
+    section.innerHTML = `
+        <div class="daily-card" style="max-width: 900px; margin: 20px auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="color: var(--gold); margin: 0;">✍️ وضع التسميع</h3>
+                <button onclick="cancelTest()" class="modern-back-btn">↩ إلغاء</button>
+            </div>
+            
+            <div id="test-info" style="background: rgba(201, 176, 122, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-around; text-align: center; flex-wrap: wrap; gap: 15px;">
+                    <div>
+                        <div style="color: #666; font-size: 0.85rem;">الصفحة</div>
+                        <div id="test-page-num" style="color: var(--dark-teal); font-weight: bold; font-size: 1.2rem;">-</div>
+                    </div>
+                    <div>
+                        <div style="color: #666; font-size: 0.85rem;">المستوى</div>
+                        <div id="test-difficulty" style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">-</div>
+                    </div>
+                    <div>
+                        <div style="color: #666; font-size: 0.85rem;">الكلمات المخفية</div>
+                        <div id="test-hidden-count" style="color: var(--dark-teal); font-weight: bold; font-size: 1.2rem;">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="test-ayahs-display" style="background: white; padding: 25px; border-radius: 15px; border: 2px solid var(--gold); font-size: 1.6rem; line-height: 2.8; text-align: justify; max-height: 500px; overflow-y: auto; font-family: 'Amiri', serif;"></div>
+            
+            <div style="text-align: center; margin-top: 25px;">
+                <button onclick="checkTestAnswers()" style="background: var(--dark-teal); color: var(--gold); border: none; padding: 15px 40px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; box-shadow: 0 4px 15px rgba(47, 95, 99, 0.3);">
+                    ✅ تحقق من الإجابات
+                </button>
+            </div>
+        </div>
+    `;
+    return section;
+}
+
+function setupTest(pageInfo, difficulty) {
+    const hidePercentage = difficulty === 'easy' ? 0.2 : difficulty === 'medium' ? 0.5 : 0.8;
+    
+    document.getElementById('test-page-num').innerText = `صفحة ${Math.ceil(hifzData.currentPage)}`;
+    
+    const difficultyText = difficulty === 'easy' ? '🌱 سهل' : difficulty === 'medium' ? '⚡ متوسط' : '🔥 صعب';
+    document.getElementById('test-difficulty').innerText = difficultyText;
+    
+    const { html, hiddenWords } = processAyahsForTest(pageInfo, hidePercentage);
+    
+    document.getElementById('test-hidden-count').innerText = hiddenWords.length;
+    document.getElementById('test-ayahs-display').innerHTML = html;
+    
+    currentTest = {
+        page: Math.ceil(hifzData.currentPage),
+        difficulty: difficulty,
+        hiddenWords: hiddenWords,
+        pageInfo: pageInfo
+    };
+}
+
+function processAyahsForTest(pageInfo, hidePercentage) {
+    let html = '';
+    const hiddenWords = [];
+    let wordIndex = 0;
+    
+    if (pageInfo.ayahStart === 1 && pageInfo.surah !== 1 && pageInfo.surah !== 9) {
+        html += `<div style="text-align:center; color:var(--gold); font-size:1.8rem; margin:15px 0; font-weight:bold;">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
+    }
+    
+    pageInfo.ayahs.forEach((ayah) => {
+        let text = ayah.text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '').trim();
+        const words = text.split(' ');
+        
+        words.forEach(word => {
+            if (word.trim().length > 0) {
+                if (Math.random() < hidePercentage && word.length > 2) {
+                    const id = `word-${wordIndex}`;
+                    hiddenWords.push({ id: id, word: word.trim() });
+                    html += `<input type="text" id="${id}" class="test-input" style="width: ${word.length * 20}px; min-width: 80px; max-width: 200px; border: none; border-bottom: 2px dashed var(--gold); background: rgba(201, 176, 122, 0.1); padding: 2px 8px; margin: 0 3px; text-align: center; font-family: 'Amiri', serif; font-size: 1.6rem;" placeholder="..." /> `;
+                } else {
+                    html += `<span>${word}</span> `;
+                }
+                wordIndex++;
+            }
+        });
+        
+        html += `<span style="color:var(--gold); font-weight:bold; font-size:1.2rem; margin:0 8px;">﴿${ayah.numberInSurah}﴾</span> `;
+    });
+    
+    return { html, hiddenWords };
+}
+
+function checkTestAnswers() {
+    if (!currentTest) return;
+    
+    let correct = 0;
+    let wrong = 0;
+    
+    currentTest.hiddenWords.forEach(item => {
+        const input = document.getElementById(item.id);
+        const userAnswer = input.value.trim();
+        const correctAnswer = item.word.trim();
+        
+        if (userAnswer === correctAnswer || removeArabicDiacritics(userAnswer) === removeArabicDiacritics(correctAnswer)) {
+            input.style.background = 'rgba(46, 204, 113, 0.2)';
+            input.style.borderBottom = '2px solid #27ae60';
+            correct++;
+        } else {
+            input.style.background = 'rgba(231, 76, 60, 0.2)';
+            input.style.borderBottom = '2px solid #e74c3c';
+            input.value = correctAnswer;
+            wrong++;
+        }
+        input.disabled = true;
+    });
+    
+    const total = currentTest.hiddenWords.length;
+    const score = Math.round((correct / total) * 100);
+    
+    hifzData.testScores.push({
+        date: new Date().toISOString(),
+        page: currentTest.page,
+        score: score,
+        correct: correct,
+        wrong: wrong,
+        total: total,
+        difficulty: currentTest.difficulty
+    });
+    hifzData.totalTests++;
+    
+    const totalScore = hifzData.testScores.reduce((sum, test) => sum + test.score, 0);
+    hifzData.averageScore = Math.round(totalScore / hifzData.testScores.length);
+    
+    saveHifzData();
+    showTestResult(score, correct, wrong, total);
+    checkHifzBadges();
+}
+
+function removeArabicDiacritics(text) {
+    return text.replace(/[\u064B-\u0652\u0670]/g, '');
+}
+
+function showTestResult(score, correct, wrong, total) {
+    const resultModal = document.createElement('div');
+    resultModal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10001;
+    `;
+    
+    const emoji = score >= 90 ? '🌟' : score >= 70 ? '👍' : score >= 50 ? '💪' : '📖';
+    const message = score >= 90 ? 'ممتاز!' : score >= 70 ? 'جيد جداً!' : score >= 50 ? 'جيد!' : 'راجع أكثر';
+    const color = score >= 70 ? '#27ae60' : score >= 50 ? '#f39c12' : '#e74c3c';
+    
+    resultModal.innerHTML = `
+        <div style="background: white; padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
+            <div style="font-size: 5rem; margin-bottom: 20px;">${emoji}</div>
+            <h2 style="color: ${color}; margin-bottom: 15px;">${message}</h2>
+            <div style="font-size: 3rem; font-weight: bold; color: var(--dark-teal); margin: 20px 0;">${score}%</div>
+            
+            <div style="display: flex; justify-content: space-around; margin: 25px 0; padding: 20px; background: #f9f9f9; border-radius: 12px;">
+                <div>
+                    <div style="color: #27ae60; font-size: 2rem; font-weight: bold;">${correct}</div>
+                    <div style="color: #666; font-size: 0.9rem;">صحيح</div>
+                </div>
+                <div>
+                    <div style="color: #e74c3c; font-size: 2rem; font-weight: bold;">${wrong}</div>
+                    <div style="color: #666; font-size: 0.9rem;">خطأ</div>
+                </div>
+                <div>
+                    <div style="color: var(--gold); font-size: 2rem; font-weight: bold;">${total}</div>
+                    <div style="color: #666; font-size: 0.9rem;">المجموع</div>
+                </div>
+            </div>
+            
+            <button onclick="closeTestResult()" style="background: var(--dark-teal); color: white; border: none; padding: 15px 30px; border-radius: 25px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; font-size: 1.1rem; width: 100%;">
+                حسناً
+            </button>
+        </div>
+    `;
+    
+    resultModal.id = 'test-result-modal';
+    document.body.appendChild(resultModal);
+    
+    playNotify();
+}
+
+function closeTestResult() {
+    const modal = document.getElementById('test-result-modal');
+    if (modal) modal.remove();
+    cancelTest();
+}
+
+function cancelTest() {
+    document.getElementById('hifz-test').style.display = 'none';
+    document.getElementById('hifz-main').style.display = 'block';
+    currentTest = null;
+    updateHifzStats();
+}
+// ==========================================
+// شارات وإنجازات الحفظ
+// ==========================================
+
+const hifzBadges = {
+    first_page: {
+        id: 'first_page',
+        name: 'البداية المباركة',
+        emoji: '🌱',
+        description: 'حفظ أول صفحة من القرآن',
+        condition: (data) => data.completedPages.length >= 1
+    },
+    juz_30: {
+        id: 'juz_30',
+        name: 'حافظ جزء عم',
+        emoji: '📖',
+        description: 'إتمام حفظ الجزء الثلاثين',
+        condition: (data) => data.completedPages.filter(p => p >= 582).length >= 22
+    },
+    streak_7: {
+        id: 'streak_7',
+        name: 'النار المشتعلة',
+        emoji: '🔥',
+        description: '7 أيام متواصلة في الحفظ',
+        condition: (data) => data.currentStreak >= 7
+    },
+    streak_30: {
+        id: 'streak_30',
+        name: 'المثابر',
+        emoji: '⚡',
+        description: '30 يوم متواصل في الحفظ',
+        condition: (data) => data.currentStreak >= 30
+    },
+    streak_100: {
+        id: 'streak_100',
+        name: 'الصامد',
+        emoji: '💪',
+        description: '100 يوم متواصل - إنجاز نادر!',
+        condition: (data) => data.currentStreak >= 100
+    },
+    pages_50: {
+        id: 'pages_50',
+        name: 'الطالب المجتهد',
+        emoji: '📚',
+        description: 'حفظ 50 صفحة من القرآن',
+        condition: (data) => data.completedPages.length >= 50
+    },
+    pages_100: {
+        id: 'pages_100',
+        name: 'النجم الساطع',
+        emoji: '🌟',
+        description: 'حفظ 100 صفحة من القرآن',
+        condition: (data) => data.completedPages.length >= 100
+    },
+    pages_300: {
+        id: 'pages_300',
+        name: 'الماسة النفيسة',
+        emoji: '💎',
+        description: 'حفظ 300 صفحة - نصف القرآن!',
+        condition: (data) => data.completedPages.length >= 300
+    },
+    full_quran: {
+        id: 'full_quran',
+        name: 'حافظ القرآن',
+        emoji: '👑',
+        description: 'إتمام حفظ القرآن الكريم كاملاً',
+        condition: (data) => data.completedPages.length >= 604
+    },
+    perfect_test: {
+        id: 'perfect_test',
+        name: 'الدقة المثالية',
+        emoji: '🎯',
+        description: 'الحصول على 100% في التسميع',
+        condition: (data) => data.testScores.some(t => t.score === 100)
+    },
+    reviews_50: {
+        id: 'reviews_50',
+        name: 'المراجع النشط',
+        emoji: '🔁',
+        description: 'إتمام 50 مراجعة',
+        condition: (data) => data.totalReviews >= 50
+    },
+    hard_test: {
+        id: 'hard_test',
+        name: 'المتحدي الشجاع',
+        emoji: '🦁',
+        description: 'اجتياز اختبار صعب بنجاح (70%+)',
+        condition: (data) => data.testScores.some(t => t.difficulty === 'hard' && t.score >= 70)
+    }
+};
+
+function checkHifzBadges() {
+    if (!hifzData.earnedBadges) {
+        hifzData.earnedBadges = [];
+    }
+    
+    const newBadges = [];
+    
+    Object.values(hifzBadges).forEach(badge => {
+        if (!hifzData.earnedBadges.includes(badge.id)) {
+            if (badge.condition(hifzData)) {
+                hifzData.earnedBadges.push(badge.id);
+                newBadges.push(badge);
+            }
+        }
+    });
+    
+    newBadges.forEach((badge, index) => {
+        setTimeout(() => {
+            showHifzBadgeNotification(badge);
+        }, index * 2000);
+    });
+    
+    if (newBadges.length > 0) {
+        saveHifzData();
+    }
+}
+
+function showHifzBadgeNotification(badge) {
+    const notification = document.createElement('div');
+    notification.className = 'badge-notification';
+    notification.innerHTML = `
+        <div class="badge-popup" style="background: linear-gradient(135deg, var(--dark-teal), #1a3f42); color: white; animation: slideInBounce 0.6s ease;">
+            <div class="badge-emoji" style="font-size: 4rem; margin-bottom: 15px;">${badge.emoji}</div>
+            <div class="badge-title" style="font-size: 1.3rem; color: var(--gold); font-weight: bold; margin-bottom: 10px;">شارة جديدة!</div>
+            <div class="badge-name" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 10px;">${badge.name}</div>
+            <div class="badge-desc" style="font-size: 0.95rem; opacity: 0.9;">${badge.description}</div>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    playNotify();
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+    }, 4000);
+}
+
+function showMyHifzBadges() {
+    if (!hifzData.earnedBadges || hifzData.earnedBadges.length === 0) {
+        alert('🎯 لم تكتسب أي شارات بعد!\nاستمر في الحفظ والمراجعة لكسب الشارات');
+        return;
+    }
+    
+    let badgesHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 10000; overflow-y: auto; padding: 20px;" onclick="this.remove()">
+            <div onclick="event.stopPropagation()" style="background: white; padding: 30px; border-radius: 20px; max-width: 700px; width: 95%; max-height: 90vh; overflow-y: auto;">
+                <h2 style="color: var(--dark-teal); text-align: center; margin-bottom: 25px;">🏆 شاراتي في الحفظ</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+    `;
+    
+    hifzData.earnedBadges.forEach(badgeId => {
+        const badge = hifzBadges[badgeId];
+        if (badge) {
+            badgesHTML += `
+                <div style="background: linear-gradient(135deg, var(--dark-teal), #1a3f42); color: white; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">${badge.emoji}</div>
+                    <div style="font-weight: bold; margin-bottom: 5px; color: var(--gold);">${badge.name}</div>
+                    <small style="font-size: 0.8rem; opacity: 0.9;">${badge.description}</small>
+                </div>
+            `;
+        }
+    });
+    
+    badgesHTML += `
+                </div>
+                <button onclick="this.closest('div').parentElement.remove()" style="background: var(--dark-teal); color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; margin-top: 25px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
+                    إغلاق
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', badgesHTML);
+}
+
+// ==========================================
+// الإعدادات
+// ==========================================
+
+function openHifzSettings() {
+    document.getElementById('hifz-main').style.display = 'none';
+    
+    let settingsSection = document.getElementById('hifz-settings');
+    if (!settingsSection) {
+        settingsSection = createSettingsSection();
+        document.getElementById('hifz-section').appendChild(settingsSection);
+    }
+    
+    settingsSection.style.display = 'block';
+    loadSettingsData();
+}
+
+function createSettingsSection() {
+    const section = document.createElement('div');
+    section.id = 'hifz-settings';
+    section.style.display = 'none';
+    section.innerHTML = `
+        <div class="daily-card" style="max-width: 700px; margin: 20px auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3 style="color: var(--gold); margin: 0;">⚙️ إعدادات الحفظ</h3>
+                <button onclick="closeHifzSettings()" class="modern-back-btn">↩ رجوع</button>
+            </div>
+            
+            <div style="background: rgba(201, 176, 122, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                <h4 style="color: var(--dark-teal); margin-bottom: 15px;">📖 خطة الحفظ</h4>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">الخطة الحالية: <strong id="current-plan-text">-</strong></p>
+                
+                <select id="plan-select" style="width: 100%; padding: 12px; border: 2px solid var(--gold); border-radius: 10px; font-family: 'Amiri', serif; font-size: 1rem; margin-bottom: 15px;">
+                    <option value="quarter">🌱 ربع صفحة يومياً (≈ 3 آيات)</option>
+                    <option value="half">🌿 نصف صفحة يومياً (≈ 6 آيات)</option>
+                    <option value="full">🌳 صفحة كاملة يومياً (≈ 12 آية)</option>
+                </select>
+                
+                <button onclick="changePlan()" style="background: var(--dark-teal); color: var(--gold); border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; width: 100%;">
+                    تحديث الخطة
+                </button>
+            </div>
+            
+            <div style="background: rgba(201, 176, 122, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                <h4 style="color: var(--dark-teal); margin-bottom: 15px;">📊 الإحصائيات التفصيلية</h4>
+                
+                <div style="display: grid; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">تاريخ البداية:</span>
+                        <strong id="stats-start-date" style="color: var(--dark-teal);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">مدة الحفظ:</span>
+                        <strong id="stats-duration" style="color: var(--dark-teal);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">أطول سلسلة:</span>
+                        <strong id="stats-longest-streak" style="color: var(--dark-teal);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">إجمالي الاختبارات:</span>
+                        <strong id="stats-total-tests" style="color: var(--dark-teal);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">أعلى درجة:</span>
+                        <strong id="stats-best-score" style="color: var(--gold);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">الشارات المكتسبة:</span>
+                        <strong id="stats-badges" style="color: var(--gold);">-</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: rgba(231, 76, 60, 0.1); padding: 20px; border-radius: 15px; border: 2px solid #e74c3c;">
+                <h4 style="color: #e74c3c; margin-bottom: 15px;">⚠️ منطقة الخطر</h4>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">إعادة تعيين كل البيانات (لا يمكن التراجع)</p>
+                
+                <button onclick="resetHifzData()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; width: 100%;">
+                    🗑️ مسح كل البيانات
+                </button>
+            </div>
+        </div>
+    `;
+    return section;
+}
+
+function loadSettingsData() {
+    const planText = {
+        'quarter': '🌱 ربع صفحة يومياً',
+        'half': '🌿 نصف صفحة يومياً',
+        'full': '🌳 صفحة كاملة يومياً'
+    };
+    document.getElementById('current-plan-text').innerText = planText[hifzData.plan] || '-';
+    document.getElementById('plan-select').value = hifzData.plan;
+    
+    if (hifzData.startDate) {
+        const startDate = new Date(hifzData.startDate);
+        document.getElementById('stats-start-date').innerText = startDate.toLocaleDateString('ar-SA');
+        
+        const days = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+        document.getElementById('stats-duration').innerText = days + ' يوم';
+    }
+    
+    document.getElementById('stats-longest-streak').innerText = (hifzData.longestStreak || 0) + ' يوم 🔥';
+    document.getElementById('stats-total-tests').innerText = (hifzData.totalTests || 0);
+    
+    const bestScore = hifzData.testScores && hifzData.testScores.length > 0 
+        ? Math.max(...hifzData.testScores.map(t => t.score))
+        : 0;
+    document.getElementById('stats-best-score').innerText = bestScore + '%';
+    
+    const badgesCount = hifzData.earnedBadges ? hifzData.earnedBadges.length : 0;
+    document.getElementById('stats-badges').innerText = badgesCount + ' 🏆';
+}
+
+function changePlan() {
+    const newPlan = document.getElementById('plan-select').value;
+    
+    if (confirm('هل أنت متأكد من تغيير الخطة?\n\n⚠️ سيتم الاحتفاظ بتقدمك الحالي')) {
+        hifzData.plan = newPlan;
+        saveHifzData();
+        
+        alert('✅ تم تحديث الخطة بنجاح!');
+        loadSettingsData();
+    }
+}
+
+function resetHifzData() {
+    if (confirm('⚠️ تحذير!\n\nسيتم مسح كل بيانات الحفظ:\n- الصفحات المحفوظة\n- السلسلة اليومية\n- الاختبارات والمراجعات\n- الشارات المكتسبة\n\nهل أنت متأكد تماماً؟')) {
+        if (confirm('⚠️ تأكيد نهائي!\n\nلا يمكن التراجع عن هذا الإجراء\nهل تريد المتابعة؟')) {
+            hifzData = {
+                plan: null,
+                startDate: null,
+                currentPage: 1,
+                completedPages: [],
+                reviewedPages: {},
+                currentStreak: 0,
+                longestStreak: 0,
+                lastCompletedDate: null,
+                totalAyat: 0,
+                totalReviews: 0,
+                testScores: [],
+                totalTests: 0,
+                averageScore: 0,
+                earnedBadges: []
+            };
+            
+            saveHifzData();
+            
+            alert('✅ تم مسح كل البيانات\nيمكنك البدء من جديد');
+            
+            closeHifzSettings();
+            document.getElementById('hifz-main').style.display = 'none';
+            document.getElementById('hifz-setup').style.display = 'block';
+        }
+    }
+}
+
+function closeHifzSettings() {
+    document.getElementById('hifz-settings').style.display = 'none';
+    document.getElementById('hifz-main').style.display = 'block';
+    updateHifzStats();
+}
