@@ -2470,7 +2470,12 @@ function checkTestAnswers() {
         const userAnswer = input.value.trim();
         const correctAnswer = item.word.trim();
         
-        if (userAnswer === correctAnswer || removeArabicDiacritics(userAnswer) === removeArabicDiacritics(correctAnswer)) {
+        // مقارنة بدون تشكيل - الإجابة صحيحة حتى لو بدون تشكيل
+        const userClean = removeArabicDiacritics(userAnswer);
+        const correctClean = removeArabicDiacritics(correctAnswer);
+        
+        if (userClean === correctClean) {
+
             input.style.background = 'rgba(46, 204, 113, 0.2)';
             input.style.borderBottom = '2px solid #27ae60';
             correct++;
