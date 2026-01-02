@@ -206,16 +206,18 @@ function switchMainTab(tabName) {
     });
     
     // إظهار القسم المطلوب
-    const targetSection = sections[tabName];
-    if (targetSection) {
-        const section = document.getElementById(targetSection);
-        if (section) {
-            section.style.display = 'block';
-            console.log('✅ Section shown:', targetSection);
-        } else {
-            console.error('❌ Section not found:', targetSection);
-        }
+    // إظهار القسم المطلوب
+const targetSection = sections[tabName];
+if (targetSection) {
+    const section = document.getElementById(targetSection);
+    if (section) {
+        section.setAttribute('style', 'display: block !important;');
+        console.log('✅ Section shown:', targetSection);
+    } else {
+        console.error('❌ Section not found:', targetSection);
     }
+}
+
     
     // تهيئة خاصة لكل قسم
     switch(tabName) {
