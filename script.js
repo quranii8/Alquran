@@ -3024,6 +3024,7 @@ function closeTafsir() {
 }
 
 // تفعيل التفسير عند الضغط على الآيات
+// تفعيل التفسير عند الضغط على الآيات
 function enableAyahTafsir() {
     const ayahsContainer = document.getElementById('ayahsContainer');
     if (!ayahsContainer) return;
@@ -3037,13 +3038,63 @@ function enableAyahTafsir() {
         
         // التحقق من أنه ضغط على آية
         if (target.classList.contains('ayah-item')) {
-            const ayahIndex = parseInt(target.getAttribute('data-index'));
-            const ayahNumber = ayahIndex + 1;
             const ayahText = target.innerText.trim();
             
-            openTafsir(surahNumber, ayahNumber, ayahText, surahName);
+            // البحث عن رقم الآية من العنصر التالي
+            let nextElement = target.nextElementSibling;
+            let ayahNumber = null;
+            
+            // البحث عن الرقم ﴿﴾
+            while (nextElement && !ayahNumber) {
+                const text = nextElement.innerText || nextElement.textContent;
+                const match = text.match(/﴿(\d+)﴾/);
+                
+                if (match) {
+                    ayahNumber = parseInt(match[1]);
+                    break;
+                }
+                
+                nextElement = nextElement.nextElementSibling;
+            }
+            
+            // إذا ما لقينا الرقم، نجرب نستخرجه من data-index
+            if (!ayahNumber) {
+                const ayahIndex = parseInt(target.getAttribute('data-index'));
+                if (!isNaN(ayahIndex)) {
+                    ayahNumber = ayahIndex + 1;
+                }
+            }
+            
+            // فتح التفسير
+            if (ayahNumber) {
+                openTafsir(surahNumber, ayahNumber, ayahText, surahName);
+            } else {
+                console.error('لم يتم العثور على رقم الآية');
+                alert('⚠️ حدث خطأ في تحديد رقم الآية');
+            }
         }
     });
+    
+    // إضافة cursor pointer للآيات
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .ayah-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 3px 5px;
+            border-radius: 5px;
+        }
+        .ayah-item:hover {
+            background: rgba(201, 176, 122, 0.15);
+            color: var(--dark-teal);
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// تفعيل التفسير عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', enableAyahTafsir);
+
     
     // إضافة cursor pointer للآيات
     const style = document.createElement('style');
