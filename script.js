@@ -213,23 +213,32 @@ function openSurah(id, name) {
             ayahsHTML = '<div class="basmala-separate">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>';
         }
         
-                for (let i = 0; i < ayahs.length; i++) {
-            let text = ayahs[i].text;
-            text = text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '');
-            text = text.replace(/بسم الله الرحمن الرحيم/g, '');
-            text = text.trim();
-            
-            if (text.length > 0) {
-                ayahsHTML += `
-                    <span class="ayah-item" 
-                          data-index="${i}" 
-                          data-surah="${id}" 
-                          data-ayah="${ayahs[i].numberInSurah}"
-                          data-ayah-text="${text.replace(/"/g, '&quot;')}">${text}</span> 
-                    <span style="color:var(--gold); font-size: 1.1rem;">﴿${ayahs[i].numberInSurah}﴾</span> 
-                `;
-            }
-        }
+               for (let i = 0; i < ayahs.length; i++) {
+    let text = ayahs[i].text;
+    
+    // حذف البسملة من الآيات (بكل الأشكال)
+    // ما عدا الفاتحة - البسملة فيها آية
+    if (id !== 1) {  // إذا مو سورة الفاتحة
+        text = text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '');
+        text = text.replace(/بسم الله الرحمن الرحيم/g, '');
+        text = text.replace(/بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ/g, '');
+        text = text.replace(/بِسمِ اللَّهِ الرَّحمٰنِ الرَّحيمِ/g, '');
+    }
+    text = text.trim();
+    
+    // عدم عرض آيات فارغة
+    if (text.length > 0) {
+        ayahsHTML += `
+            <span class="ayah-item" 
+                  data-index="${i}" 
+                  data-surah="${id}" 
+                  data-ayah="${ayahs[i].numberInSurah}"
+                  data-ayah-text="${text.replace(/"/g, '&quot;')}">${text}</span> 
+            <span style="color:var(--gold); font-size: 1.1rem;">﴿${ayahs[i].numberInSurah}﴾</span> 
+        `;
+    }
+}
+
         
         document.getElementById('ayahsContainer').innerHTML = ayahsHTML;
         setupAyahHighlighting(ayahs.length);
