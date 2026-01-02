@@ -2964,3 +2964,107 @@ function closeHifzSettings() {
     document.getElementById('hifz-main').style.display = 'block';
     updateHifzStats();
 }
+// ==========================================
+// قسم التفسير
+// ==========================================
+
+let currentTafsirAyah = null;
+
+// تعديل دالة openSurah لإضافة أزرار التفسير
+const originalOpenSurah = openSurah;
+openSurah = function(id, name) {
+    currentSurahId = id;
+    document.getElementById('sideMenu').classList.remove('open');
+    
+    document.getElementById('full-quran-view').style.display = 'none';
+    document.getElementById('topics-view').style.display = 'none';
+    document.getElementById('quran-view').style.display = 'block';
+    document.getElementById('current-surah-title').innerText = name;
+    
+    updateAudioSource();
+    
+    fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
+        const ayahs = data.data.ayahs;
+        
+        let ayahsHTML = '';
+        
+        if (id !== 9 && id !== 1) {
+            ayahsHTML = '<div class="basmala-separate">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>';
+        }
+        
+        for (let i = 0; i < ayahs.length; i++) {
+            let text = ayahs[i].text;
+            text = text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '');
+            text = text.replace(/بسم الله الرحمن الرحيم/g, '');
+            text = text.trim();
+            
+            if (text.length > 0) {
+                ayahsHTML += `
+                    <span class="ayah-item" data-index="${i}">${text}</span> 
+                    <span style="color:var(--gold); font-size: 1.1rem;">﴿${ayahs[i].numberInSurah}﴾</span> 
+                    <button class="tafsir-btn" onclick="openTafsir(${id}, ${ayahs[i].numberInSurah}, '${text.replace(/'/g, "\\'")}', '${name}')">تفسير</button>
+                `;
+            }
+        }
+        
+        document.getElementById('ayahsContainer').innerHTML = ayahsHTML;
+        setupAyahHighlighting(ayahs.length);
+    });
+
+    if (typeof checkKhatmaProgress === "function") {
+        checkKhatmaProgress(id);
+    }
+};
+
+// فتح نافذة التفسير
+function openTafsir(surahNumber, ayahNumber, ayahText, surahName) {
+    currentTafsirAyah = {
+        surah: surahNumber,
+        ayah: ayahNumber,
+        text: ayahText,
+        surahName: surahName
+    };
+    
+    // عرض الآية
+    const ayahDisplay = document.querySelector('#tafsir-ayah-text div');
+    const ayahRef = document.querySelector('#tafsir-ayah-text small');
+    
+    if (ayahDisplay) ayahDisplay.innerText = ayahText;
+    if (ayahRef) ayahRef.innerText = `${surahName} - آية ${ayahNumber}`;
+    
+    // عرض النافذة
+    document.getElementById('tafsir-modal').style.display = 'block';
+    
+    // تحميل التفسير
+    loadSelectedTafsir();
+}
+
+// تحميل التفسير المختار
+async function loadSelectedTafsir() {
+    if (!currentTafsirAyah) return;
+    
+    const tafsirType = document.getElementById('tafsir-selector').value;
+    const contentDiv = document.getElementById('tafsir-content');
+    
+    contentDiv.innerHTML = '<p style="text-align: center; color: #999;">⏳ جاري تحميل التفسير...</p>';
+    
+    try {
+        const response = await fetch(`https://api.alquran.cloud/v1/ayah/${currentTafsirAyah.surah}:${currentTafsirAyah.ayah}/${tafsirType}`);
+        const data = await response.json();
+        
+        if (data.code === 200 && data.data.text) {
+            contentDiv.innerHTML = `<p>${data.data.text}</p>`;
+        } else {
+            contentDiv.innerHTML = '<p style="text-align: center; color: #e74c3c;">❌ التفسير غير متوفر لهذه الآية</p>';
+        }
+    } catch (error) {
+        console.error('خطأ في تحميل التفسير:', error);
+        contentDiv.innerHTML = '<p style="text-align: center; color: #e74c3c;">❌ حدث خطأ في تحميل التفسير. تأكد من الاتصال بالإنترنت.</p>';
+    }
+}
+
+// إغلاق نافذة التفسير
+function closeTafsir() {
+    document.getElementById('tafsir-modal').style.display = 'none';
+    currentTafsirAyah = null;
+}
