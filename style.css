@@ -1020,19 +1020,30 @@ body.dark-mode .hifz-plan-card {
 }
 
 /* زر التفسير في الآيات */
-.tafsir-btn {
-    background: var(--gold);
-    color: var(--dark-teal);
-    border: none;
-    padding: 5px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: 'Amiri', serif;
-    font-weight: bold;
-    font-size: 0.85rem;
-    margin: 0 5px;
-    transition: 0.3s;
+./* تفاعل الآيات للتفسير */
+.ayah-item {
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: inline !important;
+    padding: 3px 5px !important;
+    border-radius: 5px !important;
 }
+
+.ayah-item:hover {
+    background: rgba(201, 176, 122, 0.15) !important;
+    color: var(--dark-teal) !important;
+}
+
+.ayah-item:active {
+    transform: scale(0.98);
+}
+
+/* دعم الوضع المظلم */
+body.dark-mode .ayah-item:hover {
+    background: rgba(47, 95, 99, 0.2) !important;
+    color: var(--gold) !important;
+}
+
 
 .tafsir-btn:hover {
     transform: translateY(-2px);
