@@ -3023,58 +3023,44 @@ function closeTafsir() {
     currentTafsirAyah = null;
 }
 
-// إضافة أزرار التفسير للآيات الموجودة
-// إضافة أزرار التفسير للآيات الموجودة
-function addTafsirButtons() {
+// تفعيل التفسير عند الضغط على الآيات
+function enableAyahTafsir() {
     const ayahsContainer = document.getElementById('ayahsContainer');
     if (!ayahsContainer) return;
     
     const surahName = document.getElementById('current-surah-title').innerText;
     const surahNumber = currentSurahId;
     
-    // البحث عن كل أرقام الآيات ﴿﴾
-    const numberPattern = /﴿(\d+)﴾/g;
-    const html = ayahsContainer.innerHTML;
-    
-    // إزالة أزرار التفسير القديمة
-    ayahsContainer.querySelectorAll('.tafsir-btn').forEach(btn => btn.remove());
-    
-    // إضافة زر تفسير بعد كل رقم آية
-    let newHTML = html.replace(/﴿(\d+)﴾/g, function(match, ayahNum) {
-        // استخراج نص الآية (النص قبل الرقم)
-        const beforeNumber = html.substring(0, html.indexOf(match));
-        const lastAyahEnd = beforeNumber.lastIndexOf('﴾');
+    // إضافة حدث الضغط على الآيات
+    ayahsContainer.addEventListener('click', function(e) {
+        const target = e.target;
         
-        let ayahText = '';
-        if (lastAyahEnd === -1) {
-            // أول آية
-            ayahText = beforeNumber.substring(beforeNumber.lastIndexOf('</div>') + 6).trim();
-        } else {
-            ayahText = beforeNumber.substring(lastAyahEnd + 1).trim();
+        // التحقق من أنه ضغط على آية
+        if (target.classList.contains('ayah-item')) {
+            const ayahIndex = parseInt(target.getAttribute('data-index'));
+            const ayahNumber = ayahIndex + 1;
+            const ayahText = target.innerText.trim();
+            
+            openTafsir(surahNumber, ayahNumber, ayahText, surahName);
         }
-        
-        // تنظيف النص
-        ayahText = ayahText.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-        
-        return `${match} <button class="tafsir-btn" onclick="openTafsir(${surahNumber}, ${ayahNum}, '${ayahText.replace(/'/g, "\\'")}', '${surahName}')">📖 تفسير</button>`;
     });
     
-    ayahsContainer.innerHTML = newHTML;
+    // إضافة cursor pointer للآيات
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .ayah-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 3px 5px;
+            border-radius: 5px;
+        }
+        .ayah-item:hover {
+            background: rgba(201, 176, 122, 0.15);
+            color: var(--dark-teal);
+        }
+    `;
+    document.head.appendChild(style);
 }
 
-// مراقبة التغييرات في ayahsContainer لإضافة الأزرار تلقائياً
-const observeAyahs = new MutationObserver(function() {
-    setTimeout(addTafsirButtons, 100);
-});
-
-// بدء المراقبة عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', function() {
-    const ayahsContainer = document.getElementById('ayahsContainer');
-    if (ayahsContainer) {
-        observeAyahs.observe(ayahsContainer, {
-            childList: true,
-            subtree: true
-        });
-    }
-});
-
+// تفعيل التفسير عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', enableAyahTafsir);
