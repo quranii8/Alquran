@@ -213,14 +213,21 @@ function openSurah(id, name) {
             ayahsHTML = '<div class="basmala-separate">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>';
         }
         
-        for (let i = 0; i < ayahs.length; i++) {
+                for (let i = 0; i < ayahs.length; i++) {
             let text = ayahs[i].text;
             text = text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '');
             text = text.replace(/بسم الله الرحمن الرحيم/g, '');
             text = text.trim();
             
             if (text.length > 0) {
-                ayahsHTML += '<span class="ayah-item" data-index="' + i + '">' + text + '</span> <span style="color:var(--gold); font-size: 1.1rem;">(' + ayahs[i].numberInSurah + ')</span> ';
+                ayahsHTML += `
+                    <span class="ayah-item" 
+                          data-index="${i}" 
+                          data-surah="${id}" 
+                          data-ayah="${ayahs[i].numberInSurah}"
+                          data-ayah-text="${text.replace(/"/g, '&quot;')}">${text}</span> 
+                    <span style="color:var(--gold); font-size: 1.1rem;">﴿${ayahs[i].numberInSurah}﴾</span> 
+                `;
             }
         }
         
@@ -3025,12 +3032,10 @@ function closeTafsir() {
 
 // تفعيل التفسير عند الضغط على الآيات
 // تفعيل التفسير عند الضغط على الآيات
+// تفعيل التفسير عند الضغط على الآيات
 function enableAyahTafsir() {
     const ayahsContainer = document.getElementById('ayahsContainer');
     if (!ayahsContainer) return;
-    
-    const surahName = document.getElementById('current-surah-title').innerText;
-    const surahNumber = currentSurahId;
     
     // إضافة حدث الضغط على الآيات
     ayahsContainer.addEventListener('click', function(e) {
@@ -3038,39 +3043,30 @@ function enableAyahTafsir() {
         
         // التحقق من أنه ضغط على آية
         if (target.classList.contains('ayah-item')) {
-            const ayahText = target.innerText.trim();
+            // استخراج البيانات من data attributes
+            const surahNumber = parseInt(target.getAttribute('data-surah'));
+            const ayahNumber = parseInt(target.getAttribute('data-ayah'));
+            const ayahText = target.getAttribute('data-ayah-text') || target.innerText.trim();
             
-            // البحث عن رقم الآية من العنصر التالي
-            let nextElement = target.nextElementSibling;
-            let ayahNumber = null;
+            // الحصول على اسم السورة
+            const surahName = document.getElementById('current-surah-title').innerText;
             
-            // البحث عن الرقم ﴿﴾
-            while (nextElement && !ayahNumber) {
-                const text = nextElement.innerText || nextElement.textContent;
-                const match = text.match(/﴿(\d+)﴾/);
-                
-                if (match) {
-                    ayahNumber = parseInt(match[1]);
-                    break;
-                }
-                
-                nextElement = nextElement.nextElementSibling;
-            }
-            
-            // إذا ما لقينا الرقم، نجرب نستخرجه من data-index
-            if (!ayahNumber) {
-                const ayahIndex = parseInt(target.getAttribute('data-index'));
-                if (!isNaN(ayahIndex)) {
-                    ayahNumber = ayahIndex + 1;
-                }
-            }
+            console.log('Tafsir requested:', {
+                surah: surahNumber,
+                ayah: ayahNumber,
+                name: surahName,
+                text: ayahText
+            });
             
             // فتح التفسير
-            if (ayahNumber) {
+            if (surahNumber && ayahNumber) {
                 openTafsir(surahNumber, ayahNumber, ayahText, surahName);
             } else {
-                console.error('لم يتم العثور على رقم الآية');
-                alert('⚠️ حدث خطأ في تحديد رقم الآية');
+                console.error('بيانات الآية غير صحيحة:', {
+                    surah: surahNumber,
+                    ayah: ayahNumber
+                });
+                alert('⚠️ حدث خطأ في تحديد الآية. حاول مرة أخرى.');
             }
         }
     });
@@ -3079,35 +3075,21 @@ function enableAyahTafsir() {
     const style = document.createElement('style');
     style.innerHTML = `
         .ayah-item {
-            cursor: pointer;
-            transition: all 0.2s ease;
-            padding: 3px 5px;
-            border-radius: 5px;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            padding: 3px 5px !important;
+            border-radius: 5px !important;
         }
         .ayah-item:hover {
-            background: rgba(201, 176, 122, 0.15);
-            color: var(--dark-teal);
+            background: rgba(201, 176, 122, 0.15) !important;
+            color: var(--dark-teal) !important;
         }
-    `;
-    document.head.appendChild(style);
-}
-
-// تفعيل التفسير عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', enableAyahTafsir);
-
-    
-    // إضافة cursor pointer للآيات
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .ayah-item {
-            cursor: pointer;
-            transition: all 0.2s ease;
-            padding: 3px 5px;
-            border-radius: 5px;
+        .ayah-item:active {
+            transform: scale(0.98) !important;
         }
-        .ayah-item:hover {
-            background: rgba(201, 176, 122, 0.15);
-            color: var(--dark-teal);
+        body.dark-mode .ayah-item:hover {
+            background: rgba(47, 95, 99, 0.2) !important;
+            color: var(--gold) !important;
         }
     `;
     document.head.appendChild(style);
