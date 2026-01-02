@@ -2970,52 +2970,6 @@ function closeHifzSettings() {
 
 let currentTafsirAyah = null;
 
-// تعديل دالة openSurah لإضافة أزرار التفسير
-const originalOpenSurah = openSurah;
-openSurah = function(id, name) {
-    currentSurahId = id;
-    document.getElementById('sideMenu').classList.remove('open');
-    
-    document.getElementById('full-quran-view').style.display = 'none';
-    document.getElementById('topics-view').style.display = 'none';
-    document.getElementById('quran-view').style.display = 'block';
-    document.getElementById('current-surah-title').innerText = name;
-    
-    updateAudioSource();
-    
-    fetch(`https://api.alquran.cloud/v1/surah/${id}`).then(res => res.json()).then(data => {
-        const ayahs = data.data.ayahs;
-        
-        let ayahsHTML = '';
-        
-        if (id !== 9 && id !== 1) {
-            ayahsHTML = '<div class="basmala-separate">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>';
-        }
-        
-        for (let i = 0; i < ayahs.length; i++) {
-            let text = ayahs[i].text;
-            text = text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '');
-            text = text.replace(/بسم الله الرحمن الرحيم/g, '');
-            text = text.trim();
-            
-            if (text.length > 0) {
-                ayahsHTML += `
-                    <span class="ayah-item" data-index="${i}">${text}</span> 
-                    <span style="color:var(--gold); font-size: 1.1rem;">﴿${ayahs[i].numberInSurah}﴾</span> 
-                    <button class="tafsir-btn" onclick="openTafsir(${id}, ${ayahs[i].numberInSurah}, '${text.replace(/'/g, "\\'")}', '${name}')">تفسير</button>
-                `;
-            }
-        }
-        
-        document.getElementById('ayahsContainer').innerHTML = ayahsHTML;
-        setupAyahHighlighting(ayahs.length);
-    });
-
-    if (typeof checkKhatmaProgress === "function") {
-        checkKhatmaProgress(id);
-    }
-};
-
 // فتح نافذة التفسير
 function openTafsir(surahNumber, ayahNumber, ayahText, surahName) {
     currentTafsirAyah = {
@@ -3068,3 +3022,62 @@ function closeTafsir() {
     document.getElementById('tafsir-modal').style.display = 'none';
     currentTafsirAyah = null;
 }
+
+// إضافة أزرار التفسير للآيات الموجودة
+function addTafsirButtons() {
+    const ayahsContainer = document.getElementById('ayahsContainer');
+    if (!ayahsContainer) return;
+    
+    const surahName = document.getElementById('current-surah-title').innerText;
+    const surahNumber = currentSurahId;
+    
+    // البحث عن كل الآيات
+    const ayahSpans = ayahsContainer.querySelectorAll('.ayah-item');
+    
+    ayahSpans.forEach((span, index) => {
+        const ayahNumber = index + 1;
+        const ayahText = span.innerText;
+        
+        // التحقق من عدم وجود زر تفسير بالفعل
+        const nextElement = span.nextElementSibling;
+        if (nextElement && nextElement.classList && nextElement.classList.contains('tafsir-btn')) {
+            return; // الزر موجود بالفعل
+        }
+        
+        // البحث عن رقم الآية
+        let numberSpan = span.nextElementSibling;
+        while (numberSpan && numberSpan.tagName !== 'SPAN') {
+            numberSpan = numberSpan.nextElementSibling;
+        }
+        
+        if (numberSpan) {
+            // إنشاء زر التفسير
+            const btn = document.createElement('button');
+            btn.className = 'tafsir-btn';
+            btn.innerText = 'تفسير';
+            btn.onclick = function() {
+                openTafsir(surahNumber, ayahNumber, ayahText, surahName);
+            };
+            
+            // إضافة الزر بعد رقم الآية
+            numberSpan.after(btn);
+        }
+    });
+}
+
+// مراقبة التغييرات في ayahsContainer لإضافة الأزرار تلقائياً
+const observeAyahs = new MutationObserver(function() {
+    setTimeout(addTafsirButtons, 100);
+});
+
+// بدء المراقبة عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    const ayahsContainer = document.getElementById('ayahsContainer');
+    if (ayahsContainer) {
+        observeAyahs.observe(ayahsContainer, {
+            childList: true,
+            subtree: true
+        });
+    }
+});
+
