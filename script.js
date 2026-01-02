@@ -2470,7 +2470,7 @@ function checkTestAnswers() {
         const userAnswer = input.value.trim();
         const correctAnswer = item.word.trim();
         
-        // مقارنة بدون تشكيل - الإجابة صحيحة حتى لو بدون تشكيل
+        // مقارنة بدون تشكيل - الإجابة صحيحة حتى لو بدون تشكيل        // مقارنة بدون تشكيل - الإجابة صحيحة حتى لو بدون تشكيل
         const userClean = removeArabicDiacritics(userAnswer);
         const correctClean = removeArabicDiacritics(correctAnswer);
         
@@ -2511,8 +2511,20 @@ function checkTestAnswers() {
 }
 
 function removeArabicDiacritics(text) {
-    return text.replace(/[\u064B-\u0652\u0670]/g, '');
+    // إزالة التشكيل
+    let cleaned = text.replace(/[\u064B-\u0652\u0670]/g, '');
+    // إزالة المسافات الزائدة
+    cleaned = cleaned.replace(/\s+/g, '');
+    // تحويل الهمزات المختلفة لشكل موحد
+    cleaned = cleaned.replace(/[إأآا]/g, 'ا');
+    cleaned = cleaned.replace(/[ىي]/g, 'ي');
+    cleaned = cleaned.replace(/ة/g, 'ه');
+    // إزالة علامات الترقيم
+    cleaned = cleaned.replace(/[\.،؛]/g, '');
+    
+    return cleaned.trim().toLowerCase();
 }
+
 
 function showTestResult(score, correct, wrong, total) {
     const resultModal = document.createElement('div');
@@ -2872,9 +2884,20 @@ function loadSettingsData() {
 }
 
 function changePlan() {
-    const newPlan = document.getElementById('plan-select').value;
+    const selectElement = document.getElementById('plan-select');
+    if (!selectElement) {
+        alert('❌ خطأ في تحميل الإعدادات');
+        return;
+    }
     
-    if (confirm('هل أنت متأكد من تغيير الخطة?\n\n⚠️ سيتم الاحتفاظ بتقدمك الحالي')) {
+    const newPlan = selectElement.value;
+    
+    if (!newPlan) {
+        alert('⚠️ يرجى اختيار خطة أولاً');
+        return;
+    }
+    
+    if (confirm('هل أنت متأكد من تغيير الخطة؟\n\n⚠️ سيتم الاحتفاظ بتقدمك الحالي')) {
         hifzData.plan = newPlan;
         saveHifzData();
         
@@ -2883,36 +2906,58 @@ function changePlan() {
     }
 }
 
+
 function resetHifzData() {
-    if (confirm('⚠️ تحذير!\n\nسيتم مسح كل بيانات الحفظ:\n- الصفحات المحفوظة\n- السلسلة اليومية\n- الاختبارات والمراجعات\n- الشارات المكتسبة\n\nهل أنت متأكد تماماً؟')) {
-        if (confirm('⚠️ تأكيد نهائي!\n\nلا يمكن التراجع عن هذا الإجراء\nهل تريد المتابعة؟')) {
-            hifzData = {
-                plan: null,
-                startDate: null,
-                currentPage: 1,
-                completedPages: [],
-                reviewedPages: {},
-                currentStreak: 0,
-                longestStreak: 0,
-                lastCompletedDate: null,
-                totalAyat: 0,
-                totalReviews: 0,
-                testScores: [],
-                totalTests: 0,
-                averageScore: 0,
-                earnedBadges: []
-            };
-            
-            saveHifzData();
-            
-            alert('✅ تم مسح كل البيانات\nيمكنك البدء من جديد');
-            
-            closeHifzSettings();
-            document.getElementById('hifz-main').style.display = 'none';
-            document.getElementById('hifz-setup').style.display = 'block';
-        }
+    const firstConfirm = confirm('⚠️ تحذير!\n\nسيتم مسح كل بيانات الحفظ:\n- الصفحات المحفوظة\n- السلسلة اليومية\n- الاختبارات والمراجعات\n- الشارات المكتسبة\n\nهل أنت متأكد تماماً؟');
+    
+    if (!firstConfirm) {
+        return;
     }
+    
+    const secondConfirm = confirm('⚠️ تأكيد نهائي!\n\nلا يمكن التراجع عن هذا الإجراء\nهل تريد المتابعة؟');
+    
+    if (!secondConfirm) {
+        return;
+    }
+    
+    // مسح البيانات
+    hifzData = {
+        plan: null,
+        startDate: null,
+        currentPage: 1,
+        completedPages: [],
+        reviewedPages: {},
+        currentStreak: 0,
+        longestStreak: 0,
+        lastCompletedDate: null,
+        totalAyat: 0,
+        totalReviews: 0,
+        testScores: [],
+        totalTests: 0,
+        averageScore: 0,
+        earnedBadges: []
+    };
+    
+    // حفظ البيانات الفارغة
+    localStorage.setItem('hifzData', JSON.stringify(hifzData));
+    
+    if (typeof window.saveToCloud === 'function') {
+        window.saveToCloud('hifz', hifzData);
+    }
+    
+    alert('✅ تم مسح كل البيانات بنجاح\nيمكنك البدء من جديد');
+    
+    // إغلاق الإعدادات والعودة لصفحة الاختيار
+    const settingsSection = document.getElementById('hifz-settings');
+    if (settingsSection) settingsSection.style.display = 'none';
+    
+    const mainSection = document.getElementById('hifz-main');
+    if (mainSection) mainSection.style.display = 'none';
+    
+    const setupSection = document.getElementById('hifz-setup');
+    if (setupSection) setupSection.style.display = 'block';
 }
+
 
 function closeHifzSettings() {
     document.getElementById('hifz-settings').style.display = 'none';
