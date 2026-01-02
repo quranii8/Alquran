@@ -1000,3 +1000,81 @@ body.dark-mode .hifz-plan-card {
     background: #1a1a1a !important;
     color: white !important;
 }
+/* ================= قسم التفسير ================= */
+
+#tafsir-modal {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#tafsir-content {
+    direction: rtl;
+}
+
+#tafsir-content p {
+    margin-bottom: 15px;
+}
+
+/* زر التفسير في الآيات */
+.tafsir-btn {
+    background: var(--gold);
+    color: var(--dark-teal);
+    border: none;
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Amiri', serif;
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin: 0 5px;
+    transition: 0.3s;
+}
+
+.tafsir-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(201, 176, 122, 0.4);
+}
+
+/* دعم الوضع المظلم */
+body.dark-mode #tafsir-modal > div {
+    background: #1a1a1a !important;
+}
+
+body.dark-mode #tafsir-ayah-text {
+    background: rgba(47, 95, 99, 0.2) !important;
+}
+
+body.dark-mode #tafsir-ayah-text div {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode #tafsir-content {
+    background: #262626 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode #tafsir-selector {
+    background: #262626 !important;
+    color: #e0e0e0 !important;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+    #tafsir-modal > div {
+        margin: 20px auto !important;
+        padding: 20px !important;
+    }
+    
+    #tafsir-ayah-text div {
+        font-size: 1.2rem !important;
+    }
+    
+    #tafsir-content {
+        font-size: 1rem !important;
+        padding: 15px !important;
+    }
+}
