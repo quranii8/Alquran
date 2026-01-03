@@ -1,923 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-  <!-- Eruda Console للتطوير على الموبايل -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>
-    eruda.init();
-</script>
-
-<head>
-    <!-- Google tag (gtag.js) -->
-
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-4WXT2RQ0SV"></script>
-
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-4WXT2RQ0SV');
-</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حقيبة المؤمن - الإصدار الهيبة</title>
-    <!-- PWA Manifest -->
-<!-- PWA Support -->
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/x-icon" href="favicon.ico">
-<meta name="theme-color" content="#2F5F63">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="حقيبة المؤمن">
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
-
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-<!-- الضيف -->
-<div id="sideMenu" class="side-menu">
-    <button class="close-btn" onclick="toggleMenu()">×</button>
-<div id="userProfile" style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 20px; display: none;">
-    <img id="userPhoto" src="" alt="avatar" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--gold); margin-bottom: 10px;">
-    <div id="userName" style="color: white; font-weight: bold; font-size: 14px;"></div>
-    <div id="userEmail" style="color: var(--gold); font-size: 11px; opacity: 0.8;"></div>
-    <button onclick="logout()" style="background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; border-radius: 5px; padding: 3px 10px; font-size: 10px; margin-top: 10px; cursor: pointer;">تسجيل خروج</button>
-</div>
-
-<div id="loginGuest" style="text-align: center; padding: 15px; margin-bottom: 20px;">
-    <p style="font-size: 12px; color: #ccc;">أنت تتصفح كضيف</p>
-    <button class="menu-tool-btn" onclick="loginAndSync()" style="width: 100%; margin-top: 5px;">ربط الحساب بسحابة جوجل ☁️</button>
-</div>
-<!-- زر الإنجازات (يظهر فقط للمسجلين) -->
-<div id="achievementsBtn" style="display: none; text-align: center; margin-bottom: 20px;">
-    <button class="menu-tool-btn" onclick="openAchievements()" style="width: 100%; background: var(--gold); color: var(--dark-teal); font-weight: bold;">
-        🏆 إنجازاتي
-    </button>
-</div>
-
-    <h3 style="text-align:center;color:var(--gold);">الإعدادات</h3>
-    <hr style="border:0.5px solid rgba(201,176,122,0.3);">
-
-    <div class="menu-item">
-        <span>الوضع المظلم</span>
-        <button id="darkModeBtn" class="menu-tool-btn" onclick="toggleDarkMode()">🌙</button>
-    </div>
-<div class="menu-item">
-    <span>مزامنة الختمة (سحابي)</span>
-    <button class="menu-tool-btn" onclick="loginAndSync()">☁️</button>
-</div>
-
-<div class="menu-item">
-    <span>إشعارات النظام</span>
-    <button class="menu-tool-btn" onclick="requestNotify()">🔔</button>
-</div>
-    <div class="menu-item">
-        <span>أصوات التنبيه</span>
-        <button id="muteBtn" class="menu-tool-btn" onclick="toggleMute()">🔊</button>
-    </div>
-
-    <div class="menu-item">
-        <span>حجم الخط</span>
-        <div class="font-controls">
-            <button class="menu-tool-btn" onclick="changeFontSize(2)">A+</button>
-            <button class="menu-tool-btn" onclick="changeFontSize(-2)">A-</button>
-        </div>
-    <div class="menu-item">
-    <span>تحديث الموقع</span>
-    <button class="menu-tool-btn" onclick="getQibla()">📍</button>
-</div>
-
-<div class="menu-item">
-    <span>تنبيهات الأذان</span>
-    <button id="notifBtn" class="menu-tool-btn" onclick="requestNotificationPermission()">🔔</button>
-</div>
-
-</div>
-
-    </div>
-
-    <p style="font-size:12px;text-align:center;margin-top:50px;opacity:0.6;">
-        إصدار حقيبة المؤمن 2025
-    </p>
-</div>
-
-<header>
-    <div class="menu-icon" onclick="toggleMenu()">☰</div>
-    <h1>حقيبة المؤمن</h1>
-    
-    <div class="main-nav">
-<div class="quran-menu-wrapper">
-    <button id="quranTab" class="active dropbtn" onclick="toggleQuranDropdown(event)">القرآن الكريم ▾</button>
-    <div id="quranDropdown" class="dropdown-content">
-    <a href="javascript:void(0)" onclick="selectQuranOption('quran')">المصحف كاملاً</a>
-    <a href="javascript:void(0)" onclick="selectQuranOption('paper-mushaf')">📜 المصحف الورقي</a>
-    <a href="javascript:void(0)" onclick="selectQuranOption('topics')">الفهرس الموضوعي</a>
-</div>
-</div>
-
-        <button id="azkarTab" onclick="switchMainTab('azkar')">قسم الأذكار</button>
-       <div class="quran-menu-wrapper">
-    <button id="sebhaTab" class="dropbtn" onclick="toggleSebhaDropdown(event)">السبحة ▾</button>
-    <div id="sebhaDropdown" class="dropdown-content">
-        <a href="javascript:void(0)" onclick="selectSebhaType('tasbih')">📿 التسبيح</a>
-        <a href="javascript:void(0)" onclick="selectSebhaType('istighfar')">🤲 الاستغفار</a>
-        <a href="javascript:void(0)" onclick="selectSebhaType('tahmid')">❤️ التحميد</a>
-        <a href="javascript:void(0)" onclick="selectSebhaType('takbir')">☝️ التكبير</a>
-        <a href="javascript:void(0)" onclick="selectSebhaType('salah')">🕌 الصلاة على النبي</a>
-    </div>
-</div>
-
-        <button id="prayerTab" onclick="switchMainTab('prayer')">مواقيت الصلاة</button>
-<button id="qiblaTab" onclick="switchMainTab('qibla')">اتجاه القبلة</button>
-<button id="khatmaTab" onclick="switchMainTab('khatma')">تحدي الختمة 🏆</button>
-<button id="hifzTab" onclick="switchMainTab('hifz')">حفظ القرآن 📚</button>
-
-    </div>
-</header>
-
-<div class="container">
-
-<!-- ================= القرآن ================= -->
-<div id="quran-section">
-    
-    <div id="full-quran-view">
-        <div id="daily-content" class="daily-card">
-            <div class="daily-header">
-                <span class="daily-icon">📖</span>
-                <span class="daily-title">آية اليوم</span>
-            </div>
-            <p id="daily-text" class="daily-text">جاري تحميل الآية...</p>
-            <small id="daily-ref" class="daily-ref"></small>
-            <button onclick="copyDailyAyah()" class="copy-btn">نسخ الآية 📋</button>
-        </div>
-
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="ابحث عن سورة..." onkeyup="filterSurahs()">
-        </div>
-        <div class="surah-grid" id="surahList"></div>
-    </div>
-
-    <div id="quran-view" style="display:none;">
-        <div style="text-align:center;margin:10px;">
-            <button class="modern-back-btn" onclick="showMain()">🏠 العودة للقائمة</button>
-        </div>
-
-        <div class="player-container modern-style">
-            <h2 id="current-surah-title"></h2>
-
-            <div class="reciter-section">
-                <select id="reciterSelect" onchange="updateAudioSource()">
-                    <option value="afs">🎙️ مشاري العفاسي</option>
-                    <option value="minsh">🎙️ محمد صديق المنشاوي</option>
-                    <option value="basit">🎙️ عبد الباسط عبد الصمد</option>
-                    <option value="husr">🎙️ محمود خليل الحصري</option>
-                    <option value="maher">🎙️ ماهر المعيقلي</option>
-                    <option value="qtm">🎙️ ناصر القطامي</option>
-                    <option value="yasser">🎙️ ياسر الدوسري</option>
-                </select>
-            </div>
-
-            <div class="modern-player-layout">
-                <button id="playBtn" class="play-btn-small" onclick="toggleAudio()">▷</button>
-                <div class="progress-wrapper">
-                    <span id="currentTime">0:00</span>
-                    <input type="range" id="seekSlider" value="0" max="100" oninput="seekAudio()">
-                    <span id="durationTime">0:00</span>
-                </div>
-            </div>
-
-            <audio id="audioPlayer"></audio>
-        </div>
-<!-- نافذة التفسير -->
-<div id="tafsir-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 10000; overflow-y: auto; padding: 20px;" onclick="closeTafsir()">
-    <div onclick="event.stopPropagation()" style="background: white; max-width: 800px; margin: 50px auto; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-            <h3 style="color: var(--dark-teal); margin: 0;">📖 التفسير</h3>
-            <button onclick="closeTafsir()" style="background: #e74c3c; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;">×</button>
-        </div>
-        
-        <div id="tafsir-ayah-text" style="background: rgba(201, 176, 122, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-right: 4px solid var(--gold);">
-            <div style="font-size: 1.5rem; line-height: 2; text-align: center; font-family: 'Amiri', serif; color: var(--dark-teal);"></div>
-            <small style="display: block; text-align: center; color: #666; margin-top: 10px;"></small>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-            <label style="color: var(--dark-teal); font-weight: bold; display: block; margin-bottom: 10px;">اختر التفسير:</label>
-            <select id="tafsir-selector" onchange="loadSelectedTafsir()" style="width: 100%; padding: 12px; border: 2px solid var(--gold); border-radius: 10px; font-family: 'Amiri', serif; font-size: 1rem; background: white;">
-                <option value="ar.muyassar">التفسير الميسر</option>
-                <option value="ar.jalalayn">تفسير الجلالين</option>
-                <option value="ar.baghawi">تفسير البغوي</option>
-                <option value="ar.qurtubi">تفسير القرطبي</option>
-                <option value="ar.tabari">تفسير الطبري</option>
-                <option value="ar.saddi">تفسير السعدي</option>
-            </select>
-        </div>
-        
-        <div id="tafsir-content" style="background: #f9f9f9; padding: 25px; border-radius: 15px; font-size: 1.1rem; line-height: 2; text-align: justify; font-family: 'Amiri', serif; max-height: 400px; overflow-y: auto;">
-            <p style="text-align: center; color: #999;">⏳ جاري تحميل التفسير...</p>
-        </div>
-    </div>
-</div>
-
-        <div style="text-align: center; margin-bottom: 15px; padding: 10px; background: rgba(201, 176, 122, 0.1); border-radius: 10px;">
-    <small style="color: #666; font-size: 0.85rem;">💡 اضغط على الآية للتفسير</small>
-</div>
-
-<div class="ayah-text" id="ayahsContainer"></div>
-
-
-    <div id="topics-view" style="display:none; padding:10px;">
-        <h3 style="color:var(--gold); text-align:center; margin-bottom:20px; font-size: 1.5rem;">الفهرس الموضوعي الجامع</h3>
-        <div class="surah-grid">
-            <div class="surah-card" onclick="showTopicSurahs('قصص الأنبياء', [11, 12, 14, 18, 19, 20, 21, 28])">📜 قصص الأنبياء</div>
-            <div class="surah-card" onclick="showTopicSurahs('أهوال القيامة', [75, 78, 81, 82, 84, 99, 101])">🌋 أهوال القيامة</div>
-            <div class="surah-card" onclick="showTopicSurahs('العبادات والأحكام', [2, 4, 5, 9, 22, 24, 62])">🕋 العبادات والأحكام</div>
-            <div class="surah-card" onclick="showTopicSurahs('الرقية والشفاء', [1, 112, 113, 114, 17, 10])">🛡️ الرقية والشفاء</div>
-            <div class="surah-card" onclick="showTopicSurahs('الأخلاق والآداب', [31, 49, 103, 104, 107, 68])">❤️ الأخلاق والآداب</div>
-            <div class="surah-card" onclick="showTopicSurahs('عظمة الخالق', [13, 16, 27, 30, 35, 41, 55])">🌌 عظمة الخالق</div>
-            <div class="surah-card" onclick="showTopicSurahs('الجنة ونعيمها', [55, 56, 76, 88, 39, 43])">🌳 الجنة ونعيمها</div>
-            <div class="surah-card" onclick="showTopicSurahs('الصبر والابتلاء', [2, 3, 90, 93, 94, 103])">💎 الصبر والابتلاء</div>
-            <div class="surah-card" onclick="showTopicSurahs('التوحيد والعقيدة', [1, 112, 109, 2, 3, 59])">☝️ التوحيد والعقيدة</div>
-            <div class="surah-card" onclick="showTopicSurahs('المسبحات', [57, 59, 61, 62, 64])">✨ المسبحات</div>
-        </div>
-        <button onclick="selectQuranOption('quran')" style="margin: 30px auto; display: block; background:var(--gold); color:var(--dark-teal); border:none; padding:12px 25px; border-radius:12px; cursor:pointer; font-family:'Amiri', serif; font-weight:bold;">العودة للمصحف الكامل</button>
-    </div>
-
-</div>
-
-<!-- ================= الأذكار ================= -->
-<div id="azkar-section">
-    <div class="azkar-categories" id="azkarCats">
-        <div class="category-card" onclick="loadAzkar('morning')">☀️ أذكار الصباح</div>
-        <div class="category-card" onclick="loadAzkar('evening')">🌙 أذكار المساء</div>
-        <div class="category-card" onclick="loadAzkar('sleep')">🛌 أذكار النوم</div>
-        <div class="category-card" onclick="loadAzkar('afterPrayer')">📿 بعد الصلاة</div>
-        <div class="category-card" onclick="loadAzkar('generalDuas')">🤲 أدعية نبوية</div>
-    </div>
-
-    <div id="azkar-content" style="display:none;">
-        <div class="top-controls">
-            <button class="modern-back-btn" onclick="backToAzkarCats()">↩ العودة</button>
-            <button class="modern-reset-soft" onclick="resetAzkarProgress()">تصفير</button>
-        </div>
-
-        <h2 id="azkar-title" style="text-align:center;color:var(--gold);"></h2>
-        <div id="azkarList"></div>
-    </div>
-</div>
-<!-- ================= السبحة ================= -->
-<!-- ================= السبحة ================= -->
-<div id="sebha-section">
-    
-    <!-- قائمة اختيار نوع السبحة -->
-    <div id="sebha-categories" style="display:grid;">
-        <h3 style="text-align:center; color:var(--gold); grid-column: 1/-1;">اختر نوع الذكر</h3>
-        <div class="category-card" onclick="selectSebhaType('tasbih')">📿 التسبيح</div>
-        <div class="category-card" onclick="selectSebhaType('istighfar')">🤲 الاستغفار</div>
-        <div class="category-card" onclick="selectSebhaType('tahmid')">❤️ التحميد</div>
-        <div class="category-card" onclick="selectSebhaType('takbir')">☝️ التكبير</div>
-        <div class="category-card" onclick="selectSebhaType('salah')">🕌 الصلاة على النبي</div>
-    </div>
-
-    <!-- واجهة السبحة الرئيسية -->
-    <div id="sebha-main-view" style="display:none;">
-        <div style="text-align:center;margin:10px;">
-            <button class="modern-back-btn" onclick="backToSebhaCategories()">↩ العودة للأقسام</button>
-        </div>
-
-        <h2 id="sebha-type-title" style="text-align:center; color:var(--gold);">📿 التسبيح</h2>
-        <p id="sebha-type-text" style="text-align:center; font-size:1.5rem; color:var(--dark-teal); font-weight:bold; margin:10px;">سُبْحَانَ اللَّهِ</p>
-
-        <div class="goal-setting">
-            الهدف اليومي:
-            <input type="number" id="sebhaGoal" value="100" min="1" onchange="updateGoal()">
-        </div>
-
-        <div class="progress-container">
-            <div id="sebhaBar" class="progress-bar"></div>
-        </div>
-
-        <div class="sebha-circle" onclick="incrementSebha()">
-            <span id="sebhaCounter">0</span>
-            <small id="sebhaStatus">اضغط للذكر</small>
-        </div>
-
-        <button class="modern-reset-soft" onclick="resetSebha()">تصفير العداد</button>
-
-        <div class="timer-wrapper">
-            <span>التصفير التلقائي:</span>
-            <div id="countdown-timer" class="modern-timer">00:00:00</div>
-        </div>
-    </div>
-</div>
-
-<div id="prayer-section" style="text-align:center;">
-    <div class="prayer-hero-card">
-        <h3 id="next-prayer-name">جاري تحديد موقعك...</h3>
-        <div id="next-prayer-timer" class="big-timer">00:00:00</div>
-    </div>
-
-    <div class="prayer-detailed-grid">
-        <div class="p-card"><span>الفجر</span><b id="fajr-time">--:--</b></div>
-        <div class="p-card"><span>الظهر</span><b id="dhuhr-time">--:--</b></div>
-        <div class="p-card"><span>العصر</span><b id="asr-time">--:--</b></div>
-        <div class="p-card"><span>المغرب</span><b id="maghrib-time">--:--</b></div>
-        <div class="p-card"><span>العشاء</span><b id="isha-time">--:--</b></div>
-    </div>
-</div>
-<div id="qibla-section" style="text-align:center;">
-    <div class="qibla-container">
-        <h3>اتجاه القبلة</h3>
-        
-        <button id="enable-compass-btn" onclick="askCompassPermission()" style="background:var(--gold); color:var(--dark-teal); border:none; padding:10px 20px; border-radius:12px; font-weight:bold; margin-bottom:15px; cursor:pointer; font-family:'Amiri', serif;">
-            تشغيل البوصلة الحية 🧭
-        </button>
-
-        <div class="compass" style="position: relative;">
-            <div class="compass-arrow" id="compass-pointer"></div>
-            <div class="kaaba-icon">🕋</div>
-        </div>
-        <div class="qibla-degrees"><span id="qibla-deg">--</span>°</div>
-        <p id="qibla-status" style="margin-top:10px; font-size:14px;">اضغط الزر لتفعيل الحركة</p>
-    </div>
-</div>
-<div id="khatma-section" style="text-align:center; padding:20px;">
-    <div class="daily-card shadow-lg" style="background: white; border-radius: 15px; padding: 20px; max-width: 800px; margin: auto;">
-        <h2 style="color:var(--gold);">🏆 تحدي الختمة (30 يوم)</h2>
-        
-        <div class="progress-container" style="height: 20px; background:#eee; border-radius:10px; overflow:hidden; margin-top:10px;">
-            <div id="totalKhatmaBar" style="background: linear-gradient(90deg, #d4af37, #f1c40f); width: 0%; height:100%; transition: 0.5s;"></div>
-        </div>
-        <small id="total-percent-text" style="color:var(--dark-teal); font-weight:bold; display:block; margin-top:5px;">التقدم الكلي: 0%</small>
-
-        <hr style="margin:20px 0; opacity: 0.2;">
-
-        <div id="khatma-reading-area" style="display:none;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                <small id="juz-progress-text" style="color:var(--dark-teal); font-weight:bold;">تقدمك في الجزء: 0%</small>
-            </div>
-            <div class="progress-container" style="height: 10px; background:#ddd; border-radius:5px; margin-bottom:15px;">
-                <div id="juzInnerBar" style="background: var(--dark-teal); width: 0%; height:100%; transition: 0.3s;"></div>
-            </div>
-
-            <h3 id="khatma-surah-title" style="color:var(--gold); margin-bottom:15px;"></h3>
-            
-            <div id="khatma-ayahs-display" style="background:#fff; padding:20px; border-radius:15px; font-size:1.6rem; line-height:2.8; text-align:right; border:2px solid var(--gold); max-height:500px; overflow-y:auto; direction:rtl; font-family: 'Amiri', serif;">
-                </div>
-
-            <p style="margin-top:10px; font-size:0.9rem; color:#666;">💡 اضغط على رقم الآية عند وصولك إليها لحفظ تقدمك.</p>
-            
-            <div style="margin-top:20px;">
-                <button onclick="markFullJuzDone()" style="background:#27ae60; color:white; border:none; padding:12px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">✅ أكملت الجزء كاملاً</button>
-                <button onclick="closeKhatmaReading()" style="background:#95a5a6; color:white; border:none; padding:12px 25px; border-radius:8px; margin-right:10px; cursor:pointer;">إغلاق</button>
-            </div>
-        </div>
-
-        <div id="khatma-intro">
-            <h3 id="daily-task-title" style="color:var(--dark-teal);">ورد اليوم (الجزء 1)</h3>
-            <p style="color:#7f8c8d; margin-bottom:20px;">ابدأ وردك اليومي وسجل تقدمك آية بآية</p>
-            <button class="modern-back-btn" style="background:var(--dark-teal); color:var(--gold); padding:15px 40px; font-size:1.1rem; border-radius:30px; cursor:pointer; border:none;" onclick="startKhatmaReading()">📖 ابدأ القراءة الآن</button>
-        </div>
-    </div>
-</div>
-<!-- ================= قسم الإنجازات ================= --><!-- ================= قسم الإنجازات ================= -->
-<div <div id="achievements-section" style="padding:20px;">
-    <div style="text-align:center; margin-bottom:20px;">
-        <button class="modern-back-btn" onclick="closeAchievements()">↩ العودة</button>
-    </div>
-
-    <div class="daily-card shadow-lg" style="max-width: 900px; margin: auto;">
-        <h2 style="color:var(--gold); text-align:center;">🏆 إنجازاتي الإيمانية</h2>
-        
-        <!-- ✨ جديد: المستوى والـ XP -->
-        <div style="background: linear-gradient(135deg, var(--dark-teal), #1a3f42); padding: 20px; border-radius: 15px; margin: 20px 0; color: white; text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 10px;">⭐</div>
-            <h3 style="margin: 5px 0; color: var(--gold);" id="current-level-title">المستوى 1</h3>
-            <p style="margin: 5px 0; font-size: 1.1rem;" id="current-level-xp">0 XP</p>
-            
-            <!-- شريط تقدم المستوى -->
-            <div style="background: rgba(255,255,255,0.2); height: 15px; border-radius: 10px; margin: 15px auto; max-width: 400px; overflow: hidden;">
-                <div id="level-progress-bar" style="background: var(--gold); height: 100%; width: 0%; transition: 0.5s;"></div>
-            </div>
-            <small id="next-level-text" style="opacity: 0.9;">100 XP للمستوى التالي</small>
-        </div>
-
-        <!-- ✨ جديد: السلسلة اليومية -->
-        <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); padding: 20px; border-radius: 15px; margin: 20px 0; color: white; text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 10px;">🔥</div>
-            <h3 style="margin: 5px 0;">السلسلة اليومية</h3>
-            <p style="font-size: 2.5rem; font-weight: bold; margin: 10px 0;" id="current-streak-display">0</p>
-            <p style="margin: 5px 0; font-size: 0.95rem;">يوم متواصل</p>
-            <small style="opacity: 0.9;">أطول سلسلة: <span id="longest-streak-display">0</span> يوم</small>
-        </div>
-
-        <!-- ✨ جديد: الشارات المحصلة -->
-        <div style="background: white; padding: 20px; border-radius: 15px; margin: 20px 0; border: 2px solid var(--gold);">
-            <h3 style="color: var(--dark-teal); text-align: center; margin-bottom: 15px;">🏅 الشارات المحصلة</h3>
-            <div id="badges-display" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; min-height: 80px;">
-                <p style="color: #999; width: 100%; text-align: center;">لم تحصل على أي شارة بعد</p>
-            </div>
-        </div>
-
-        <hr style="border: 1px solid rgba(201,176,122,0.3); margin: 30px 0;">
-
-        <!-- معلومات العضوية -->
-        <div style="background: rgba(47,95,99,0.05); padding: 15px; border-radius: 12px; margin: 20px 0; text-align:center;">
-            <p style="font-size: 1.1rem; color: var(--dark-teal); margin: 5px;">
-                📅 <strong>عضو منذ:</strong> <span id="member-since">جاري التحميل...</span>
-            </p>
-            <p style="font-size: 1.1rem; color: var(--dark-teal); margin: 5px;">
-                ⏱️ <strong>عدد الأيام:</strong> <span id="days-count">0</span> يوم
-            </p>
-        </div>
-
-        <hr style="border: 1px solid rgba(201,176,122,0.3); margin: 20px 0;">
-
-        <!-- إحصائيات السبحة -->
-        <h3 style="color: var(--dark-teal); text-align: center; margin: 20px 0;">📿 إحصائيات الذكر</h3>
-        <div class="achievements-grid">
-            <div class="achievement-card">
-                <div class="achievement-emoji">📿</div>
-                <div class="achievement-title">التسبيح</div>
-                <div class="achievement-count" id="total-tasbih">0</div>
-                <div class="achievement-label">مرة</div>
-            </div>
-
-            <div class="achievement-card">
-                <div class="achievement-emoji">🤲</div>
-                <div class="achievement-title">الاستغفار</div>
-                <div class="achievement-count" id="total-istighfar">0</div>
-                <div class="achievement-label">مرة</div>
-            </div>
-
-            <div class="achievement-card">
-                <div class="achievement-emoji">❤️</div>
-                <div class="achievement-title">التحميد</div>
-                <div class="achievement-count" id="total-tahmid">0</div>
-                <div class="achievement-label">مرة</div>
-            </div>
-
-            <div class="achievement-card">
-                <div class="achievement-emoji">☝️</div>
-                <div class="achievement-title">التكبير</div>
-                <div class="achievement-count" id="total-takbir">0</div>
-                <div class="achievement-label">مرة</div>
-            </div>
-
-            <div class="achievement-card">
-                <div class="achievement-emoji">🕌</div>
-                <div class="achievement-title">الصلاة على النبي</div>
-                <div class="achievement-count" id="total-salah">0</div>
-                <div class="achievement-label">مرة</div>
-            </div>
-        </div>
-
-        <hr style="border: 1px solid rgba(201,176,122,0.3); margin: 30px 0;">
-
-        <!-- إحصائيات القرآن والأذكار -->
-        <h3 style="color: var(--dark-teal); text-align: center; margin: 20px 0;">📖 إحصائيات العبادات</h3>
-        <div class="achievements-grid">
-            <div class="achievement-card">
-                <div class="achievement-emoji">📖</div>
-                <div class="achievement-title">الأوراد المكتملة</div>
-                <div class="achievement-count" id="total-awrad">0</div>
-                <div class="achievement-label">جزء</div>
-            </div>
-
-            <div class="achievement-card">
-                <div class="achievement-emoji">✅</div>
-                <div class="achievement-title">الأذكار المقروءة</div>
-                <div class="achievement-count" id="total-azkar">0</div>
-                <div class="achievement-label">ذكر</div>
-            </div>
-        </div>
-
-        <!-- رسالة تحفيزية -->
-        <div style="background: linear-gradient(135deg, var(--dark-teal), #1a3f42); color: var(--gold); padding: 20px; border-radius: 15px; margin-top: 30px; text-align: center;">
-            <p style="font-size: 1.2rem; margin: 0;">
-                ✨ <strong>بارك الله في عمرك وأعمالك!</strong> ✨
-            </p>
-            <p style="font-size: 0.9rem; margin: 10px 0 0 0; opacity: 0.9;">
-                استمر في طريق الخير، وكل ذكرة تُسجل في ميزان حسناتك 💚
-            </p>
-        </div>
-    </div>
-</div>
-<!-- ================= قسم حفظ القرآن ================= -->
-<div id="hifz-section" style="padding:20px;">
-    
-    <!-- المرحلة 1: اختيار الخطة -->
-    <div id="hifz-setup" style="display:block;">
-        <div class="daily-card shadow-lg" style="max-width: 600px; margin: auto;">
-            <h2 style="color:var(--gold); text-align:center; margin-bottom: 20px;">
-                📚 ابدأ رحلة الحفظ
-            </h2>
-            
-            <p style="text-align: center; color: var(--dark-teal); font-size: 1.1rem; margin-bottom: 30px;">
-                اختر خطة الحفظ المناسبة لك
-            </p>
-            
-            <div style="display: grid; gap: 15px; margin-bottom: 30px;">
-                
-                <div class="hifz-plan-card" onclick="selectHifzPlan('quarter')" style="background: white; padding: 20px; border-radius: 15px; border: 3px solid #ddd; cursor: pointer; text-align: center; transition: 0.3s;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🌱</div>
-                    <h3 style="color: var(--dark-teal); margin: 10px 0;">ربع صفحة يومياً</h3>
-                    <p style="color: #666; font-size: 0.9rem;">للمبتدئين - حفظ متقن وثابت</p>
-                    <small style="color: var(--gold); font-weight: bold;">≈ 3 آيات يومياً</small>
-                </div>
-                
-                <div class="hifz-plan-card" onclick="selectHifzPlan('half')" style="background: white; padding: 20px; border-radius: 15px; border: 3px solid #ddd; cursor: pointer; text-align: center; transition: 0.3s;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🌿</div>
-                    <h3 style="color: var(--dark-teal); margin: 10px 0;">نصف صفحة يومياً</h3>
-                    <p style="color: #666; font-size: 0.9rem;">متوسط - توازن بين السرعة والإتقان</p>
-                    <small style="color: var(--gold); font-weight: bold;">≈ 6 آيات يومياً</small>
-                </div>
-                
-                <div class="hifz-plan-card" onclick="selectHifzPlan('full')" style="background: white; padding: 20px; border-radius: 15px; border: 3px solid #ddd; cursor: pointer; text-align: center; transition: 0.3s;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🌳</div>
-                    <h3 style="color: var(--dark-teal); margin: 10px 0;">صفحة كاملة يومياً</h3>
-                    <p style="color: #666; font-size: 0.9rem;">متقدم - حفظ سريع ومكثف</p>
-                    <small style="color: var(--gold); font-weight: bold;">≈ 12 آية يومياً</small>
-                </div>
-                
-            </div>
-            
-            <p style="text-align: center; color: #999; font-size: 0.85rem; margin-top: 20px;">
-                💡 يمكنك تغيير الخطة في أي وقت من الإعدادات
-            </p>
-        </div>
-    </div>
-    
-    <!-- المرحلة 2: الواجهة الرئيسية -->
-    <div id="hifz-main" style="display:none;">
-        
-        <!-- شريط التقدم الكلي -->
-        <div class="daily-card" style="background: linear-gradient(135deg, var(--dark-teal), #1a3f42); color: white; text-align: center; padding: 25px; margin-bottom: 20px;">
-            <h3 style="color: var(--gold); margin-bottom: 15px;">🌟 رحلتك في الحفظ</h3>
-            
-            <div style="background: rgba(255,255,255,0.2); height: 25px; border-radius: 15px; overflow: hidden; margin: 20px 0;">
-                <div id="hifz-total-progress" style="background: var(--gold); height: 100%; width: 0%; transition: 0.5s; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; color: var(--dark-teal);"></div>
-            </div>
-            
-            <button onclick="showMyHifzBadges()" style="background: var(--gold); color: var(--dark-teal); border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; margin-bottom: 15px;">
-                🏆 شاراتي (<span id="hifz-badges-count">0</span>)
-            </button>
-            
-            <div style="display: flex; justify-content: space-around; margin-top: 20px; flex-wrap: wrap; gap: 15px;">
-                <div>
-                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-pages-count">0</div>
-                    <div style="font-size: 0.85rem; opacity: 0.9;">صفحة محفوظة</div>
-                </div>
-                <div>
-                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-days-count">0</div>
-                    <div style="font-size: 0.85rem; opacity: 0.9;">يوم متواصل 🔥</div>
-                </div>
-                <div>
-                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-ayat-count">0</div>
-                    <div style="font-size: 0.85rem; opacity: 0.9;">آية متقنة</div>
-                </div>
-                <div>
-                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-reviews-count">0</div>
-                    <div style="font-size: 0.85rem; opacity: 0.9;">مراجعة</div>
-                </div>
-                <div>
-                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-average-score">0%</div>
-                    <div style="font-size: 0.85rem; opacity: 0.9;">متوسط التسميع</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- ورد اليوم -->
-        <div class="daily-card" style="max-width: 800px; margin: 20px auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                <h3 style="color: var(--gold); margin: 0;">📖 ورد اليوم</h3>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="startTestMode()" style="background: #9b59b6; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
-                        ✍️ تسميع
-                    </button>
-                    <button onclick="startReviewMode()" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
-                        🔁 المراجعة
-                    </button>
-                    <button onclick="openHifzSettings()" style="background: transparent; border: 2px solid var(--gold); color: var(--gold); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-family: 'Amiri', serif;">
-                        ⚙️ إعدادات
-                    </button>
-                </div>
-            </div>
-            
-            <div id="hifz-today-info" style="background: rgba(201, 176, 122, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
-                <p style="color: var(--dark-teal); font-weight: bold; font-size: 1.1rem; margin: 5px 0;" id="hifz-today-range">جاري التحميل...</p>
-                <small style="color: #666;">عدد الآيات: <span id="hifz-today-ayat-count">0</span></small>
-            </div>
-            
-            <!-- عرض الآيات -->
-            <div id="hifz-ayahs-display" style="background: white; padding: 25px; border-radius: 15px; border: 2px solid var(--gold); font-size: 1.6rem; line-height: 2.5; text-align: justify; max-height: 500px; overflow-y: auto; font-family: 'Amiri', serif;">
-                <!-- الآيات تظهر هنا -->
-            </div>
-            
-            <div style="text-align: center; margin-top: 25px;">
-                <button onclick="markTodayComplete()" style="background: var(--dark-teal); color: var(--gold); border: none; padding: 15px 40px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; box-shadow: 0 4px 15px rgba(47, 95, 99, 0.3);">
-                    ✅ أتممت الحفظ اليوم
-                </button>
-            </div>
-        </div>
-        
-    </div>
-    
-</div>
-
-
-
-</div>
-
-<audio id="notificationSound" src="https://www.soundjay.com/buttons/sounds/button-37a.mp3"></audio>
-<audio id="azanSound" src="https://www.islamcan.com/common/makkah.mp3" preload="auto"></audio>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    onAuthStateChanged,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-  /* Firebase Config */
-  const firebaseConfig = {
-    apiKey: "AIzaSyDAWPEns_hhMY3jAWJd2EqILJ9vxInKfMs",
-    authDomain: "alquran-app-f02b9.firebaseapp.com",
-    projectId: "alquran-app-f02b9",
-    storageBucket: "alquran-app-f02b9.firebasestorage.app",
-    messagingSenderId: "283906260546",
-    appId: "1:283906260546:web:4215f4193ae35add0777db"
-  };
-
-  /* Init */
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-  
-  // جعل المتغيرات متاحة عالمياً
-  window.firebaseAuth = auth;
-  window.firebaseDb = db;
-
-  // دالة حفظ البيانات في Firebase
-  window.saveToCloud = async function(type, data) {
-    const user = auth.currentUser;
-    if (!user) {
-      console.log("⚠️ لم يتم تسجيل الدخول");
-      return;
-    }
-
-    try {
-      await setDoc(
-        doc(db, "users", user.uid),
-        { 
-          [type]: data, 
-          lastSync: new Date().toISOString(),
-          email: user.email,
-          displayName: user.displayName
-        },
-        { merge: true }
-      );
-      console.log(`✅ تم حفظ ${type} في السحابة`);
-    } catch (e) {
-      console.error(`❌ خطأ في حفظ ${type}:`, e);
-    }
-  };
-
-  // دالة تحميل البيانات من Firebase
-  async function loadUserData(userId) {
-    try {
-      console.log("📥 جاري تحميل بياناتك...");
-      const userDoc = await getDoc(doc(db, "users", userId));
-      
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        
-        // تحميل الإنجازات
-        if (data.achievements) {
-          window.achievements = data.achievements;
-          localStorage.setItem('achievements', JSON.stringify(data.achievements));
-          console.log("✅ تم تحميل الإنجازات من السحابة");
-        }
-        
-        // تحميل الختمة
-        if (data.khatma) {
-          window.khatmaData = data.khatma;
-          localStorage.setItem('khatmaProgress', JSON.stringify(data.khatma));
-          if (typeof updateKhatmaUI === 'function') {
-            setTimeout(() => updateKhatmaUI(), 500);
-          }
-          console.log("✅ تم تحميل تقدم الختمة من السحابة");
-        }
-        
-        // تحميل السبحة
-        if (data.sebha) {
-          window.sebhaCounters = data.sebha;
-          localStorage.setItem('sebhaCounters', JSON.stringify(data.sebha));
-          console.log("✅ تم تحميل عدادات السبحة من السحابة");
-        }
-        
-        // تحديث واجهة الإنجازات
-        if (typeof updateAchievementsUI === 'function') {
-          setTimeout(() => updateAchievementsUI(), 800);
-        }
-        
-     
-        return true;
-        
-      } else {
-        console.log("📝 حساب جديد - سيتم إنشاء ملفك في السحابة");
-        
-        // حفظ تاريخ العضوية لأول مرة
-        if (window.achievements && !window.achievements.memberSince) {
-          window.achievements.memberSince = new Date().toISOString();
-          localStorage.setItem('achievements', JSON.stringify(window.achievements));
-          await window.saveToCloud('achievements', window.achievements);
-        }
-        
-        return false;
-      }
-    } catch (e) {
-      console.error("❌ خطأ في تحميل البيانات:", e);
-      alert("⚠️ حدث خطأ في تحميل بياناتك من السحابة");
-      return false;
-    }
-  }
-
-  /* مراقب حالة تسجيل الدخول */
-  onAuthStateChanged(auth, async (user) => {
-    const profileCard = document.getElementById('userProfile');
-    const guestCard = document.getElementById('loginGuest');
-    const achievementsBtn = document.getElementById('achievementsBtn');
-
-    if (user) {
-      // إظهار بطاقة المستخدم
-      profileCard.style.display = 'block';
-      guestCard.style.display = 'none';
-      achievementsBtn.style.display = 'block';
-
-      document.getElementById('userName').textContent = user.displayName || 'مستخدم';
-      document.getElementById('userEmail').textContent = user.email || '';
-      document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/60';
-      
-      console.log("✅ مرحباً", user.displayName || user.email);
-      
-      // تحميل البيانات من السحابة
-      await loadUserData(user.uid);
-      
-    } else {
-      // وضع الضيف
-      profileCard.style.display = 'none';
-      guestCard.style.display = 'block';
-      achievementsBtn.style.display = 'none';
-      console.log("👤 تصفح كضيف");
-    }
-  });
-
-  /* تسجيل الدخول */
-  window.loginAndSync = async function() {
-    try {
-      console.log("🔐 جاري تسجيل الدخول...");
-      const result = await signInWithPopup(auth, provider);
-      
-      // تحميل البيانات بعد تسجيل الدخول
-      await loadUserData(result.user.uid);
-      
-    } catch (e) {
-      console.error("❌ خطأ في تسجيل الدخول:", e);
-      alert("❌ فشل تسجيل الدخول، تأكد من الاتصال بالإنترنت");
-    }
-  };
-
-  /* تسجيل الخروج */
-  window.logout = function() {
-    if (confirm("هل تريد تسجيل الخروج؟\n\n(ملاحظة: بياناتك محفوظة في السحابة)")) {
-      signOut(auth).then(() => {
-        localStorage.clear();
-        location.reload();
-      });
-    }
-  };
-</script>
-<!-- قسم المصحف الورقي -->
-<div id="paper-mushaf-section" style="display:none; padding: 20px;">
-    
-    <!-- كارد المصحف -->
-<div style="background: linear-gradient(90deg, #4A7C7E 0%, #7A9B7E 25%, #B8A676 50%, #D4B896 75%, #C9B07A 100%);
- padding: 25px; border-radius: 20px; margin: 20px auto; max-width: 900px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-        
-        <!-- الهيدر -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <button onclick="saveMushafBookmark()" style="background: #F4C430; color: #2F5F63; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; font-family: 'Amiri', serif; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                🔖 محفوظة
-            </button>
-            
-            <h2 style="color: #F4C430; margin: 0; font-size: 1.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
-                📖 المصحف الورقي
-            </h2>
-            
-            <button onclick="closePaperMushaf()" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 8px 20px; border-radius: 12px; font-weight: bold; font-family: 'Amiri', serif; cursor: pointer;">
-                🏠 رجوع
-            </button>
-        </div>
-        
-        <!-- رقم الصفحة -->
-        <div style="text-align: center; color: white; font-size: 1.1rem; margin-bottom: 15px; font-weight: bold;">
-            صفحة <span id="mushaf-current-page">1</span> من 569
-        </div>
-        
-        <!-- منطقة الصورة -->
-        <div id="mushaf-normal-view" style="background: white; border-radius: 15px; padding: 20px; box-shadow: inset 0 4px 8px rgba(0,0,0,0.1); position: relative; min-height: 500px; display: flex; align-items: center; justify-content: center;">
-            
-            <!-- الأزرار الجانبية -->
-            <button onclick="prevMushafPage()" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: #6B5344; color: white; border: none; padding: 20px 15px; border-radius: 12px; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10;">
-                ←
-            </button>
-            
-            <button onclick="nextMushafPage()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #6B5344; color: white; border: none; padding: 20px 15px; border-radius: 12px; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10;">
-                →
-            </button>
-            
-            <!-- الصورة -->
-            <img id="mushaf-page-img" src="" alt="صفحة القرآن" onclick="openFullscreenMushaf()" style="max-width: 100%; max-height: 500px; width: auto; height: auto; box-shadow: 0 8px 20px rgba(0,0,0,0.2); border-radius: 8px; cursor: pointer;">
-            
-            <!-- Loader -->
-            <div id="mushaf-loader" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                <div style="width: 50px; height: 50px; border: 5px solid rgba(244, 196, 48, 0.3); border-top-color: #F4C430; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-            </div>
-        </div>
-        
-        <!-- أزرار التحكم السفلية -->
-        <div style="display: flex; gap: 10px; justify-content: center; align-items: center; margin-top: 20px; flex-wrap: wrap;">
-            
-            <button onclick="openFullscreenMushaf()" style="background: #F4C430; color: #2F5F63; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; font-size: 1rem;">
-                ⛶ عرض بملء الشاشة
-            </button>
-            
-            <div style="display: flex; gap: 5px; align-items: center;">
-                <input type="number" id="mushaf-page-input" min="1" max="569" placeholder="رقم" style="width: 80px; padding: 10px; border: 2px solid #F4C430; border-radius: 8px; text-align: center; font-family: 'Amiri', serif; font-weight: bold;">
-                <button onclick="jumpToMushafPage()" style="background: #F4C430; color: #2F5F63; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;">
-                    انتقال
-                </button>
-            </div>
-            
-            <button onclick="loadMushafBookmark()" style="background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
-                🔖 الذهاب للعلامة
-            </button>
-        </div>
-        
-    </div>
-    
-</div>
-
-<!-- شاشة ملء الشاشة -->
-<div id="mushaf-fullscreen-view" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999;">
-    
-    <!-- زر الخروج -->
-    <button onclick="closeFullscreenMushaf()" style="position: fixed; top: 15px; right: 15px; background: rgba(255,255,255,0.9); color: #333; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; z-index: 100000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;">
-        ×
-    </button>
-    
-    <!-- الصورة -->
-    <div id="mushaf-fullscreen-container" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; touch-action: pan-x;">
-        <img id="mushaf-fullscreen-img" src="" alt="صفحة القرآن" style="max-width: 100%; max-height: 100%; width: auto; height: auto; user-select: none;">
-    </div>
-    
-</div>
-
-<style>
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-</style>
-
-
-
-<script src="script.js?v=5"></script>
-
-
-
-
-
-
-<!-- Service Worker Registration -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/Quran.github.io/sw.js')
-      .then(reg => console.log('✅ Service Worker registered'))
-      .catch(err => console.log('❌ SW error:', err));
-  });
-}
-</script>
-<!-- اختبار الصور -->
-
-
-</body>
-</html>
