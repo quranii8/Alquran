@@ -2024,39 +2024,6 @@ function saveHifzData() {
 }
 
 // تحديث دالة switchMainTab لدعم قسم الحفظ
-const originalSwitchMainTab = switchMainTab;
-switchMainTab = function(t) {
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    const activeTab = document.getElementById(t + 'Tab');
-    if (activeTab) activeTab.classList.add('active');
-
-    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section', 'achievements-section', 'hifz-section'];
-    
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
-    });
-    
-    if (t === 'qibla' && typeof getQibla === 'function') getQibla();
-    if (t === 'prayer' && typeof fetchPrayers === 'function') fetchPrayers();
-    if (t === 'khatma' && typeof updateKhatmaUI === 'function') updateKhatmaUI();
-    if (t === 'hifz') initHifzSection();
-    
-    if (t === 'quran') {
-        const fullView = document.getElementById('full-quran-view');
-        const topicsView = document.getElementById('topics-view');
-        const quranView = document.getElementById('quran-view');
-
-        if (fullView) fullView.style.display = 'block';
-        if (topicsView) topicsView.style.display = 'none';
-        if (quranView) quranView.style.display = 'none';
-    }
-    
-    if(t === 'sebha') {
-        document.getElementById('sebha-categories').style.display = 'grid';
-        document.getElementById('sebha-main-view').style.display = 'none';
-    }
-};
 
 // تهيئة قسم الحفظ
 function initHifzSection() {
