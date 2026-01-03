@@ -207,11 +207,15 @@ function switchMainTab(tabName) {
     
     // إظهار القسم المطلوب
     // إظهار القسم المطلوب
+// إظهار القسم المطلوب
 const targetSection = sections[tabName];
 if (targetSection) {
     const section = document.getElementById(targetSection);
     if (section) {
-        section.setAttribute('style', 'display: block !important;');
+        section.style.display = 'block';
+        section.style.visibility = 'visible';
+        section.style.opacity = '1';
+
         console.log('✅ Section shown:', targetSection);
     } else {
         console.error('❌ Section not found:', targetSection);
