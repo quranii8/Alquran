@@ -1099,7 +1099,6 @@ body.dark-mode #tafsir-selector {
 #hifz-section {
     display: none;
 }
-
 /* إظهار قسم القرآن فقط */
 #quran-section {
     display: block;
