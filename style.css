@@ -1089,3 +1089,18 @@ body.dark-mode #tafsir-selector {
         padding: 15px !important;
     }
 }
+/* إخفاء الأقسام افتراضياً */
+#azkar-section,
+#sebha-section,
+#prayer-section,
+#qibla-section,
+#khatma-section,
+#achievements-section,
+#hifz-section {
+    display: none;
+}
+
+/* إظهار قسم القرآن فقط */
+#quran-section {
+    display: block;
+}
