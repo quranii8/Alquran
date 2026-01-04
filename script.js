@@ -571,62 +571,6 @@ function resetAllSebhaAutomated() {
 }
 
 setInterval(updateCountdown, 1000);
-function switchMainTab(t) {
-    // 1. تحديث الأزرار
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    const activeTab = document.getElementById(t + 'Tab');
-    if (activeTab) activeTab.classList.add('active');
-
-    // 2. قائمة كل الأقسام (مع قسم الإنجازات)
-    const allSections = [
-        'quran-section', 
-        'azkar-section', 
-        'sebha-section', 
-        'prayer-section', 
-        'qibla-section', 
-        'khatma-section',
-        'achievements-section'  // ✨ مهم جداً
-    ];
-
-    // 3. إخفاء كل الأقسام وإظهار المطلوب فقط
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) {
-            el.style.display = s.startsWith(t) ? 'block' : 'none';
-        }
-    });
-
-    // 4. دوال خاصة لبعض الأقسام
-    if (t === 'qibla' && typeof getQibla === 'function') getQibla();
-    if (t === 'prayer' && typeof fetchPrayers === 'function') fetchPrayers();
-    if (t === 'khatma' && typeof updateKhatmaUI === 'function') updateKhatmaUI();
-    
-    // 5. إعدادات خاصة بالقرآن
-    if (t === 'quran') {
-        const fullView = document.getElementById('full-quran-view');
-        const topicsView = document.getElementById('topics-view');
-        const quranView = document.getElementById('quran-view');
-
-        if (fullView) fullView.style.display = 'block';
-        if (topicsView) topicsView.style.display = 'none';
-        if (quranView) quranView.style.display = 'none';
-    }
-    
-    // 6. إعدادات خاصة بالسبحة
-    if (t === 'sebha') {
-        document.getElementById('sebha-categories').style.display = 'grid';
-        document.getElementById('sebha-main-view').style.display = 'none';
-    }
-}
-
-// --- 6. الوضع الداكن والخط والتبديل ---
-function switchMainTab(t) {
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab').classList.add('active');
-    ['quran-section', 'azkar-section', 'sebha-section'].forEach(s => { 
-        document.getElementById(s).style.display = s.startsWith(t) ? 'block' : 'none'; 
-    });
-}
 
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 function changeFontSize(d) { 
@@ -776,37 +720,7 @@ function handleCompass(e) {
 }
 
 // دالة التبديل الشاملة (تأكد أنها الوحيدة في الملف)
-function switchMainTab(t) {
-    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab')?.classList.add('active');
 
-    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section'];
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
-    });
-    
-    if(t === 'qibla') getQibla();
-    if(t === 'prayer') fetchPrayers();
-}
-// دالة جلب آية اليوم بناءً على تاريخ اليوم
-async function loadDailyAyah() {
-    try {
-        const now = new Date();
-        // استخدام رقم اليوم في السنة للحصول على آية متجددة يومياً
-        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-        
-        const response = await fetch(`https://api.alquran.cloud/v1/ayah/${dayOfYear}/ar.alafasy`);
-        const data = await response.json();
-        
-        if(data.code === 200) {
-            document.getElementById('daily-text').innerText = data.data.text;
-            document.getElementById('daily-ref').innerText = `[سورة ${data.data.surah.name} - آية ${data.data.numberInSurah}]`;
-        }
-    } catch (error) {
-        document.getElementById('daily-text').innerText = "فذكر بالقرآن من يخاف وعيد";
-    }
-}
 
 // دالة نسخ الآية
 function copyDailyAyah() {
@@ -980,65 +894,6 @@ function showMain() {
     // مسح التمييزات
     document.querySelectorAll('.ayah-active').forEach(el => el.classList.remove('ayah-active'));
 }
-
-function switchMainTab(t) {
-    // 1. تحديث شكل الأزرار في القائمة العلوية
-    document.querySelectorAll('.main-nav button').forEach(b => {
-        b.classList.remove('active');
-    });
-    
-    // تأكد أن الـ ID الخاص بالزر يطابق (اسم القسم + Tab)
-    const activeTab = document.getElementById(t + 'Tab');
-    if (activeTab) {
-        activeTab.classList.add('active');
-    }
-
-    // 2. مصفوفة بكل الأقسام الرئيسية لضمان إخفاء غير المطلوب
-    const allSections = [
-        'quran-section', 
-        'azkar-section', 
-        'sebha-section', 
-        'prayer-section', 
-        'qibla-section'
-    ];
-
-    allSections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) {
-            // إظهار القسم إذا كان يبدأ بنفس اسم التاب المختار، وإخفاء الباقي
-            el.style.display = s.startsWith(t) ? 'block' : 'none';
-        }
-    });
-
-    // 3. تشغيل الدوال الخاصة بالأقسام التي تحتاج تحديث لحظي عند الفتح
-    if (t === 'qibla') {
-        if (typeof getQibla === 'function') {
-            getQibla(); // جلب إحداثيات القبلة
-        }
-    }
-    
-    if (t === 'prayer') {
-        if (typeof fetchPrayers === 'function') {
-            fetchPrayers(); // تحديث مواقيت الصلاة والعداد التنازلي
-        }
-    }
-
-    // 4. ملاحظة هامة للفهرس: عند الانتقال لقسم القرآن من زر خارجي
-    // نضمن دائماً ظهور المصحف الكامل وإخفاء الفهرس والقارئ كحالة افتراضية
-    if (t === 'quran') {
-        const fullView = document.getElementById('full-quran-view');
-        const topicsView = document.getElementById('topics-view');
-        const quranView = document.getElementById('quran-view');
-
-        if (fullView) fullView.style.display = 'block';
-        if (topicsView) topicsView.style.display = 'none';
-        if (quranView) quranView.style.display = 'none';
-    }
-        // للسبحة: نعرض قائمة الاختيار
-    if(t === 'sebha') {
-        document.getElementById('sebha-categories').style.display = 'grid';
-        document.getElementById('sebha-main-view').style.display = 'none';
-    }
 }
 function switchMainTab(t) {
     // 1. تغيير حالة الأزرار العلوية
