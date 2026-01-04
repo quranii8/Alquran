@@ -13,7 +13,6 @@ let sebhaCounters = JSON.parse(localStorage.getItem('sebhaCounters')) || {
     takbir: { count: 0, goal: 100 },
     salah: { count: 0, goal: 100 }
 };
-
 const sebhaTexts = {
     tasbih: { title: 'التسبيح', text: 'سُبْحَانَ اللَّهِ', emoji: '📿' },
     istighfar: { title: 'الاستغفار', text: 'أَسْتَغْفِرُ اللَّهَ', emoji: '🤲' },
@@ -160,139 +159,7 @@ const LEVELS = [
     { level: 10, xpNeeded: 10000, title: 'أسطورة' }
 ];
 
-// ==========================================
-// دالة التبديل بين الأقسام - محدّثة
-// ==========================================
 
-function switchMainTab(tabName) {
-    console.log('🔄 Switching to tab:', tabName);
-    
-    // إخفاء القائمة الجانبية
-    const sideMenu = document.getElementById('sideMenu');
-    if (sideMenu) {
-        sideMenu.classList.remove('open');
-    }
-    
-    // تحديث الأزرار
-    document.querySelectorAll('.main-nav button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    const activeBtn = document.getElementById(tabName + 'Tab');
-    if (activeBtn) {
-        activeBtn.classList.add('active');
-        console.log('✅ Button activated:', tabName + 'Tab');
-    } else {
-        console.error('❌ Button not found:', tabName + 'Tab');
-    }
-    
-    // إخفاء جميع الأقسام
-    const sections = {
-        'quran': 'quran-section',
-        'azkar': 'azkar-section',
-        'sebha': 'sebha-section',
-        'prayer': 'prayer-section',
-        'qibla': 'qibla-section',
-        'khatma': 'khatma-section',
-        'achievements': 'achievements-section',
-        'hifz': 'hifz-section'
-    };
-    
-    Object.values(sections).forEach(sectionId => {
-        const section = document.getElementById(sectionId);
-        if (section) {
-            section.style.display = 'none';
-        }
-    });
-    
-    // إظهار القسم المطلوب
-    // إظهار القسم المطلوب
-// إظهار القسم المطلوب
-// إظهار القسم المطلوب
-const targetSection = sections[tabName];
-if (targetSection) {
-    const section = document.getElementById(targetSection);
-    if (section) {
-        section.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important;';
-        section.removeAttribute('hidden');
-
-
-        console.log('✅ Section shown:', targetSection);
-    } else {
-        console.error('❌ Section not found:', targetSection);
-    }
-}
-
-    
-    // تهيئة خاصة لكل قسم
-    switch(tabName) {
-        case 'quran':
-            const fullView = document.getElementById('full-quran-view');
-            const topicsView = document.getElementById('topics-view');
-            const quranView = document.getElementById('quran-view');
-            
-            if (fullView) fullView.style.display = 'block';
-            if (topicsView) topicsView.style.display = 'none';
-            if (quranView) quranView.style.display = 'none';
-            console.log('✅ Quran section initialized');
-            break;
-            
-        case 'azkar':
-            const azkarCategories = document.getElementById('azkar-categories');
-            const azkarMainView = document.getElementById('azkar-main-view');
-            
-            if (azkarCategories) azkarCategories.style.display = 'grid';
-            if (azkarMainView) azkarMainView.style.display = 'none';
-            console.log('✅ Azkar section initialized');
-            break;
-            
-        case 'sebha':
-            const sebhaCategories = document.getElementById('sebha-categories');
-            const sebhaMainView = document.getElementById('sebha-main-view');
-            
-            if (sebhaCategories) sebhaCategories.style.display = 'grid';
-            if (sebhaMainView) sebhaMainView.style.display = 'none';
-            console.log('✅ Sebha section initialized');
-            break;
-            
-        case 'prayer':
-            if (typeof fetchPrayers === 'function') {
-                fetchPrayers();
-                console.log('✅ Prayer times fetched');
-            }
-            break;
-            
-        case 'qibla':
-            if (typeof getQibla === 'function') {
-                getQibla();
-                console.log('✅ Qibla direction fetched');
-            }
-            break;
-            
-        case 'khatma':
-            if (typeof updateKhatmaUI === 'function') {
-                updateKhatmaUI();
-                console.log('✅ Khatma UI updated');
-            }
-            break;
-            
-        case 'achievements':
-            if (typeof displayBadges === 'function') {
-                displayBadges();
-                console.log('✅ Badges displayed');
-            }
-            break;
-            
-        case 'hifz':
-            if (typeof initHifzSection === 'function') {
-                initHifzSection();
-                console.log('✅ Hifz section initialized');
-            }
-            break;
-    }
-}
-
-console.log('✅ switchMainTab function loaded successfully');
 // --- 1. القائمة الجانبية والإعدادات ---
 function toggleMenu() { document.getElementById('sideMenu').classList.toggle('open'); }
 function toggleMute() { 
@@ -345,32 +212,16 @@ function openSurah(id, name) {
             ayahsHTML = '<div class="basmala-separate">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>';
         }
         
-               for (let i = 0; i < ayahs.length; i++) {
-    let text = ayahs[i].text;
-    
-    // حذف البسملة من الآيات (بكل الأشكال)
-    // ما عدا الفاتحة - البسملة فيها آية
-    if (id !== 1) {  // إذا مو سورة الفاتحة
-        text = text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '');
-        text = text.replace(/بسم الله الرحمن الرحيم/g, '');
-        text = text.replace(/بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ/g, '');
-        text = text.replace(/بِسمِ اللَّهِ الرَّحمٰنِ الرَّحيمِ/g, '');
-    }
-    text = text.trim();
-    
-    // عدم عرض آيات فارغة
-    if (text.length > 0) {
-        ayahsHTML += `
-            <span class="ayah-item" 
-                  data-index="${i}" 
-                  data-surah="${id}" 
-                  data-ayah="${ayahs[i].numberInSurah}"
-                  data-ayah-text="${text.replace(/"/g, '&quot;')}">${text}</span> 
-            <span style="color:var(--gold); font-size: 1.1rem;">﴿${ayahs[i].numberInSurah}﴾</span> 
-        `;
-    }
-}
-
+        for (let i = 0; i < ayahs.length; i++) {
+            let text = ayahs[i].text;
+            text = text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '');
+            text = text.replace(/بسم الله الرحمن الرحيم/g, '');
+            text = text.trim();
+            
+            if (text.length > 0) {
+                ayahsHTML += '<span class="ayah-item" data-index="' + i + '">' + text + '</span> <span style="color:var(--gold); font-size: 1.1rem;">(' + ayahs[i].numberInSurah + ')</span> ';
+            }
+        }
         
         document.getElementById('ayahsContainer').innerHTML = ayahsHTML;
         setupAyahHighlighting(ayahs.length);
@@ -719,7 +570,62 @@ function resetAllSebhaAutomated() {
 }
 
 setInterval(updateCountdown, 1000);
+function switchMainTab(t) {
+    // 1. تحديث الأزرار
+    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+    const activeTab = document.getElementById(t + 'Tab');
+    if (activeTab) activeTab.classList.add('active');
 
+    // 2. قائمة كل الأقسام (مع قسم الإنجازات)
+    const allSections = [
+        'quran-section', 
+        'azkar-section', 
+        'sebha-section', 
+        'prayer-section', 
+        'qibla-section', 
+        'khatma-section',
+        'achievements-section'  // ✨ مهم جداً
+    ];
+
+    // 3. إخفاء كل الأقسام وإظهار المطلوب فقط
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) {
+            el.style.display = s.startsWith(t) ? 'block' : 'none';
+        }
+    });
+
+    // 4. دوال خاصة لبعض الأقسام
+    if (t === 'qibla' && typeof getQibla === 'function') getQibla();
+    if (t === 'prayer' && typeof fetchPrayers === 'function') fetchPrayers();
+    if (t === 'khatma' && typeof updateKhatmaUI === 'function') updateKhatmaUI();
+    
+    // 5. إعدادات خاصة بالقرآن
+    if (t === 'quran') {
+        const fullView = document.getElementById('full-quran-view');
+        const topicsView = document.getElementById('topics-view');
+        const quranView = document.getElementById('quran-view');
+
+        if (fullView) fullView.style.display = 'block';
+        if (topicsView) topicsView.style.display = 'none';
+        if (quranView) quranView.style.display = 'none';
+    }
+    
+    // 6. إعدادات خاصة بالسبحة
+    if (t === 'sebha') {
+        document.getElementById('sebha-categories').style.display = 'grid';
+        document.getElementById('sebha-main-view').style.display = 'none';
+    }
+}
+
+// --- 6. الوضع الداكن والخط والتبديل ---
+function switchMainTab(t) {
+    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(t + 'Tab').classList.add('active');
+    ['quran-section', 'azkar-section', 'sebha-section'].forEach(s => { 
+        document.getElementById(s).style.display = s.startsWith(t) ? 'block' : 'none'; 
+    });
+}
 
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
 function changeFontSize(d) { 
@@ -869,7 +775,19 @@ function handleCompass(e) {
 }
 
 // دالة التبديل الشاملة (تأكد أنها الوحيدة في الملف)
+function switchMainTab(t) {
+    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(t + 'Tab')?.classList.add('active');
 
+    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section'];
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
+    });
+    
+    if(t === 'qibla') getQibla();
+    if(t === 'prayer') fetchPrayers();
+}
 // دالة جلب آية اليوم بناءً على تاريخ اليوم
 async function loadDailyAyah() {
     try {
@@ -1061,6 +979,102 @@ function showMain() {
     // مسح التمييزات
     document.querySelectorAll('.ayah-active').forEach(el => el.classList.remove('ayah-active'));
 }
+
+function switchMainTab(t) {
+    // 1. تحديث شكل الأزرار في القائمة العلوية
+    document.querySelectorAll('.main-nav button').forEach(b => {
+        b.classList.remove('active');
+    });
+    
+    // تأكد أن الـ ID الخاص بالزر يطابق (اسم القسم + Tab)
+    const activeTab = document.getElementById(t + 'Tab');
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+
+    // 2. مصفوفة بكل الأقسام الرئيسية لضمان إخفاء غير المطلوب
+    const allSections = [
+        'quran-section', 
+        'azkar-section', 
+        'sebha-section', 
+        'prayer-section', 
+        'qibla-section'
+    ];
+
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) {
+            // إظهار القسم إذا كان يبدأ بنفس اسم التاب المختار، وإخفاء الباقي
+            el.style.display = s.startsWith(t) ? 'block' : 'none';
+        }
+    });
+
+    // 3. تشغيل الدوال الخاصة بالأقسام التي تحتاج تحديث لحظي عند الفتح
+    if (t === 'qibla') {
+        if (typeof getQibla === 'function') {
+            getQibla(); // جلب إحداثيات القبلة
+        }
+    }
+    
+    if (t === 'prayer') {
+        if (typeof fetchPrayers === 'function') {
+            fetchPrayers(); // تحديث مواقيت الصلاة والعداد التنازلي
+        }
+    }
+
+    // 4. ملاحظة هامة للفهرس: عند الانتقال لقسم القرآن من زر خارجي
+    // نضمن دائماً ظهور المصحف الكامل وإخفاء الفهرس والقارئ كحالة افتراضية
+    if (t === 'quran') {
+        const fullView = document.getElementById('full-quran-view');
+        const topicsView = document.getElementById('topics-view');
+        const quranView = document.getElementById('quran-view');
+
+        if (fullView) fullView.style.display = 'block';
+        if (topicsView) topicsView.style.display = 'none';
+        if (quranView) quranView.style.display = 'none';
+    }
+        // للسبحة: نعرض قائمة الاختيار
+    if(t === 'sebha') {
+        document.getElementById('sebha-categories').style.display = 'grid';
+        document.getElementById('sebha-main-view').style.display = 'none';
+    }
+}
+function switchMainTab(t) {
+    // 1. تغيير حالة الأزرار العلوية
+    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(t + 'Tab')?.classList.add('active');
+
+    // 2. قائمة الأقسام مع إضافة قسم الختمة الجديد
+    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section'];
+
+    // 3. التبديل بين الأقسام
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
+    });
+
+    // 4. تشغيل وظائف الأقسام الخاصة
+    if (t === 'qibla') getQibla();
+    if (t === 'prayer') fetchPrayers();
+    if (t === 'khatma' && typeof updateKhatmaUI === 'function') updateKhatmaUI();
+    
+    // 5. تصفير واجهة القرآن عند العودة لها
+    if (t === 'quran') {
+        document.getElementById('full-quran-view').style.display = 'block';
+        document.getElementById('topics-view').style.display = 'none';
+        document.getElementById('quran-view').style.display = 'none';
+    }
+}
+// بيانات الختمة
+// 1. إدارة بيانات الختمة في الذاكرة
+let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || {
+    currentJuz: 1,
+    lastAyahIndex: 0,
+    lastUpdate: new Date().toDateString()
+};
+
+let currentJuzAyahs = [];
+
 // 2. دالة بدء القراءة وجلب الجزء
 async function startKhatmaReading() {
     document.getElementById('khatma-intro').style.display = 'none';
@@ -1636,21 +1650,23 @@ function closeFullscreenMushaf() {
     document.body.style.overflow = 'auto';
 }
 
-// إعداد السحب للتنقل// إعداد السحب للتنقل
+// إعداد السحب للتنقل// إعداد السحب للت// إعداد السحب للتنقل
 function setupSwipeGestures() {
     const container = document.getElementById('mushaf-fullscreen-container');
     const img = document.getElementById('mushaf-fullscreen-img');
     let touchStartX = 0;
     let touchEndX = 0;
     let isSwiping = false;
+    let hasNavigated = false; // 🔥 جديد: لمنع التنقل المتعدد
     
     container.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
         isSwiping = true;
+        hasNavigated = false; // إعادة ضبط
     }, { passive: true });
     
     container.addEventListener('touchmove', (e) => {
-        if (!isSwiping) return;
+        if (!isSwiping || hasNavigated) return; // 🔥 إيقاف لو تم التنقل
         
         touchEndX = e.changedTouches[0].screenX;
         const diff = touchEndX - touchStartX;
@@ -1661,7 +1677,7 @@ function setupSwipeGestures() {
     }, { passive: true });
     
     container.addEventListener('touchend', (e) => {
-        if (!isSwiping) return;
+        if (!isSwiping || hasNavigated) return;
         
         touchEndX = e.changedTouches[0].screenX;
         isSwiping = false;
@@ -1674,25 +1690,28 @@ function setupSwipeGestures() {
     }, { passive: true });
     
     function handleSwipe() {
-        const swipeThreshold = 50;
+        if (hasNavigated) return; // 🔥 منع التنقل المتكرر
+        
+        const swipeThreshold = 80; // 🔥 زيادة الحد الأدنى للسحب
         const diff = touchEndX - touchStartX;
         
         if (diff > swipeThreshold) {
-            // سحب لليمين = الصفحة التالية ⬅️
+            // سحب لليمين = الصفحة التالية
+            hasNavigated = true; // 🔥 تسجيل أن التنقل تم
             nextMushafPageFullscreen();
         }
-        
-        if (diff < -swipeThreshold) {
-            // سحب لليسار = الصفحة السابقة ➡️
+        else if (diff < -swipeThreshold) {
+            // سحب لليسار = الصفحة السابقة
+            hasNavigated = true; // 🔥 تسجيل أن التنقل تم
             prevMushafPageFullscreen();
         }
     }
 }
 
-// التنقل في وضع ملء الشاشة - محسّن
+// التنقل في وضع ملء الشاشة - صفحة واحدة فقط
 function nextMushafPageFullscreen() {
     if (currentMushafPage < 569) {
-        currentMushafPage++;
+        currentMushafPage++; // 🔥 زيادة صفحة واحدة فقط
         updateFullscreenImage();
         showPageTransition('→');
     }
@@ -1700,11 +1719,12 @@ function nextMushafPageFullscreen() {
 
 function prevMushafPageFullscreen() {
     if (currentMushafPage > 1) {
-        currentMushafPage--;
+        currentMushafPage--; // 🔥 تقليل صفحة واحدة فقط
         updateFullscreenImage();
         showPageTransition('←');
     }
 }
+
 
 function updateFullscreenImage() {
     const imageNumber = currentMushafPage + 274;
@@ -1773,18 +1793,19 @@ let hifzData = JSON.parse(localStorage.getItem('hifzData')) || {
     startDate: null,
     currentPage: 1,
     completedPages: [],
-    reviewedPages: {},
+    reviewedPages: {}, // 🔥 جديد: {pageNumber: lastReviewDate}
     currentStreak: 0,
     longestStreak: 0,
     lastCompletedDate: null,
     totalAyat: 0,
-    totalReviews: 0,
-    testScores: [],
-    totalTests: 0,
-    averageScore: 0,
-    earnedBadges: []
+    totalReviews: 0 // 🔥 جديد
+    testScores: [], // 🔥 جديد: [{date, page, score, totalWords}]
+    totalTests: 0,  // 🔥 جديد
+    averageScore: 0 // 🔥 جديد
 };
 
+
+// جدول الصفحات والآيات (مبسط - أول 10 صفحات كمثال)
 // جلب معلومات الصفحة من API
 async function getPageInfo(pageNumber) {
     try {
@@ -1813,18 +1834,22 @@ async function getPageInfo(pageNumber) {
     }
 }
 
+
 // اختيار خطة الحفظ
 function selectHifzPlan(plan) {
+    // تمييز الخطة المختارة
     document.querySelectorAll('.hifz-plan-card').forEach(card => {
         card.classList.remove('selected');
     });
     event.currentTarget.classList.add('selected');
     
+    // حفظ الخطة
     hifzData.plan = plan;
     hifzData.startDate = new Date().toISOString();
     hifzData.currentPage = 1;
     saveHifzData();
     
+    // الانتقال للواجهة الرئيسية بعد ثانية
     setTimeout(() => {
         document.getElementById('hifz-setup').style.display = 'none';
         document.getElementById('hifz-main').style.display = 'block';
@@ -1834,6 +1859,7 @@ function selectHifzPlan(plan) {
 }
 
 // تحميل ورد اليوم
+// تحميل ورد اليوم
 async function loadTodayHifz() {
     if (!hifzData.plan) {
         document.getElementById('hifz-setup').style.display = 'block';
@@ -1841,6 +1867,7 @@ async function loadTodayHifz() {
         return;
     }
     
+    // حساب الصفحة الحالية حسب الخطة
     const currentPage = Math.ceil(hifzData.currentPage);
     
     if (currentPage > 604) {
@@ -1856,9 +1883,11 @@ async function loadTodayHifz() {
         return;
     }
     
+    // عرض loader
     const display = document.getElementById('hifz-ayahs-display');
     display.innerHTML = '<p style="text-align:center; color:#999;">⏳ جاري تحميل ورد اليوم...</p>';
     
+    // جلب معلومات الصفحة
     const pageInfo = await getPageInfo(currentPage);
     
     if (!pageInfo) {
@@ -1866,6 +1895,7 @@ async function loadTodayHifz() {
         return;
     }
     
+    // حساب عدد الآيات حسب الخطة
     let ayahsToShow = pageInfo.ayahs;
     if (hifzData.plan === 'quarter') {
         ayahsToShow = pageInfo.ayahs.slice(0, Math.ceil(pageInfo.totalAyahs / 4));
@@ -1873,42 +1903,83 @@ async function loadTodayHifz() {
         ayahsToShow = pageInfo.ayahs.slice(0, Math.ceil(pageInfo.totalAyahs / 2));
     }
     
+    // عرض معلومات الورد
     document.getElementById('hifz-today-range').innerText = `صفحة ${currentPage} - ${pageInfo.surahName}`;
     document.getElementById('hifz-today-ayat-count').innerText = ayahsToShow.length;
     
+    // عرض الآيات
     let html = '';
     
+    // إضافة البسملة إذا كانت بداية السورة (ما عدا التوبة)
     if (pageInfo.ayahStart === 1 && pageInfo.surah !== 1 && pageInfo.surah !== 9) {
         html += `<div style="text-align:center; color:var(--gold); font-size:2rem; margin:20px 0; font-weight:bold;">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
     }
     
     ayahsToShow.forEach((ayah) => {
+        // إزالة البسملة من النص إذا كانت موجودة
         let text = ayah.text.replace(/بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ/g, '').trim();
         
-        if (text.length > 0) {
-            html += `<span class="hifz-ayah">${text}</span> <span style="color:var(--gold); font-weight:bold; font-size:1.2rem; margin:0 8px;">﴿${ayah.numberInSurah}﴾</span> `;
-        }
+        html += `<span class="hifz-ayah">${text}</span> <span style="color:var(--gold); font-weight:bold; font-size:1.2rem; margin:0 8px;">﴿${ayah.numberInSurah}﴾</span> `;
     });
     
     display.innerHTML = html;
 }
 
+
+// جلب اسم السورة
+async function getSurahName(surahNumber) {
+    const surahNames = {
+        1: 'سورة الفاتحة',
+        2: 'سورة البقرة',
+        3: 'سورة آل عمران',
+        // سنضيف الباقي لاحقاً
+    };
+    return surahNames[surahNumber] || `سورة ${surahNumber}`;
+}
+
+// جلب الآيات من API
+async function loadHifzAyahs(surah, start, end) {
+    const display = document.getElementById('hifz-ayahs-display');
+    display.innerHTML = '<p style="text-align:center; color:#999;">جاري التحميل...</p>';
+    
+    try {
+        const response = await fetch(`https://api.alquran.cloud/v1/surah/${surah}`);
+        const data = await response.json();
+        const ayahs = data.data.ayahs.slice(start - 1, end);
+        
+        let html = '';
+        ayahs.forEach((ayah, index) => {
+            const ayahNumber = start + index;
+            html += `<span class="hifz-ayah">${ayah.text}</span> <span style="color:var(--gold); font-size:1.1rem; margin:0 10px;">(${ayahNumber})</span> `;
+        });
+        
+        display.innerHTML = html;
+        
+    } catch (error) {
+        display.innerHTML = '<p style="text-align:center; color:#e74c3c;">تعذر تحميل الآيات. تأكد من الاتصال بالإنترنت.</p>';
+    }
+}
+
+// إتمام ورد اليوم
 // إتمام ورد اليوم
 async function markTodayComplete() {
     const today = new Date().toDateString();
     const currentPage = Math.ceil(hifzData.currentPage);
     
+    // التحقق من عدم التكرار
     if (hifzData.lastCompletedDate === today) {
         alert('✅ لقد أتممت ورد اليوم بالفعل!\nبارك الله فيك 🌟');
         return;
     }
     
+    // جلب معلومات الصفحة الحالية
     const pageInfo = await getPageInfo(currentPage);
     if (!pageInfo) {
         alert('❌ حدث خطأ، حاول مرة أخرى');
         return;
     }
     
+    // حساب عدد الآيات حسب الخطة
     let ayahsCompleted = pageInfo.totalAyahs;
     if (hifzData.plan === 'quarter') {
         ayahsCompleted = Math.ceil(pageInfo.totalAyahs / 4);
@@ -1916,14 +1987,17 @@ async function markTodayComplete() {
         ayahsCompleted = Math.ceil(pageInfo.totalAyahs / 2);
     }
     
+    // تحديث البيانات
     if (!hifzData.completedPages.includes(currentPage)) {
         hifzData.completedPages.push(currentPage);
     }
     hifzData.lastCompletedDate = today;
     hifzData.totalAyat += ayahsCompleted;
     
+    // حساب السلسلة
     updateStreak();
     
+    // الانتقال للصفحة التالية حسب الخطة
     if (hifzData.plan === 'quarter') {
         hifzData.currentPage += 0.25;
     } else if (hifzData.plan === 'half') {
@@ -1933,16 +2007,23 @@ async function markTodayComplete() {
     }
     
     saveHifzData();
-    showHifzCelebration();
-    updateHifzStats();
-    checkHifzBadges();
     
+    // إظهار تهنئة
+    showHifzCelebration();
+    
+    // تحديث الإحصائيات
+    updateHifzStats();
+    
+    // تحميل الورد الجديد
     setTimeout(() => {
         loadTodayHifz();
     }, 2500);
+    // فحص الشارات الجديدة
+    checkHifzBadges();
+}
 }
 
-// تحديث السلسلة
+// تحديث السلسلة اليومية
 function updateStreak() {
     const today = new Date();
     const lastDate = hifzData.lastCompletedDate ? new Date(hifzData.lastCompletedDate) : null;
@@ -1965,6 +2046,7 @@ function updateStreak() {
     }
 }
 
+// تحديث الإحصائيات
 // تحديث الإحصائيات
 function updateHifzStats() {
     const completedPages = hifzData.completedPages.length;
@@ -1994,13 +2076,14 @@ function updateHifzStats() {
     const avgScore = document.getElementById('hifz-average-score');
     if (avgScore) avgScore.innerText = hifzData.averageScore + '%';
     
-    const badgesCount = document.getElementById('hifz-badges-count');
+        const badgesCount = document.getElementById('hifz-badges-count');
     if (badgesCount && hifzData.earnedBadges) {
         badgesCount.innerText = hifzData.earnedBadges.length;
     }
-}
 
-// احتفالية
+
+
+// إظهار احتفالية
 function showHifzCelebration() {
     const celebration = document.createElement('div');
     celebration.className = 'badge-notification';
@@ -2023,14 +2106,260 @@ function showHifzCelebration() {
 function saveHifzData() {
     localStorage.setItem('hifzData', JSON.stringify(hifzData));
     
+    // حفظ في السحابة
     if (typeof window.saveToCloud === 'function') {
         window.saveToCloud('hifz', hifzData);
     }
 }
 
-// تحديث دالة switchMainTab لدعم قسم الحفظ
+// فتح الإعدادات
+// فتح صفحة الإعدادات الكاملة
+function openHifzSettings() {
+    // إخفاء الواجهة الرئيسية
+    document.getElementById('hifz-main').style.display = 'none';
+    
+    // إنشاء صفحة الإعدادات
+    let settingsSection = document.getElementById('hifz-settings');
+    if (!settingsSection) {
+        settingsSection = createSettingsSection();
+        document.getElementById('hifz-section').appendChild(settingsSection);
+    }
+    
+    settingsSection.style.display = 'block';
+    loadSettingsData();
+}
 
-// تهيئة قسم الحفظ
+// إنشاء صفحة الإعدادات
+function createSettingsSection() {
+    const section = document.createElement('div');
+    section.id = 'hifz-settings';
+    section.style.display = 'none';
+    section.innerHTML = `
+        <div class="daily-card" style="max-width: 700px; margin: 20px auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3 style="color: var(--gold); margin: 0;">⚙️ إعدادات الحفظ</h3>
+                <button onclick="closeHifzSettings()" class="modern-back-btn">↩ رجوع</button>
+            </div>
+            
+            <!-- تغيير الخطة -->
+            <div style="background: rgba(201, 176, 122, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                <h4 style="color: var(--dark-teal); margin-bottom: 15px;">📖 خطة الحفظ</h4>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">الخطة الحالية: <strong id="current-plan-text">-</strong></p>
+                
+                <select id="plan-select" style="width: 100%; padding: 12px; border: 2px solid var(--gold); border-radius: 10px; font-family: 'Amiri', serif; font-size: 1rem; margin-bottom: 15px;">
+                    <option value="quarter">🌱 ربع صفحة يومياً (≈ 3 آيات)</option>
+                    <option value="half">🌿 نصف صفحة يومياً (≈ 6 آيات)</option>
+                    <option value="full">🌳 صفحة كاملة يومياً (≈ 12 آية)</option>
+                </select>
+                
+                <button onclick="changePlan()" style="background: var(--dark-teal); color: var(--gold); border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; width: 100%;">
+                    تحديث الخطة
+                </button>
+            </div>
+            
+            <!-- إحصائيات تفصيلية -->
+            <div style="background: rgba(201, 176, 122, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                <h4 style="color: var(--dark-teal); margin-bottom: 15px;">📊 الإحصائيات التفصيلية</h4>
+                
+                <div style="display: grid; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">تاريخ البداية:</span>
+                        <strong id="stats-start-date" style="color: var(--dark-teal);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">مدة الحفظ:</span>
+                        <strong id="stats-duration" style="color: var(--dark-teal);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">أطول سلسلة:</span>
+                        <strong id="stats-longest-streak" style="color: var(--dark-teal);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">إجمالي الاختبارات:</span>
+                        <strong id="stats-total-tests" style="color: var(--dark-teal);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">أعلى درجة:</span>
+                        <strong id="stats-best-score" style="color: var(--gold);">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
+                        <span style="color: #666;">الشارات المكتسبة:</span>
+                        <strong id="stats-badges" style="color: var(--gold);">-</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- تصدير البيانات -->
+            <div style="background: rgba(201, 176, 122, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                <h4 style="color: var(--dark-teal); margin-bottom: 15px;">💾 النسخ الاحتياطي</h4>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">احفظ تقدمك أو استعد بيانات سابقة</p>
+                
+                <div style="display: grid; gap: 10px;">
+                    <button onclick="exportHifzData()" style="background: #27ae60; color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
+                        📥 تصدير البيانات
+                    </button>
+                    <button onclick="importHifzData()" style="background: #3498db; color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
+                        📤 استيراد البيانات
+                    </button>
+                </div>
+            </div>
+            
+            <!-- إعادة تعيين -->
+            <div style="background: rgba(231, 76, 60, 0.1); padding: 20px; border-radius: 15px; border: 2px solid #e74c3c;">
+                <h4 style="color: #e74c3c; margin-bottom: 15px;">⚠️ منطقة الخطر</h4>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">إعادة تعيين كل البيانات (لا يمكن التراجع)</p>
+                
+                <button onclick="resetHifzData()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; width: 100%;">
+                    🗑️ مسح كل البيانات
+                </button>
+            </div>
+            
+        </div>
+    `;
+    return section;
+}
+
+// تحميل بيانات الإعدادات
+function loadSettingsData() {
+    // الخطة الحالية
+    const planText = {
+        'quarter': '🌱 ربع صفحة يومياً',
+        'half': '🌿 نصف صفحة يومياً',
+        'full': '🌳 صفحة كاملة يومياً'
+    };
+    document.getElementById('current-plan-text').innerText = planText[hifzData.plan] || '-';
+    document.getElementById('plan-select').value = hifzData.plan;
+    
+    // تاريخ البداية
+    if (hifzData.startDate) {
+        const startDate = new Date(hifzData.startDate);
+        document.getElementById('stats-start-date').innerText = startDate.toLocaleDateString('ar-SA');
+        
+        // مدة الحفظ
+        const days = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+        document.getElementById('stats-duration').innerText = days + ' يوم';
+    }
+    
+    // أطول سلسلة
+    document.getElementById('stats-longest-streak').innerText = (hifzData.longestStreak || 0) + ' يوم 🔥';
+    
+    // الاختبارات
+    document.getElementById('stats-total-tests').innerText = (hifzData.totalTests || 0);
+    
+    // أعلى درجة
+    const bestScore = hifzData.testScores && hifzData.testScores.length > 0 
+        ? Math.max(...hifzData.testScores.map(t => t.score))
+        : 0;
+    document.getElementById('stats-best-score').innerText = bestScore + '%';
+    
+    // الشارات
+    const badgesCount = hifzData.earnedBadges ? hifzData.earnedBadges.length : 0;
+    document.getElementById('stats-badges').innerText = badgesCount + ' 🏆';
+}
+
+// تغيير الخطة
+function changePlan() {
+    const newPlan = document.getElementById('plan-select').value;
+    
+    if (confirm('هل أنت متأكد من تغيير الخطة؟\n\n⚠️ سيتم الاحتفاظ بتقدمك الحالي')) {
+        hifzData.plan = newPlan;
+        saveHifzData();
+        
+        alert('✅ تم تحديث الخطة بنجاح!');
+        loadSettingsData();
+    }
+}
+
+// تصدير البيانات
+function exportHifzData() {
+    const dataStr = JSON.stringify(hifzData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hifz-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    
+    URL.revokeObjectURL(url);
+    
+    alert('✅ تم تصدير البيانات بنجاح!\nاحفظ الملف في مكان آمن');
+}
+
+// استيراد البيانات
+function importHifzData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = (event) => {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                
+                if (confirm('⚠️ سيتم استبدال بياناتك الحالية\nهل أنت متأكد؟')) {
+                    hifzData = importedData;
+                    saveHifzData();
+                    
+                    alert('✅ تم استيراد البيانات بنجاح!');
+                    closeHifzSettings();
+                    initHifzSection();
+                }
+            } catch (error) {
+                alert('❌ خطأ في قراءة الملف!\nتأكد من أن الملف صحيح');
+            }
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+
+// إعادة تعيين كل البيانات
+function resetHifzData() {
+    if (confirm('⚠️ تحذير!\n\nسيتم مسح كل بيانات الحفظ:\n- الصفحات المحفوظة\n- السلسلة اليومية\n- الاختبارات والمراجعات\n- الشارات المكتسبة\n\nهل أنت متأكد تماماً؟')) {
+        if (confirm('⚠️ تأكيد نهائي!\n\nلا يمكن التراجع عن هذا الإجراء\nهل تريد المتابعة؟')) {
+            // إعادة تعيين البيانات
+            hifzData = {
+                plan: null,
+                startDate: null,
+                currentPage: 1,
+                completedPages: [],
+                reviewedPages: {},
+                currentStreak: 0,
+                longestStreak: 0,
+                lastCompletedDate: null,
+                totalAyat: 0,
+                totalReviews: 0,
+                testScores: [],
+                totalTests: 0,
+                averageScore: 0,
+                earnedBadges: []
+            };
+            
+            saveHifzData();
+            
+            alert('✅ تم مسح كل البيانات\nيمكنك البدء من جديد');
+            
+            closeHifzSettings();
+            document.getElementById('hifz-main').style.display = 'none';
+            document.getElementById('hifz-setup').style.display = 'block';
+        }
+    }
+}
+
+// إغلاق الإعدادات
+function closeHifzSettings() {
+    document.getElementById('hifz-settings').style.display = 'none';
+    document.getElementById('hifz-main').style.display = 'block';
+    updateHifzStats();
+}
+
+// تحميل البيانات عند فتح القسم
 function initHifzSection() {
     if (hifzData.plan) {
         document.getElementById('hifz-setup').style.display = 'none';
@@ -2043,9 +2372,44 @@ function initHifzSection() {
     }
 }
 // ==========================================
+// دالة التبديل الخاصة بقسم حفظ القرآن فقط
+// ==========================================
+
+function switchToHifzSection() {
+    // 1. تحديث زر حفظ القرآن
+    document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
+    const hifzBtn = document.getElementById('hifzTab');
+    if (hifzBtn) hifzBtn.classList.add('active');
+
+    // 2. إخفاء كل الأقسام الأخرى
+    const allSections = [
+        'quran-section', 
+        'azkar-section', 
+        'sebha-section', 
+        'prayer-section', 
+        'qibla-section', 
+        'khatma-section',
+        'achievements-section',
+        'paper-mushaf-section'
+    ];
+    
+    allSections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = 'none';
+    });
+
+    // 3. إظهار قسم الحفظ
+    const hifzSection = document.getElementById('hifz-section');
+    if (hifzSection) hifzSection.style.display = 'block';
+
+    // 4. تهيئة قسم الحفظ
+    initHifzSection();
+}
+// ==========================================
 // نظام المراجعة الذكية
 // ==========================================
 
+// حساب الصفحات التي تحتاج مراجعة
 function getPagesNeedingReview() {
     const today = new Date();
     const needReview = [];
@@ -2054,11 +2418,13 @@ function getPagesNeedingReview() {
         const lastReview = hifzData.reviewedPages[pageNum];
         
         if (!lastReview) {
+            // لم تتم مراجعتها أبداً
             needReview.push({ page: pageNum, priority: 10 });
         } else {
             const reviewDate = new Date(lastReview);
             const daysSinceReview = Math.floor((today - reviewDate) / (1000 * 60 * 60 * 24));
             
+            // نظام Spaced Repetition
             if (daysSinceReview >= 7) {
                 needReview.push({ page: pageNum, priority: 5 });
             } else if (daysSinceReview >= 3) {
@@ -2069,15 +2435,19 @@ function getPagesNeedingReview() {
         }
     });
     
+    // ترتيب حسب الأولوية
     needReview.sort((a, b) => b.priority - a.priority);
+    
     return needReview;
 }
 
+// اختيار صفحات للمراجعة اليومية
 function selectReviewPages(count = 3) {
     const needReview = getPagesNeedingReview();
     return needReview.slice(0, count);
 }
 
+// فتح وضع المراجعة
 async function startReviewMode() {
     const reviewPages = selectReviewPages(3);
     
@@ -2086,18 +2456,23 @@ async function startReviewMode() {
         return;
     }
     
+    // إخفاء الواجهة الرئيسية وإظهار واجهة المراجعة
     document.getElementById('hifz-main').style.display = 'none';
     
     let reviewSection = document.getElementById('hifz-review');
     if (!reviewSection) {
+        // إنشاء قسم المراجعة إذا لم يكن موجوداً
         reviewSection = createReviewSection();
         document.getElementById('hifz-section').appendChild(reviewSection);
     }
     
     reviewSection.style.display = 'block';
+    
+    // عرض الصفحات للمراجعة
     displayReviewPages(reviewPages);
 }
 
+// إنشاء واجهة المراجعة
 function createReviewSection() {
     const section = document.createElement('div');
     section.id = 'hifz-review';
@@ -2114,12 +2489,15 @@ function createReviewSection() {
                 <small style="color: #666;">راجع الآيات وتأكد من حفظها</small>
             </div>
             
-            <div id="review-pages-container"></div>
+            <div id="review-pages-container">
+                <!-- الصفحات تظهر هنا -->
+            </div>
         </div>
     `;
     return section;
 }
 
+// عرض الصفحات للمراجعة
 async function displayReviewPages(reviewPages) {
     const container = document.getElementById('review-pages-container');
     document.getElementById('review-count').innerText = reviewPages.length;
@@ -2168,9 +2546,11 @@ async function displayReviewPages(reviewPages) {
     container.innerHTML = html;
 }
 
+// توليد HTML للآيات
 function generateAyahsHTML(ayahs, pageInfo) {
     let html = '';
     
+    // البسملة
     if (pageInfo.ayahStart === 1 && pageInfo.surah !== 1 && pageInfo.surah !== 9) {
         html += `<div style="text-align:center; color:var(--gold); font-size:1.8rem; margin:15px 0; font-weight:bold;">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
     }
@@ -2183,17 +2563,20 @@ function generateAyahsHTML(ayahs, pageInfo) {
     return html;
 }
 
+// تسجيل مراجعة الصفحة
 function markPageReviewed(pageNumber) {
     hifzData.reviewedPages[pageNumber] = new Date().toISOString();
     hifzData.totalReviews++;
     saveHifzData();
     
+    // إزالة الكارد من القائمة
     event.target.closest('.review-page-card').style.opacity = '0.3';
     event.target.disabled = true;
     event.target.innerText = '✅ تمت المراجعة';
     
     playNotify();
     
+    // التحقق من إتمام كل المراجعات
     setTimeout(() => {
         const remaining = document.querySelectorAll('.review-page-card button:not(:disabled)').length;
         if (remaining === 0) {
@@ -2202,6 +2585,7 @@ function markPageReviewed(pageNumber) {
     }, 500);
 }
 
+// احتفالية إتمام المراجعة
 function showReviewCompleteCelebration() {
     const celebration = document.createElement('div');
     celebration.className = 'badge-notification';
@@ -2221,32 +2605,37 @@ function showReviewCompleteCelebration() {
         celebration.remove();
         closeReviewMode();
     }, 3000);
-    
+        // فحص الشارات
     checkHifzBadges();
 }
 
+// إغلاق وضع المراجعة
 function closeReviewMode() {
     document.getElementById('hifz-review').style.display = 'none';
     document.getElementById('hifz-main').style.display = 'block';
     updateHifzStats();
 }
-
 // ==========================================
-// نظام التسميع
+// نظام التسميع الذكي - Test Mode
 // ==========================================
 
-let currentTest = null;
+let currentTest = null; // بيانات الاختبار الحالي
 
+// بدء وضع التسميع
 async function startTestMode() {
     if (hifzData.completedPages.length === 0) {
         alert('⚠️ لا توجد صفحات محفوظة للتسميع!\nاحفظ صفحات أولاً ثم جرّب التسميع');
         return;
     }
     
+    // اختيار صفحة عشوائية من المحفوظ
     const randomPage = hifzData.completedPages[Math.floor(Math.random() * hifzData.completedPages.length)];
+    
+    // عرض نافذة اختيار المستوى
     showDifficultySelection(randomPage);
 }
 
+// عرض نافذة اختيار الصعوبة
 function showDifficultySelection(pageNumber) {
     const modal = document.createElement('div');
     modal.id = 'difficulty-modal';
@@ -2296,18 +2685,23 @@ function showDifficultySelection(pageNumber) {
     document.body.appendChild(modal);
 }
 
+// بدء الاختبار بمستوى معين
 async function startTestWithDifficulty(pageNumber, difficulty) {
+    // إغلاق النافذة
     const modal = document.getElementById('difficulty-modal');
     if (modal) modal.remove();
     
+    // جلب بيانات الصفحة
     const pageInfo = await getPageInfo(pageNumber);
     if (!pageInfo) {
         alert('❌ حدث خطأ في تحميل الصفحة');
         return;
     }
     
+    // إخفاء الواجهة الرئيسية
     document.getElementById('hifz-main').style.display = 'none';
     
+    // إنشاء واجهة الاختبار
     let testSection = document.getElementById('hifz-test');
     if (!testSection) {
         testSection = createTestSection();
@@ -2315,9 +2709,12 @@ async function startTestWithDifficulty(pageNumber, difficulty) {
     }
     
     testSection.style.display = 'block';
+    
+    // إعداد الاختبار
     setupTest(pageInfo, difficulty);
 }
 
+// إنشاء واجهة الاختبار
 function createTestSection() {
     const section = document.createElement('div');
     section.id = 'hifz-test';
@@ -2346,7 +2743,9 @@ function createTestSection() {
                 </div>
             </div>
             
-            <div id="test-ayahs-display" style="background: white; padding: 25px; border-radius: 15px; border: 2px solid var(--gold); font-size: 1.6rem; line-height: 2.8; text-align: justify; max-height: 500px; overflow-y: auto; font-family: 'Amiri', serif;"></div>
+            <div id="test-ayahs-display" style="background: white; padding: 25px; border-radius: 15px; border: 2px solid var(--gold); font-size: 1.6rem; line-height: 2.8; text-align: justify; max-height: 500px; overflow-y: auto; font-family: 'Amiri', serif;">
+                <!-- الآيات تظهر هنا -->
+            </div>
             
             <div style="text-align: center; margin-top: 25px;">
                 <button onclick="checkTestAnswers()" style="background: var(--dark-teal); color: var(--gold); border: none; padding: 15px 40px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; box-shadow: 0 4px 15px rgba(47, 95, 99, 0.3);">
@@ -2358,19 +2757,24 @@ function createTestSection() {
     return section;
 }
 
+// إعداد الاختبار
 function setupTest(pageInfo, difficulty) {
+    // نسبة الإخفاء
     const hidePercentage = difficulty === 'easy' ? 0.2 : difficulty === 'medium' ? 0.5 : 0.8;
     
+    // عرض معلومات الاختبار
     document.getElementById('test-page-num').innerText = `صفحة ${Math.ceil(hifzData.currentPage)}`;
     
     const difficultyText = difficulty === 'easy' ? '🌱 سهل' : difficulty === 'medium' ? '⚡ متوسط' : '🔥 صعب';
     document.getElementById('test-difficulty').innerText = difficultyText;
     
+    // معالجة الآيات وإخفاء الكلمات
     const { html, hiddenWords } = processAyahsForTest(pageInfo, hidePercentage);
     
     document.getElementById('test-hidden-count').innerText = hiddenWords.length;
     document.getElementById('test-ayahs-display').innerHTML = html;
     
+    // حفظ بيانات الاختبار
     currentTest = {
         page: Math.ceil(hifzData.currentPage),
         difficulty: difficulty,
@@ -2379,11 +2783,13 @@ function setupTest(pageInfo, difficulty) {
     };
 }
 
+// معالجة الآيات وإخفاء كلمات
 function processAyahsForTest(pageInfo, hidePercentage) {
     let html = '';
     const hiddenWords = [];
     let wordIndex = 0;
     
+    // البسملة
     if (pageInfo.ayahStart === 1 && pageInfo.surah !== 1 && pageInfo.surah !== 9) {
         html += `<div style="text-align:center; color:var(--gold); font-size:1.8rem; margin:15px 0; font-weight:bold;">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
     }
@@ -2394,6 +2800,7 @@ function processAyahsForTest(pageInfo, hidePercentage) {
         
         words.forEach(word => {
             if (word.trim().length > 0) {
+                // تحديد هل نخفي الكلمة أم لا
                 if (Math.random() < hidePercentage && word.length > 2) {
                     const id = `word-${wordIndex}`;
                     hiddenWords.push({ id: id, word: word.trim() });
@@ -2411,6 +2818,7 @@ function processAyahsForTest(pageInfo, hidePercentage) {
     return { html, hiddenWords };
 }
 
+// التحقق من الإجابات
 function checkTestAnswers() {
     if (!currentTest) return;
     
@@ -2422,27 +2830,25 @@ function checkTestAnswers() {
         const userAnswer = input.value.trim();
         const correctAnswer = item.word.trim();
         
-        // مقارنة بدون تشكيل - الإجابة صحيحة حتى لو بدون تشكيل        // مقارنة بدون تشكيل - الإجابة صحيحة حتى لو بدون تشكيل
-        const userClean = removeArabicDiacritics(userAnswer);
-        const correctClean = removeArabicDiacritics(correctAnswer);
-        
-        if (userClean === correctClean) {
-
+        // مقارنة بسيطة (يمكن تحسينها)
+        if (userAnswer === correctAnswer || removeArabicDiacritics(userAnswer) === removeArabicDiacritics(correctAnswer)) {
             input.style.background = 'rgba(46, 204, 113, 0.2)';
             input.style.borderBottom = '2px solid #27ae60';
             correct++;
         } else {
             input.style.background = 'rgba(231, 76, 60, 0.2)';
             input.style.borderBottom = '2px solid #e74c3c';
-            input.value = correctAnswer;
+            input.value = correctAnswer; // عرض الإجابة الصحيحة
             wrong++;
         }
         input.disabled = true;
     });
     
+    // حساب النتيجة
     const total = currentTest.hiddenWords.length;
     const score = Math.round((correct / total) * 100);
     
+    // حفظ النتيجة
     hifzData.testScores.push({
         date: new Date().toISOString(),
         page: currentTest.page,
@@ -2454,30 +2860,24 @@ function checkTestAnswers() {
     });
     hifzData.totalTests++;
     
+    // حساب المتوسط
     const totalScore = hifzData.testScores.reduce((sum, test) => sum + test.score, 0);
     hifzData.averageScore = Math.round(totalScore / hifzData.testScores.length);
     
     saveHifzData();
+    
+    // عرض النتيجة
     showTestResult(score, correct, wrong, total);
+        // فحص الشارات
     checkHifzBadges();
 }
 
+// إزالة التشكيل للمقارنة
 function removeArabicDiacritics(text) {
-    // إزالة التشكيل
-    let cleaned = text.replace(/[\u064B-\u0652\u0670]/g, '');
-    // إزالة المسافات الزائدة
-    cleaned = cleaned.replace(/\s+/g, '');
-    // تحويل الهمزات المختلفة لشكل موحد
-    cleaned = cleaned.replace(/[إأآا]/g, 'ا');
-    cleaned = cleaned.replace(/[ىي]/g, 'ي');
-    cleaned = cleaned.replace(/ة/g, 'ه');
-    // إزالة علامات الترقيم
-    cleaned = cleaned.replace(/[\.،؛]/g, '');
-    
-    return cleaned.trim().toLowerCase();
+    return text.replace(/[\u064B-\u0652\u0670]/g, '');
 }
 
-
+// عرض نتيجة الاختبار
 function showTestResult(score, correct, wrong, total) {
     const resultModal = document.createElement('div');
     resultModal.style.cssText = `
@@ -2530,12 +2930,15 @@ function showTestResult(score, correct, wrong, total) {
     playNotify();
 }
 
+// إغلاق نتيجة الاختبار
 function closeTestResult() {
     const modal = document.getElementById('test-result-modal');
     if (modal) modal.remove();
+    
     cancelTest();
 }
 
+// إلغاء الاختبار
 function cancelTest() {
     document.getElementById('hifz-test').style.display = 'none';
     document.getElementById('hifz-main').style.display = 'block';
@@ -2633,6 +3036,7 @@ const hifzBadges = {
     }
 };
 
+// التحقق من الشارات الجديدة
 function checkHifzBadges() {
     if (!hifzData.earnedBadges) {
         hifzData.earnedBadges = [];
@@ -2641,7 +3045,9 @@ function checkHifzBadges() {
     const newBadges = [];
     
     Object.values(hifzBadges).forEach(badge => {
+        // التحقق من عدم الحصول عليها مسبقاً
         if (!hifzData.earnedBadges.includes(badge.id)) {
+            // التحقق من الشرط
             if (badge.condition(hifzData)) {
                 hifzData.earnedBadges.push(badge.id);
                 newBadges.push(badge);
@@ -2649,9 +3055,10 @@ function checkHifzBadges() {
         }
     });
     
+    // عرض الشارات الجديدة
     newBadges.forEach((badge, index) => {
         setTimeout(() => {
-            showHifzBadgeNotification(badge);
+            showBadgeNotification(badge);
         }, index * 2000);
     });
     
@@ -2660,7 +3067,8 @@ function checkHifzBadges() {
     }
 }
 
-function showHifzBadgeNotification(badge) {
+// عرض إشعار الشارة
+function showBadgeNotification(badge) {
     const notification = document.createElement('div');
     notification.className = 'badge-notification';
     notification.innerHTML = `
@@ -2681,6 +3089,7 @@ function showHifzBadgeNotification(badge) {
     }, 4000);
 }
 
+// عرض كل الشارات المكتسبة
 function showMyHifzBadges() {
     if (!hifzData.earnedBadges || hifzData.earnedBadges.length === 0) {
         alert('🎯 لم تكتسب أي شارات بعد!\nاستمر في الحفظ والمراجعة لكسب الشارات');
@@ -2718,327 +3127,3 @@ function showMyHifzBadges() {
     
     document.body.insertAdjacentHTML('beforeend', badgesHTML);
 }
-
-// ==========================================
-// الإعدادات
-// ==========================================
-
-function openHifzSettings() {
-    document.getElementById('hifz-main').style.display = 'none';
-    
-    let settingsSection = document.getElementById('hifz-settings');
-    if (!settingsSection) {
-        settingsSection = createSettingsSection();
-        document.getElementById('hifz-section').appendChild(settingsSection);
-    }
-    
-    settingsSection.style.display = 'block';
-    loadSettingsData();
-}
-
-function createSettingsSection() {
-    const section = document.createElement('div');
-    section.id = 'hifz-settings';
-    section.style.display = 'none';
-    section.innerHTML = `
-        <div class="daily-card" style="max-width: 700px; margin: 20px auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                <h3 style="color: var(--gold); margin: 0;">⚙️ إعدادات الحفظ</h3>
-                <button onclick="closeHifzSettings()" class="modern-back-btn">↩ رجوع</button>
-            </div>
-            
-            <div style="background: rgba(201, 176, 122, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                <h4 style="color: var(--dark-teal); margin-bottom: 15px;">📖 خطة الحفظ</h4>
-                <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">الخطة الحالية: <strong id="current-plan-text">-</strong></p>
-                
-                <select id="plan-select" style="width: 100%; padding: 12px; border: 2px solid var(--gold); border-radius: 10px; font-family: 'Amiri', serif; font-size: 1rem; margin-bottom: 15px;">
-                    <option value="quarter">🌱 ربع صفحة يومياً (≈ 3 آيات)</option>
-                    <option value="half">🌿 نصف صفحة يومياً (≈ 6 آيات)</option>
-                    <option value="full">🌳 صفحة كاملة يومياً (≈ 12 آية)</option>
-                </select>
-                
-                <button onclick="changePlan()" style="background: var(--dark-teal); color: var(--gold); border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; width: 100%;">
-                    تحديث الخطة
-                </button>
-            </div>
-            
-            <div style="background: rgba(201, 176, 122, 0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                <h4 style="color: var(--dark-teal); margin-bottom: 15px;">📊 الإحصائيات التفصيلية</h4>
-                
-                <div style="display: grid; gap: 12px;">
-                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
-                        <span style="color: #666;">تاريخ البداية:</span>
-                        <strong id="stats-start-date" style="color: var(--dark-teal);">-</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
-                        <span style="color: #666;">مدة الحفظ:</span>
-                        <strong id="stats-duration" style="color: var(--dark-teal);">-</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
-                        <span style="color: #666;">أطول سلسلة:</span>
-                        <strong id="stats-longest-streak" style="color: var(--dark-teal);">-</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
-                        <span style="color: #666;">إجمالي الاختبارات:</span>
-                        <strong id="stats-total-tests" style="color: var(--dark-teal);">-</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
-                        <span style="color: #666;">أعلى درجة:</span>
-                        <strong id="stats-best-score" style="color: var(--gold);">-</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 10px; background: white; border-radius: 8px;">
-                        <span style="color: #666;">الشارات المكتسبة:</span>
-                        <strong id="stats-badges" style="color: var(--gold);">-</strong>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="background: rgba(231, 76, 60, 0.1); padding: 20px; border-radius: 15px; border: 2px solid #e74c3c;">
-                <h4 style="color: #e74c3c; margin-bottom: 15px;">⚠️ منطقة الخطر</h4>
-                <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">إعادة تعيين كل البيانات (لا يمكن التراجع)</p>
-                
-                <button onclick="resetHifzData()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; width: 100%;">
-                    🗑️ مسح كل البيانات
-                </button>
-            </div>
-        </div>
-    `;
-    return section;
-}
-
-function loadSettingsData() {
-    const planText = {
-        'quarter': '🌱 ربع صفحة يومياً',
-        'half': '🌿 نصف صفحة يومياً',
-        'full': '🌳 صفحة كاملة يومياً'
-    };
-    document.getElementById('current-plan-text').innerText = planText[hifzData.plan] || '-';
-    document.getElementById('plan-select').value = hifzData.plan;
-    
-    if (hifzData.startDate) {
-        const startDate = new Date(hifzData.startDate);
-        document.getElementById('stats-start-date').innerText = startDate.toLocaleDateString('ar-SA');
-        
-        const days = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
-        document.getElementById('stats-duration').innerText = days + ' يوم';
-    }
-    
-    document.getElementById('stats-longest-streak').innerText = (hifzData.longestStreak || 0) + ' يوم 🔥';
-    document.getElementById('stats-total-tests').innerText = (hifzData.totalTests || 0);
-    
-    const bestScore = hifzData.testScores && hifzData.testScores.length > 0 
-        ? Math.max(...hifzData.testScores.map(t => t.score))
-        : 0;
-    document.getElementById('stats-best-score').innerText = bestScore + '%';
-    
-    const badgesCount = hifzData.earnedBadges ? hifzData.earnedBadges.length : 0;
-    document.getElementById('stats-badges').innerText = badgesCount + ' 🏆';
-}
-
-function changePlan() {
-    const selectElement = document.getElementById('plan-select');
-    if (!selectElement) {
-        alert('❌ خطأ في تحميل الإعدادات');
-        return;
-    }
-    
-    const newPlan = selectElement.value;
-    
-    if (!newPlan) {
-        alert('⚠️ يرجى اختيار خطة أولاً');
-        return;
-    }
-    
-    if (confirm('هل أنت متأكد من تغيير الخطة؟\n\n⚠️ سيتم الاحتفاظ بتقدمك الحالي')) {
-        hifzData.plan = newPlan;
-        saveHifzData();
-        
-        alert('✅ تم تحديث الخطة بنجاح!');
-        loadSettingsData();
-    }
-}
-
-
-function resetHifzData() {
-    const firstConfirm = confirm('⚠️ تحذير!\n\nسيتم مسح كل بيانات الحفظ:\n- الصفحات المحفوظة\n- السلسلة اليومية\n- الاختبارات والمراجعات\n- الشارات المكتسبة\n\nهل أنت متأكد تماماً؟');
-    
-    if (!firstConfirm) {
-        return;
-    }
-    
-    const secondConfirm = confirm('⚠️ تأكيد نهائي!\n\nلا يمكن التراجع عن هذا الإجراء\nهل تريد المتابعة؟');
-    
-    if (!secondConfirm) {
-        return;
-    }
-    
-    // مسح البيانات
-    hifzData = {
-        plan: null,
-        startDate: null,
-        currentPage: 1,
-        completedPages: [],
-        reviewedPages: {},
-        currentStreak: 0,
-        longestStreak: 0,
-        lastCompletedDate: null,
-        totalAyat: 0,
-        totalReviews: 0,
-        testScores: [],
-        totalTests: 0,
-        averageScore: 0,
-        earnedBadges: []
-    };
-    
-    // حفظ البيانات الفارغة
-    localStorage.setItem('hifzData', JSON.stringify(hifzData));
-    
-    if (typeof window.saveToCloud === 'function') {
-        window.saveToCloud('hifz', hifzData);
-    }
-    
-    alert('✅ تم مسح كل البيانات بنجاح\nيمكنك البدء من جديد');
-    
-    // إغلاق الإعدادات والعودة لصفحة الاختيار
-    const settingsSection = document.getElementById('hifz-settings');
-    if (settingsSection) settingsSection.style.display = 'none';
-    
-    const mainSection = document.getElementById('hifz-main');
-    if (mainSection) mainSection.style.display = 'none';
-    
-    const setupSection = document.getElementById('hifz-setup');
-    if (setupSection) setupSection.style.display = 'block';
-}
-
-
-function closeHifzSettings() {
-    document.getElementById('hifz-settings').style.display = 'none';
-    document.getElementById('hifz-main').style.display = 'block';
-    updateHifzStats();
-}
-// ==========================================
-// قسم التفسير
-// ==========================================
-
-let currentTafsirAyah = null;
-
-// فتح نافذة التفسير
-function openTafsir(surahNumber, ayahNumber, ayahText, surahName) {
-    currentTafsirAyah = {
-        surah: surahNumber,
-        ayah: ayahNumber,
-        text: ayahText,
-        surahName: surahName
-    };
-    
-    // عرض الآية
-    const ayahDisplay = document.querySelector('#tafsir-ayah-text div');
-    const ayahRef = document.querySelector('#tafsir-ayah-text small');
-    
-    if (ayahDisplay) ayahDisplay.innerText = ayahText;
-    if (ayahRef) ayahRef.innerText = `${surahName} - آية ${ayahNumber}`;
-    
-    // عرض النافذة
-    document.getElementById('tafsir-modal').style.display = 'block';
-    
-    // تحميل التفسير
-    loadSelectedTafsir();
-}
-
-// تحميل التفسير المختار
-async function loadSelectedTafsir() {
-    if (!currentTafsirAyah) return;
-    
-    const tafsirType = document.getElementById('tafsir-selector').value;
-    const contentDiv = document.getElementById('tafsir-content');
-    
-    contentDiv.innerHTML = '<p style="text-align: center; color: #999;">⏳ جاري تحميل التفسير...</p>';
-    
-    try {
-        const response = await fetch(`https://api.alquran.cloud/v1/ayah/${currentTafsirAyah.surah}:${currentTafsirAyah.ayah}/${tafsirType}`);
-        const data = await response.json();
-        
-        if (data.code === 200 && data.data.text) {
-            contentDiv.innerHTML = `<p>${data.data.text}</p>`;
-        } else {
-            contentDiv.innerHTML = '<p style="text-align: center; color: #e74c3c;">❌ التفسير غير متوفر لهذه الآية</p>';
-        }
-    } catch (error) {
-        console.error('خطأ في تحميل التفسير:', error);
-        contentDiv.innerHTML = '<p style="text-align: center; color: #e74c3c;">❌ حدث خطأ في تحميل التفسير. تأكد من الاتصال بالإنترنت.</p>';
-    }
-}
-
-// إغلاق نافذة التفسير
-function closeTafsir() {
-    document.getElementById('tafsir-modal').style.display = 'none';
-    currentTafsirAyah = null;
-}
-
-// تفعيل التفسير عند الضغط على الآيات
-// تفعيل التفسير عند الضغط على الآيات
-// تفعيل التفسير عند الضغط على الآيات
-function enableAyahTafsir() {
-    const ayahsContainer = document.getElementById('ayahsContainer');
-    if (!ayahsContainer) return;
-    
-    // إضافة حدث الضغط على الآيات
-    ayahsContainer.addEventListener('click', function(e) {
-        const target = e.target;
-        
-        // التحقق من أنه ضغط على آية
-        if (target.classList.contains('ayah-item')) {
-            // استخراج البيانات من data attributes
-            const surahNumber = parseInt(target.getAttribute('data-surah'));
-            const ayahNumber = parseInt(target.getAttribute('data-ayah'));
-            const ayahText = target.getAttribute('data-ayah-text') || target.innerText.trim();
-            
-            // الحصول على اسم السورة
-            const surahName = document.getElementById('current-surah-title').innerText;
-            
-            console.log('Tafsir requested:', {
-                surah: surahNumber,
-                ayah: ayahNumber,
-                name: surahName,
-                text: ayahText
-            });
-            
-            // فتح التفسير
-            if (surahNumber && ayahNumber) {
-                openTafsir(surahNumber, ayahNumber, ayahText, surahName);
-            } else {
-                console.error('بيانات الآية غير صحيحة:', {
-                    surah: surahNumber,
-                    ayah: ayahNumber
-                });
-                alert('⚠️ حدث خطأ في تحديد الآية. حاول مرة أخرى.');
-            }
-        }
-    });
-    
-    // إضافة cursor pointer للآيات
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .ayah-item {
-            cursor: pointer !important;
-            transition: all 0.2s ease !important;
-            padding: 3px 5px !important;
-            border-radius: 5px !important;
-        }
-        .ayah-item:hover {
-            background: rgba(201, 176, 122, 0.15) !important;
-            color: var(--dark-teal) !important;
-        }
-        .ayah-item:active {
-            transform: scale(0.98) !important;
-        }
-        body.dark-mode .ayah-item:hover {
-            background: rgba(47, 95, 99, 0.2) !important;
-            color: var(--gold) !important;
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// تفعيل التفسير عند تحميل الصفحة
-document.addEventListener('DOMContentLoaded', enableAyahTafsir);
