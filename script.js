@@ -1043,32 +1043,58 @@ function switchMainTab(t) {
 function switchMainTab(t) {
     // 1. تغيير حالة الأزرار العلوية
     document.querySelectorAll('.main-nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(t + 'Tab')?.classList.add('active');
+    const activeTab = document.getElementById(t + 'Tab');
+    if (activeTab) activeTab.classList.add('active');
 
-    // 2. قائمة الأقسام مع إضافة قسم الختمة الجديد
-    const allSections = ['quran-section', 'azkar-section', 'sebha-section', 'prayer-section', 'qibla-section', 'khatma-section', 'achievements-section', 'hifz-section', 'tafsir-section'];
+    // 2. قائمة كل الأقسام
+    const allSections = [
+        'quran-section', 
+        'azkar-section', 
+        'sebha-section', 
+        'prayer-section', 
+        'qibla-section', 
+        'khatma-section', 
+        'achievements-section',
+        'hifz-section',
+        'tafsir-section'
+    ];
 
-
-    // 3. التبديل بين الأقسام
+    // 3. إخفاء كل الأقسام وإظهار المطلوب فقط
     allSections.forEach(s => {
         const el = document.getElementById(s);
-        if (el) el.style.display = s.startsWith(t) ? 'block' : 'none';
+        if (el) {
+            // إظهار القسم المطلوب بالضبط
+            el.style.display = (s === t + '-section') ? 'block' : 'none';
+        }
     });
 
     // 4. تشغيل وظائف الأقسام الخاصة
-    if (t === 'qibla') getQibla();
-    if (t === 'prayer') fetchPrayers();
+    if (t === 'qibla' && typeof getQibla === 'function') getQibla();
+    if (t === 'prayer' && typeof fetchPrayers === 'function') fetchPrayers();
     if (t === 'khatma' && typeof updateKhatmaUI === 'function') updateKhatmaUI();
+    if (t === 'hifz' && typeof populateHifzSurahList === 'function') populateHifzSurahList();
+    if (t === 'tafsir' && typeof populateTafsirSurahList === 'function') populateTafsirSurahList();
     
     // 5. تصفير واجهة القرآن عند العودة لها
     if (t === 'quran') {
-        document.getElementById('full-quran-view').style.display = 'block';
-        document.getElementById('topics-view').style.display = 'none';
-        document.getElementById('quran-view').style.display = 'none';
+        const fullView = document.getElementById('full-quran-view');
+        const topicsView = document.getElementById('topics-view');
+        const quranView = document.getElementById('quran-view');
+        
+        if (fullView) fullView.style.display = 'block';
+        if (topicsView) topicsView.style.display = 'none';
+        if (quranView) quranView.style.display = 'none';
     }
-    if (t === 'hifz') populateHifzSurahList();
-    if (t === 'tafsir') populateTafsirSurahList();
+    
+    // 6. إعدادات خاصة بالسبحة
+    if (t === 'sebha') {
+        const categories = document.getElementById('sebha-categories');
+        const mainView = document.getElementById('sebha-main-view');
+        if (categories) categories.style.display = 'grid';
+        if (mainView) mainView.style.display = 'none';
+    }
 }
+
 // بيانات الختمة
 // 1. إدارة بيانات الختمة في الذاكرة
 let khatmaData = JSON.parse(localStorage.getItem('khatmaProgress')) || {
