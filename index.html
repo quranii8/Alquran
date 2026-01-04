@@ -1,16 +1,9 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <!-- Eruda Console للتطوير على الموبايل -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>
-    eruda.init();
-</script>
-
 <head>
     <!-- Google tag (gtag.js) -->
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4WXT2RQ0SV"></script>
-
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -133,7 +126,7 @@
         <button id="prayerTab" onclick="switchMainTab('prayer')">مواقيت الصلاة</button>
 <button id="qiblaTab" onclick="switchMainTab('qibla')">اتجاه القبلة</button>
 <button id="khatmaTab" onclick="switchMainTab('khatma')">تحدي الختمة 🏆</button>
-<button id="hifzTab" onclick="switchMainTab('hifz')">حفظ القرآن 📚</button>
+<button id="hifzTab" onclick="switchToHifzSection()">حفظ القرآن 📚</button>
 
     </div>
 </header>
@@ -191,43 +184,9 @@
 
             <audio id="audioPlayer"></audio>
         </div>
-<!-- نافذة التفسير -->
-<div id="tafsir-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 10000; overflow-y: auto; padding: 20px;" onclick="closeTafsir()">
-    <div onclick="event.stopPropagation()" style="background: white; max-width: 800px; margin: 50px auto; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-            <h3 style="color: var(--dark-teal); margin: 0;">📖 التفسير</h3>
-            <button onclick="closeTafsir()" style="background: #e74c3c; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;">×</button>
-        </div>
-        
-        <div id="tafsir-ayah-text" style="background: rgba(201, 176, 122, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-right: 4px solid var(--gold);">
-            <div style="font-size: 1.5rem; line-height: 2; text-align: center; font-family: 'Amiri', serif; color: var(--dark-teal);"></div>
-            <small style="display: block; text-align: center; color: #666; margin-top: 10px;"></small>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-            <label style="color: var(--dark-teal); font-weight: bold; display: block; margin-bottom: 10px;">اختر التفسير:</label>
-            <select id="tafsir-selector" onchange="loadSelectedTafsir()" style="width: 100%; padding: 12px; border: 2px solid var(--gold); border-radius: 10px; font-family: 'Amiri', serif; font-size: 1rem; background: white;">
-                <option value="ar.muyassar">التفسير الميسر</option>
-                <option value="ar.jalalayn">تفسير الجلالين</option>
-                <option value="ar.baghawi">تفسير البغوي</option>
-                <option value="ar.qurtubi">تفسير القرطبي</option>
-                <option value="ar.tabari">تفسير الطبري</option>
-                <option value="ar.saddi">تفسير السعدي</option>
-            </select>
-        </div>
-        
-        <div id="tafsir-content" style="background: #f9f9f9; padding: 25px; border-radius: 15px; font-size: 1.1rem; line-height: 2; text-align: justify; font-family: 'Amiri', serif; max-height: 400px; overflow-y: auto;">
-            <p style="text-align: center; color: #999;">⏳ جاري تحميل التفسير...</p>
-        </div>
+
+        <div class="ayah-text" id="ayahsContainer"></div>
     </div>
-</div>
-
-        <div style="text-align: center; margin-bottom: 15px; padding: 10px; background: rgba(201, 176, 122, 0.1); border-radius: 10px;">
-    <small style="color: #666; font-size: 0.85rem;">💡 اضغط على الآية للتفسير</small>
-</div>
-
-<div class="ayah-text" id="ayahsContainer"></div>
-
 
     <div id="topics-view" style="display:none; padding:10px;">
         <h3 style="color:var(--gold); text-align:center; margin-bottom:20px; font-size: 1.5rem;">الفهرس الموضوعي الجامع</h3>
@@ -249,7 +208,7 @@
 </div>
 
 <!-- ================= الأذكار ================= -->
-<div id="azkar-section">
+<div id="azkar-section" style="display:none;">
     <div class="azkar-categories" id="azkarCats">
         <div class="category-card" onclick="loadAzkar('morning')">☀️ أذكار الصباح</div>
         <div class="category-card" onclick="loadAzkar('evening')">🌙 أذكار المساء</div>
@@ -270,7 +229,7 @@
 </div>
 <!-- ================= السبحة ================= -->
 <!-- ================= السبحة ================= -->
-<div id="sebha-section">
+<div id="sebha-section" style="display:none;">
     
     <!-- قائمة اختيار نوع السبحة -->
     <div id="sebha-categories" style="display:grid;">
@@ -314,7 +273,7 @@
     </div>
 </div>
 
-<div id="prayer-section" style="text-align:center;">
+<div id="prayer-section" style="display:none; text-align:center;">
     <div class="prayer-hero-card">
         <h3 id="next-prayer-name">جاري تحديد موقعك...</h3>
         <div id="next-prayer-timer" class="big-timer">00:00:00</div>
@@ -328,7 +287,7 @@
         <div class="p-card"><span>العشاء</span><b id="isha-time">--:--</b></div>
     </div>
 </div>
-<div id="qibla-section" style="text-align:center;">
+<div id="qibla-section" style="display:none; text-align:center;">
     <div class="qibla-container">
         <h3>اتجاه القبلة</h3>
         
@@ -344,7 +303,7 @@
         <p id="qibla-status" style="margin-top:10px; font-size:14px;">اضغط الزر لتفعيل الحركة</p>
     </div>
 </div>
-<div id="khatma-section" style="text-align:center; padding:20px;">
+<div id="khatma-section" style="display:none; text-align:center; padding:20px;">
     <div class="daily-card shadow-lg" style="background: white; border-radius: 15px; padding: 20px; max-width: 800px; margin: auto;">
         <h2 style="color:var(--gold);">🏆 تحدي الختمة (30 يوم)</h2>
         
@@ -384,7 +343,7 @@
     </div>
 </div>
 <!-- ================= قسم الإنجازات ================= --><!-- ================= قسم الإنجازات ================= -->
-<div <div id="achievements-section" style="padding:20px;">
+<div id="achievements-section" style="display:none; padding:20px;">
     <div style="text-align:center; margin-bottom:20px;">
         <button class="modern-back-btn" onclick="closeAchievements()">↩ العودة</button>
     </div>
@@ -505,127 +464,6 @@
             </p>
         </div>
     </div>
-</div>
-<!-- ================= قسم حفظ القرآن ================= -->
-<div id="hifz-section" style="padding:20px;">
-    
-    <!-- المرحلة 1: اختيار الخطة -->
-    <div id="hifz-setup" style="display:block;">
-        <div class="daily-card shadow-lg" style="max-width: 600px; margin: auto;">
-            <h2 style="color:var(--gold); text-align:center; margin-bottom: 20px;">
-                📚 ابدأ رحلة الحفظ
-            </h2>
-            
-            <p style="text-align: center; color: var(--dark-teal); font-size: 1.1rem; margin-bottom: 30px;">
-                اختر خطة الحفظ المناسبة لك
-            </p>
-            
-            <div style="display: grid; gap: 15px; margin-bottom: 30px;">
-                
-                <div class="hifz-plan-card" onclick="selectHifzPlan('quarter')" style="background: white; padding: 20px; border-radius: 15px; border: 3px solid #ddd; cursor: pointer; text-align: center; transition: 0.3s;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🌱</div>
-                    <h3 style="color: var(--dark-teal); margin: 10px 0;">ربع صفحة يومياً</h3>
-                    <p style="color: #666; font-size: 0.9rem;">للمبتدئين - حفظ متقن وثابت</p>
-                    <small style="color: var(--gold); font-weight: bold;">≈ 3 آيات يومياً</small>
-                </div>
-                
-                <div class="hifz-plan-card" onclick="selectHifzPlan('half')" style="background: white; padding: 20px; border-radius: 15px; border: 3px solid #ddd; cursor: pointer; text-align: center; transition: 0.3s;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🌿</div>
-                    <h3 style="color: var(--dark-teal); margin: 10px 0;">نصف صفحة يومياً</h3>
-                    <p style="color: #666; font-size: 0.9rem;">متوسط - توازن بين السرعة والإتقان</p>
-                    <small style="color: var(--gold); font-weight: bold;">≈ 6 آيات يومياً</small>
-                </div>
-                
-                <div class="hifz-plan-card" onclick="selectHifzPlan('full')" style="background: white; padding: 20px; border-radius: 15px; border: 3px solid #ddd; cursor: pointer; text-align: center; transition: 0.3s;">
-                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🌳</div>
-                    <h3 style="color: var(--dark-teal); margin: 10px 0;">صفحة كاملة يومياً</h3>
-                    <p style="color: #666; font-size: 0.9rem;">متقدم - حفظ سريع ومكثف</p>
-                    <small style="color: var(--gold); font-weight: bold;">≈ 12 آية يومياً</small>
-                </div>
-                
-            </div>
-            
-            <p style="text-align: center; color: #999; font-size: 0.85rem; margin-top: 20px;">
-                💡 يمكنك تغيير الخطة في أي وقت من الإعدادات
-            </p>
-        </div>
-    </div>
-    
-    <!-- المرحلة 2: الواجهة الرئيسية -->
-    <div id="hifz-main" style="display:none;">
-        
-        <!-- شريط التقدم الكلي -->
-        <div class="daily-card" style="background: linear-gradient(135deg, var(--dark-teal), #1a3f42); color: white; text-align: center; padding: 25px; margin-bottom: 20px;">
-            <h3 style="color: var(--gold); margin-bottom: 15px;">🌟 رحلتك في الحفظ</h3>
-            
-            <div style="background: rgba(255,255,255,0.2); height: 25px; border-radius: 15px; overflow: hidden; margin: 20px 0;">
-                <div id="hifz-total-progress" style="background: var(--gold); height: 100%; width: 0%; transition: 0.5s; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; color: var(--dark-teal);"></div>
-            </div>
-            
-            <button onclick="showMyHifzBadges()" style="background: var(--gold); color: var(--dark-teal); border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; margin-bottom: 15px;">
-                🏆 شاراتي (<span id="hifz-badges-count">0</span>)
-            </button>
-            
-            <div style="display: flex; justify-content: space-around; margin-top: 20px; flex-wrap: wrap; gap: 15px;">
-                <div>
-                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-pages-count">0</div>
-                    <div style="font-size: 0.85rem; opacity: 0.9;">صفحة محفوظة</div>
-                </div>
-                <div>
-                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-days-count">0</div>
-                    <div style="font-size: 0.85rem; opacity: 0.9;">يوم متواصل 🔥</div>
-                </div>
-                <div>
-                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-ayat-count">0</div>
-                    <div style="font-size: 0.85rem; opacity: 0.9;">آية متقنة</div>
-                </div>
-                <div>
-                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-reviews-count">0</div>
-                    <div style="font-size: 0.85rem; opacity: 0.9;">مراجعة</div>
-                </div>
-                <div>
-                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-average-score">0%</div>
-                    <div style="font-size: 0.85rem; opacity: 0.9;">متوسط التسميع</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- ورد اليوم -->
-        <div class="daily-card" style="max-width: 800px; margin: 20px auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                <h3 style="color: var(--gold); margin: 0;">📖 ورد اليوم</h3>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="startTestMode()" style="background: #9b59b6; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
-                        ✍️ تسميع
-                    </button>
-                    <button onclick="startReviewMode()" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
-                        🔁 المراجعة
-                    </button>
-                    <button onclick="openHifzSettings()" style="background: transparent; border: 2px solid var(--gold); color: var(--gold); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-family: 'Amiri', serif;">
-                        ⚙️ إعدادات
-                    </button>
-                </div>
-            </div>
-            
-            <div id="hifz-today-info" style="background: rgba(201, 176, 122, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
-                <p style="color: var(--dark-teal); font-weight: bold; font-size: 1.1rem; margin: 5px 0;" id="hifz-today-range">جاري التحميل...</p>
-                <small style="color: #666;">عدد الآيات: <span id="hifz-today-ayat-count">0</span></small>
-            </div>
-            
-            <!-- عرض الآيات -->
-            <div id="hifz-ayahs-display" style="background: white; padding: 25px; border-radius: 15px; border: 2px solid var(--gold); font-size: 1.6rem; line-height: 2.5; text-align: justify; max-height: 500px; overflow-y: auto; font-family: 'Amiri', serif;">
-                <!-- الآيات تظهر هنا -->
-            </div>
-            
-            <div style="text-align: center; margin-top: 25px;">
-                <button onclick="markTodayComplete()" style="background: var(--dark-teal); color: var(--gold); border: none; padding: 15px 40px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; box-shadow: 0 4px 15px rgba(47, 95, 99, 0.3);">
-                    ✅ أتممت الحفظ اليوم
-                </button>
-            </div>
-        </div>
-        
-    </div>
-    
 </div>
 
 
@@ -888,7 +726,126 @@
     <div id="mushaf-fullscreen-container" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; touch-action: pan-x;">
         <img id="mushaf-fullscreen-img" src="" alt="صفحة القرآن" style="max-width: 100%; max-height: 100%; width: auto; height: auto; user-select: none;">
     </div>
+    <!-- ================= قسم حفظ القرآن ================= -->
+<div id="hifz-section" style="display:none; padding:20px;">
     
+    <!-- المرحلة 1: اختيار الخطة -->
+    <div id="hifz-setup" style="display:block;">
+        <div class="daily-card shadow-lg" style="max-width: 600px; margin: auto;">
+            <h2 style="color:var(--gold); text-align:center; margin-bottom: 20px;">
+                📚 ابدأ رحلة الحفظ
+            </h2>
+            
+            <p style="text-align: center; color: var(--dark-teal); font-size: 1.1rem; margin-bottom: 30px;">
+                اختر خطة الحفظ المناسبة لك
+            </p>
+            
+            <div style="display: grid; gap: 15px; margin-bottom: 30px;">
+                
+                <div class="hifz-plan-card" onclick="selectHifzPlan('quarter')" style="background: white; padding: 20px; border-radius: 15px; border: 3px solid #ddd; cursor: pointer; text-align: center; transition: 0.3s;">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🌱</div>
+                    <h3 style="color: var(--dark-teal); margin: 10px 0;">ربع صفحة يومياً</h3>
+                    <p style="color: #666; font-size: 0.9rem;">للمبتدئين - حفظ متقن وثابت</p>
+                    <small style="color: var(--gold); font-weight: bold;">≈ 3 آيات يومياً</small>
+                </div>
+                
+                <div class="hifz-plan-card" onclick="selectHifzPlan('half')" style="background: white; padding: 20px; border-radius: 15px; border: 3px solid #ddd; cursor: pointer; text-align: center; transition: 0.3s;">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🌿</div>
+                    <h3 style="color: var(--dark-teal); margin: 10px 0;">نصف صفحة يومياً</h3>
+                    <p style="color: #666; font-size: 0.9rem;">متوسط - توازن بين السرعة والإتقان</p>
+                    <small style="color: var(--gold); font-weight: bold;">≈ 6 آيات يومياً</small>
+                </div>
+                
+                <div class="hifz-plan-card" onclick="selectHifzPlan('full')" style="background: white; padding: 20px; border-radius: 15px; border: 3px solid #ddd; cursor: pointer; text-align: center; transition: 0.3s;">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">🌳</div>
+                    <h3 style="color: var(--dark-teal); margin: 10px 0;">صفحة كاملة يومياً</h3>
+                    <p style="color: #666; font-size: 0.9rem;">متقدم - حفظ سريع ومكثف</p>
+                    <small style="color: var(--gold); font-weight: bold;">≈ 12 آية يومياً</small>
+                </div>
+                
+            </div>
+            
+            <p style="text-align: center; color: #999; font-size: 0.85rem; margin-top: 20px;">
+                💡 يمكنك تغيير الخطة في أي وقت من الإعدادات
+            </p>
+        </div>
+    </div>
+    
+    <!-- المرحلة 2: الواجهة الرئيسية -->
+    <div id="hifz-main" style="display:none;">
+        
+        <!-- شريط التقدم الكلي -->
+        <div class="daily-card" style="background: linear-gradient(135deg, var(--dark-teal), #1a3f42); color: white; text-align: center; padding: 25px; margin-bottom: 20px;">
+            <h3 style="color: var(--gold); margin-bottom: 15px;">🌟 رحلتك في الحفظ</h3>
+            
+            <div style="background: rgba(255,255,255,0.2); height: 25px; border-radius: 15px; overflow: hidden; margin: 20px 0;">
+                <div id="hifz-total-progress" style="background: var(--gold); height: 100%; width: 0%; transition: 0.5s; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; color: var(--dark-teal);"></div>
+            </div>
+            <button onclick="showMyHifzBadges()" style="background: var(--gold); color: var(--dark-teal); border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold; margin-bottom: 15px;">
+    🏆 شاراتي (<span id="hifz-badges-count">0</span>)
+</button>
+            <div style="display: flex; justify-content: space-around; margin-top: 20px; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-pages-count">0</div>
+                    <div style="font-size: 0.85rem; opacity: 0.9;">صفحة محفوظة</div>
+                </div>
+                <div>
+                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-days-count">0</div>
+                    <div style="font-size: 0.85rem; opacity: 0.9;">يوم متواصل 🔥</div>
+                </div>
+                <div>
+                    <div style="font-size: 2rem; font-weight: bold;" id="hifz-ayat-count">0</div>
+                    <div style="font-size: 0.85rem; opacity: 0.9;">آية متقنة</div>
+                </div>
+            <div>
+    <div style="font-size: 2rem; font-weight: bold;" id="hifz-reviews-count">0</div>
+    <div style="font-size: 0.85rem; opacity: 0.9;">مراجعة</div>
+</div>
+<div>
+    <div style="font-size: 2rem; font-weight: bold;" id="hifz-average-score">0%</div>
+    <div style="font-size: 0.85rem; opacity: 0.9;">متوسط التسميع</div>
+</div>
+        </div>
+
+        
+        <!-- ورد اليوم -->
+        <div class="daily-card" style="max-width: 800px; margin: 20px auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+    <h3 style="color: var(--gold); margin: 0;">📖 ورد اليوم</h3>
+    <div style="display: flex; gap: 10px;">
+      <button onclick="startTestMode()" style="background: #9b59b6; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
+    ✍️ تسميع
+</button>
+        <button onclick="startReviewMode()" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-family: 'Amiri', serif; font-weight: bold;">
+            🔁 المراجعة
+        </button>
+        <button onclick="openHifzSettings()" style="background: transparent; border: 2px solid var(--gold); color: var(--gold); padding: 8px 15px; border-radius: 8px; cursor: pointer; font-family: 'Amiri', serif;">
+            ⚙️ إعدادات
+        </button>
+    </div>
+</div>
+            
+            <div id="hifz-today-info" style="background: rgba(201, 176, 122, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
+                <p style="color: var(--dark-teal); font-weight: bold; font-size: 1.1rem; margin: 5px 0;" id="hifz-today-range">جاري التحميل...</p>
+                <small style="color: #666;">عدد الآيات: <span id="hifz-today-ayat-count">0</span></small>
+            </div>
+            
+            <!-- عرض الآيات -->
+            <div id="hifz-ayahs-display" style="background: white; padding: 25px; border-radius: 15px; border: 2px solid var(--gold); font-size: 1.6rem; line-height: 2.5; text-align: justify; max-height: 500px; overflow-y: auto; font-family: 'Amiri', serif;">
+                <!-- الآيات تظهر هنا -->
+            </div>
+            
+            <div style="text-align: center; margin-top: 25px;">
+                <button onclick="markTodayComplete()" style="background: var(--dark-teal); color: var(--gold); border: none; padding: 15px 40px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; box-shadow: 0 4px 15px rgba(47, 95, 99, 0.3);">
+                    ✅ أتممت الحفظ اليوم
+                </button>
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+
 </div>
 
 <style>
@@ -921,3 +878,4 @@ if ('serviceWorker' in navigator) {
 
 </body>
 </html>
+
